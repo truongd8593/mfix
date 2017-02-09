@@ -48,7 +48,7 @@ QTreeView::item:selected {
     <item row="1" column="0">
      <widget class="QFrame" name="frame_mode_bar">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>

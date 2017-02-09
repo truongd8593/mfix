@@ -169,13 +169,7 @@ class StatusIndicator(BusyIndicator):
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
 
-        # draw background
         rect = self.rect()
-        gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        gradient.setColorAt(0, QtGui.QColor(0,0,0,120))
-        gradient.setColorAt(1, QtGui.QColor(0,0,0,0))
-        painter.setBrush(gradient)
-        painter.drawRect(rect)
 
         # draw the particles
         pc = QtGui.QColor(self.particle_color)
