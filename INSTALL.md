@@ -118,8 +118,9 @@ Now that the prerequisites are installed, build MFIX with:
 Download and install Anaconda (as described in [Installing MFIX](#installing-mfix).)
 
 Homebrew is the easiest way to install MFIX build dependencies.
-1. Go to http://brew.sh and follow the installation instructions.
-2. Once homebrew is installed, install MFIX build dependencies with the command:
+ - Go to http://brew.sh and follow the installation instructions.
+ - Once homebrew is installed, install MFIX build dependencies with the command:
+ 
 ```shell
 > brew install gcc autoconf automake make gnu-sed
 ```
@@ -127,7 +128,7 @@ Homebrew is the easiest way to install MFIX build dependencies.
 Install numpy with:
 ```shell
 > conda install numpy==1.11.3
-
+```
 
 Now that the prerequisites are installed, build MFIX with the following command (make sure the python command used is from Anaconda, not /usr/bin/python).
 ```shell
