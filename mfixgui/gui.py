@@ -53,6 +53,7 @@ from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.parameter_dialog import ParameterDialog
 from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
+from mfixgui.widgets.animations import StatusIndicator
 
 from mfixgui.model_setup import ModelSetup
 from mfixgui.fluid_handler import FluidHandler
@@ -369,6 +370,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
+        self.init_status_animation()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -783,10 +785,21 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     def status_message(self, message=''):
-        self.ui.label_status.setText(message)
+        '''set the status text and update the animation'''
+
+        self.status_animation.change_text(message)
         if message != 'Ready': # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
+            self.status_animation.start()
+        else:
+            self.status_animation.stop()
 
+        if 'paused' in message:
+            self.status_animation.pause_progress()
+        elif 'running' in message:
+            pass
+        else:
+            self.status_animation.stop_progress()
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -846,8 +859,30 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.residuals.setText(self.job_manager.job.pretty_status)
 
             # update plot data
+            status = self.job_manager.job.status
             if not self.job_manager.job.is_paused():
-                self.update_plots(self.job_manager.job.status)
+                self.update_plots(status)
+
+            # update progress bar
+            t = status.get('time', None)
+            ts = status.get('tstop', None)
+            if t is not None and ts is not None:
+                try:
+                    p = t/ts
+                except:
+                    p = 0
+                self.status_animation.set_progress(p)
+
+            # update status message
+            tl = status.get('walltime_remaining', None)
+            if tl is not None:
+                try:
+                    tl = float(tl)
+                    m, s = divmod(tl, 60)
+                    h, m = divmod(m, 60)
+                except:
+                    h, m, s = 0, 0, 0
+                self.status_animation.change_text('MFiX running, %d:%02d:%02d remaining' % (h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -902,7 +937,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif unpaused:
-            self.status_message("MFiX running, process %s" % self.job_manager.job.mfix_pid)
+            #self.status_message("MFiX running, process %s" % self.job_manager.job.mfix_pid) take care of this slot_update_residuals
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -1329,6 +1364,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
     # --- animation methods ---
+    def init_status_animation(self):
+        '''create the status animation widget'''
+        self.status_animation = StatusIndicator()
+        self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
+
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
                                btn_layout=None):
