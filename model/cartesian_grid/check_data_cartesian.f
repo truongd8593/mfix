@@ -1942,8 +1942,8 @@ MODULE CHECK_DATA_CG
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCX(nn) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN X-SEGMENT :',NN
+         IF(NCX(nn) < 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 0 IN X-SEGMENT :',NN
             IF(MyPE==0)  WRITE(*,*)' NCX = ',NCX(nn)
             call mfix_exit(myPE)
          ENDIF
@@ -2134,8 +2134,8 @@ MODULE CHECK_DATA_CG
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCY(nn) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Y-SEGMENT :',NN
+         IF(NCY(nn) < 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 0 IN Y-SEGMENT :',NN
             IF(MyPE==0)  WRITE(*,*)' NCY = ',NCY(nn)
             call mfix_exit(myPE)
          ENDIF
@@ -2328,8 +2328,8 @@ MODULE CHECK_DATA_CG
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCZ(nn) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Z-SEGMENT :',NN
+         IF(NCZ(nn) < 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 0 IN Z-SEGMENT :',NN
             IF(MyPE==0)  WRITE(*,*)' NCZ = ',NCZ(nn)
             call mfix_exit(myPE)
          ENDIF
