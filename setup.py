@@ -120,8 +120,6 @@ def prereq(command_subclass):
 
     def modified_run(self):
         self.run_command('build_mfix')
-
-        sys.exit()
         orig_run(self)
 
     command_subclass.run = modified_run
