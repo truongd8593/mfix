@@ -141,8 +141,8 @@ class StatusIndicator(BusyIndicator):
         if not self.progress_advancing:
             for p in self.particles:
                 p[2] *= 4
-        self.progress = percent
         self.progress_advancing = True
+        self.progress = percent
         self.start()
 
     def pause_progress(self):
@@ -157,7 +157,6 @@ class StatusIndicator(BusyIndicator):
             self.pause_progress()
         self.progress = None
 
-
     def paintEvent (self, event):
         '''Paint the widget'''
         if not self.particles:
@@ -166,20 +165,34 @@ class StatusIndicator(BusyIndicator):
         if self.animating:
             self.advance()
 
-        # draw the particles
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(self.particle_color)
 
+        # draw background
+        rect = self.rect()
+        gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient.setColorAt(0, QtGui.QColor(0,0,0,120))
+        gradient.setColorAt(1, QtGui.QColor(0,0,0,0))
+        painter.setBrush(gradient)
+        painter.drawRect(rect)
+
+        # draw the particles
+        pc = QtGui.QColor(self.particle_color)
+        pc.setAlpha(150)
+        painter.setBrush(pc)
         for x, y, vx, vy, r in self.particles:
             painter.drawEllipse(x-r, y-r, 2*r, 2*r)
 
         # progress bar
         if self.progress:
-            rect = self.rect()
             rect.setWidth(int(self.width()*self.progress))
-            painter.drawRect(rect)
+            gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
+            gradient.setColorAt(0, self.particle_color)
+            gradient.setColorAt(1, self.particle_color.darker())
+            painter.setBrush(gradient)
+
+            painter.drawRoundedRect(rect, 5, 5)
 
         # draw the text
         font = painter.font()
@@ -196,8 +209,17 @@ if __name__  == '__main__':
     qapp = QtWidgets.QApplication([])
 
     bi = BusyIndicator()
+    bi.setStyleSheet('''QWidget{
+                    	   background-color: #E0E0E0;
+                        }''')
     bi.show()
     bi.start(50)
+
+    si = StatusIndicator()
+    si.setGeometry(QtCore.QRect(100, 0, 500, 25))
+    si.show()
+    si.start(50)
+    si.set_progress(.6)
 
     qapp.exec_()
     sys.exit()

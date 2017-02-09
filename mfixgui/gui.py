@@ -871,7 +871,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     p = t/ts
                 except:
                     p = 0
-                self.status_animation.set_progress(p)
+                if p != self.status_animation.progress:
+                    self.status_animation.set_progress(p)
 
             # update status message
             tl = status.get('walltime_remaining', None)
