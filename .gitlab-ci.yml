@@ -40,7 +40,7 @@ build:linux:
 build:mac:
   stage: build:libmfix
   script:
-    - python setup.py build_mfix
+    - python3.5 setup.py build_mfix
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
