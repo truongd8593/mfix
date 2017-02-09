@@ -127,8 +127,6 @@ def prereq(command_subclass):
     command_subclass.run = modified_run
     return command_subclass
 
-...
-
 @prereq
 class BuildExtPrereqCommand(build_ext):
     pass
