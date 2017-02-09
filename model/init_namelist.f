@@ -440,21 +440,21 @@
 !  <description>
 !    X-component of gravitational acceleration vector.
 !  </description>
-      GRAVITY_X = ZERO
+      GRAVITY_X = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>
 !    Y-component of gravitational acceleration vector.
 !  </description>
-      GRAVITY_Y = ZERO
+      GRAVITY_Y = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>
 !    Z-component of gravitational acceleration vector.
 !  </description>
-      GRAVITY_Z = ZERO
+      GRAVITY_Z = UNDEFINED
 !</keyword>
 
 
