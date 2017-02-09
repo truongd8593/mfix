@@ -718,7 +718,7 @@ class ICS(object):
 
         if total == 0.0 and self.fluid_species:
             for IC in self.ics_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Skip last species
                     self.update_keyword('ic_x_g', 0.0, args=[IC, i])
                 self.update_keyword('ic_x_g', 1.0, args=[IC, len(self.fluid_species)]) # Last defined species
             self.update_ics_fluid_mass_fraction_table()
@@ -814,7 +814,7 @@ class ICS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for IC in self.ics_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Skip last species
                     self.update_keyword('ic_x_s', 0.0, args=[IC, P, i])
                 self.update_keyword('ic_x_s', 1.0, args=[IC, P, len(species)]) # Last defined species
             self.update_ics_solids_mass_fraction_table()

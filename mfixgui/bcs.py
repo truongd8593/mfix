@@ -2561,7 +2561,7 @@ class BCS(object):
 
         if total == 0.0 and self.fluid_species:
             for BC in self.bcs_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Intentionally not +1, skip last species
                     self.update_keyword('bc_x_g', 0.0, args=[BC, i])
                 self.update_keyword('bc_x_g', 1.0, args=[BC, len(self.fluid_species)]) # Last defined species
             self.update_bcs_fluid_mass_fraction_table()
@@ -2943,7 +2943,7 @@ class BCS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for BC in self.bcs_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Intentionally not +1,  skip last species
                     self.update_keyword('bc_x_s', 0.0, args=[BC, P, i])
                 self.update_keyword('bc_x_s', 1.0, args=[BC, P, len(species)]) # Last defined species
             self.update_bcs_solids_mass_fraction_table()
@@ -3010,7 +3010,7 @@ class BCS(object):
         # TODO Error Check: For PI - either all are defined and sum to 1, or all are undefined
         enabled = True
         key = 'bc_ep_s'
-        s = sum(self.project.get_value(key, default=0, args=[BC0, p]) for p in range(1, P))
+        s = sum(self.project.get_value(key, default=0, args=[BC0, p]) for p in range(1, P)) # Sum of previous tabs
         default = (1.0 - s) if bc_type in ('MI', 'CG_MI') else None
         setup_key_widget(key, default, enabled)
 

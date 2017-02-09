@@ -597,7 +597,7 @@ class PSS(object):
 
         if total == 0.0 and self.fluid_species:
             for PS in self.pss_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Skip last species
                     self.update_keyword('ps_x_g', 0.0, args=[PS, i])
                 self.update_keyword('ps_x_g', 1.0, args=[PS, len(self.fluid_species)]) # Last defined species
             self.update_pss_fluid_mass_fraction_table()
@@ -694,7 +694,7 @@ class PSS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for PS in self.pss_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Skip last species
                     self.update_keyword('ps_x_s', 0.0, args=[PS, P, i])
                 self.update_keyword('ps_x_s', 1.0, args=[PS, P, len(species)]) # Last defined species
             self.update_pss_solids_mass_fraction_table()
