@@ -16,7 +16,7 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import PYQT5
+from qtpy import PYQT5, uic
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
                             QDialogButtonBox, QLabel, QComboBox, QSpinBox,
@@ -25,11 +25,6 @@ from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
 from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
 from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
-
-try:
-    from PyQt5 import uic
-except ImportError:
-    from PyQt4 import uic
 
 try: #2.7
     import ConfigParser as configparser
@@ -51,9 +46,7 @@ class RunPopup(QDialog):
     set_run_mfix_exe = Signal()
 
     def __init__(self, mfix_exe, parent):
-
         super(RunPopup, self).__init__(parent)
-
         self.commandline_option_exe = mfix_exe if mfix_exe else None
         self.mfix_available = False
         self.mfix_exe = None
@@ -66,12 +59,10 @@ class RunPopup(QDialog):
         self.settings = parent.settings
         self.project_dir = parent.get_project_dir()
         self.gui_comments = self.project.mfix_gui_comments
-
         # load ui
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
-
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
@@ -80,7 +71,6 @@ class RunPopup(QDialog):
             self.title = 'Resume'
         else:
             self.title = 'Run'
-
         self.signal_run.connect(self.handle_run)
         self.signal_submit.connect(self.handle_submit)
         self.signal_cancel.connect(self.close)
