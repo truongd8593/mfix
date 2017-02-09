@@ -86,7 +86,7 @@ build:linux:py:
 build:mac:py:
   stage: build:py
   script:
-    - FC=gfortran-6 CC=gcc-6 python2.7 setup.py bdist_wheel
+    - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
     - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
   dependencies:
     - build:mac
