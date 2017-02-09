@@ -355,8 +355,10 @@ class RegionsWidget(QtWidgets.QWidget):
 
 
     def setup_regions(self):
-        # Set up all widgets in pane to current state
+        # Set up all widgets in pane to current state,
+        # including updates we deferred during extract_region
         self.update_region_parameters()
+        self.tablewidget_regions.fit_to_contents()
 
 
     def stl_type_changed(self):

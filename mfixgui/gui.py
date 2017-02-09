@@ -2578,9 +2578,6 @@ class MfixGui(QtWidgets.QMainWindow,
         ### Regions
         # Look for regions in IC, BC, PS, etc.
         self.ui.regions.extract_regions(self.project, project_dir)
-        # Take care of updates we deferred during extract_region
-        # FIXME Do this when switching to regions pane
-        self.ui.regions.tablewidget_regions.fit_to_contents()
 
         # background mesh
         self.init_background_mesh()
