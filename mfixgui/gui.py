@@ -1839,7 +1839,6 @@ class MfixGui(QtWidgets.QMainWindow,
         return True
 
     def open_run_dialog(self):
-        """Open run popup dialog"""
         if not self.confirm_save():
             self.message(title="Not starting MFiX",
                          text="Must save project before running.")
@@ -1855,9 +1854,8 @@ class MfixGui(QtWidgets.QMainWindow,
                             text=udf_msg,
                             buttons=['yes', 'no'],
                             default='no')
-            if response is not 'yes':
+            if response != 'yes':
                 return
-
 
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
         self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
