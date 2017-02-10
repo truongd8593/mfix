@@ -1,6 +1,6 @@
 # Introduction
 
-This document explains how to install or build the binary packages for MFIX 2017.1
+This document explains how to install or build the binary packages for MFIX 17.1
 
 
 # Installing MFIX
@@ -51,7 +51,7 @@ TODO: replace with link to website for actual release
 https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3
 
 ```shell
-> pip install mfix-2017.1-cp35-cp35m-linux_x86_64.whl
+> pip install mfix-17.1-cp35-cp35m-linux_x86_64.whl
 ```
 
 ### macOS
@@ -61,7 +61,7 @@ TODO: replace with link to website for actual release
 https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_mac_py3
 
 ```shell
-> pip install mfix-2017.1-cp35-cp35m-macosx_10_6_x86_64.whl
+> pip install mfix-17.1-cp35-cp35m-macosx_10_6_x86_64.whl
 ```
 
 ### Windows
@@ -72,7 +72,7 @@ https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=
 
 
 ```shell
-C:\> pip install mfix-2017.1-cp27-cp27m-win_amd64.whl
+C:\> pip install mfix-17.1-cp27-cp27m-win_amd64.whl
 ```
 
 ## Uninstalling MFIX
@@ -99,7 +99,7 @@ C:\> pip uninstall mfixgui
 Building also requires gcc, autoconf, automake, and GNU Make.
 Building with other compilers is not yet supported. For running command-line MFIX without the GUI, see Section 6.
 
-Building MFIX from source requires the source tarball mfix-2017.1.tar.gz.
+Building MFIX from source requires the source tarball mfix-17.1.tar.gz.
 TODO: replace with link to website for actual release
 https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build%3Asrc
 
@@ -122,8 +122,8 @@ Install numpy with:
 Now that the prerequisites are installed, build MFIX with:
 
 ```shell
-> tar xzf mfix-2017.1.tar.gz
-> cd mfix-2017.1
+> tar xzf mfix-17.1.tar.gz
+> cd mfix-17.1
 > python setup.py bdist_wheel
 ```
 
@@ -147,8 +147,8 @@ Install numpy with:
 
 Now that the prerequisites are installed, build MFIX with the following command (make sure the python command used is from Anaconda, not /usr/bin/python).
 ```shell
-> tar xzf mfix-2017.1.tar.gz
-> cd mfix-2017.1
+> tar xzf mfix-17.1.tar.gz
+> cd mfix-17.1
 > python setup.py bdist_wheel
 ```
 
@@ -165,8 +165,8 @@ MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way t
 
 Now that the prerequisites are installed, build MFIX with the following command (make sure the python command used is from Anaconda).
 ```shell
-C:\> tar xzf mfix-2017.1.tar.gz
-C:\> cd mfix-2017.1
+C:\> tar xzf mfix-17.1.tar.gz
+C:\> cd mfix-17.1
 C:\> python setup.py bdist_wheel
 ```
 
