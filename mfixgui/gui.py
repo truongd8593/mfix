@@ -54,6 +54,7 @@ from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.parameter_dialog import ParameterDialog
 from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
 from mfixgui.widgets.animations import StatusIndicator
+from mfixgui.widgets.new_popup import NewProjectDialog
 
 from mfixgui.model_setup import ModelSetup
 from mfixgui.fluid_handler import FluidHandler
@@ -2173,14 +2174,8 @@ class MfixGui(QtWidgets.QMainWindow,
         if not run_name:
             log.warn('RUN_NAME missing from project template: %s' % template)
 
-        run_name, ok = QtWidgets.QInputDialog.getText(self, "Run name", "Enter the name for your case:", text=run_name)
-        if not ok or not run_name:
-            return
-
-        project_loc = QtWidgets.QFileDialog.getExistingDirectory(
-            self, caption='Create Project Location')
-
-        if not project_loc:
+        ok, run_name, project_loc = NewProjectDialog(self).get(run_name = run_name)
+        if any([not ok, not run_name, not project_loc]):
             return
 
         if not self.check_writable(project_loc):
