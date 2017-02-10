@@ -19,25 +19,25 @@ install MFIX dependencies.
 
 At the time of this writing, the default anaconda package for vtk needs to be
 installed separately. Also, MFIX only works with numpy 1.11.3 so a specific
-version needs to be installed
+version needs to be installed. The pyqt library must be installed manually as well.
 
 ### Linux
 ```shell
 > conda install -c menpo vtk=7.0.0
-> conda install numpy==1.11.3
+> conda install numpy==1.11.3 pyqt
 ```
 
 ### macOS
 ```shell
 > conda install -c menpo vtk=7.0.0
-> conda install numpy==1.11.3
+> conda install numpy==1.11.3 pyqt
 ```
 
 ### Windows
 
 ```shell
 C:\> conda install -c menpo vtk=7.0.0
-C:\> conda install numpy==1.11.3
+C:\> conda install numpy==1.11.3 pyqt
 ```
 
 
