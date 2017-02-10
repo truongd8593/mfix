@@ -786,20 +786,11 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def status_message(self, message=''):
         '''set the status text and update the animation'''
-
         self.status_animation.change_text(message)
         if message != 'Ready': # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
-            self.status_animation.start()
         else:
-            self.status_animation.stop()
-
-        if 'paused' in message:
-            self.status_animation.pause_progress()
-        elif 'running' in message:
-            pass
-        else:
-            self.status_animation.stop_progress()
+            self.status_animation.set_progress(0)
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -871,11 +862,10 @@ class MfixGui(QtWidgets.QMainWindow,
                     p = t/ts
                 except:
                     p = 0
-                if p != self.status_animation.progress:
-                    self.status_animation.set_progress(p)
+                self.status_animation.set_progress(p)
 
             # update status message
-            tl = status.get('walltime_remaining', None)
+            tl = status.get('walltime_elapsed', None)
             if tl is not None:
                 try:
                     tl = float(tl)
@@ -883,7 +873,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     h, m = divmod(m, 60)
                 except:
                     h, m, s = 0, 0, 0
-                self.status_animation.change_text('MFiX running, %d:%02d:%02d remaining' % (h, m, s))
+                self.status_animation.change_text('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 

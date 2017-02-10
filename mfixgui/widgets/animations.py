@@ -97,103 +97,58 @@ class BusyIndicator(Base):
             painter.drawEllipse(x-r, y-r, 2*r, 2*r)
 
 
-class StatusIndicator(BusyIndicator):
+class StatusIndicator(Base):
     def __init__(self, parent=None):
-        BusyIndicator.__init__(self, parent)
-        self.particles = []
-        self.count = 30
-        self.size_factor = 4
-        self.particle_color = QtGui.QColor('#1974f4')
+        Base.__init__(self, parent)
+        self.progress = 0
+        self.progressbar_color = QtGui.QColor('#1974f4')
         self.text_color = QtGui.QColor(Qt.black)
         self.text = 'Status'
         self.setMinimumWidth(500)
-        self.progress = None
-        self.progress_advancing = False
+        self.setMinimumHeight(30)
 
     def change_text(self, text='test'):
         self.text = text
         self.update()
 
-    def advance(self):
-        '''Advance the time'''
-        ps = self.particles
-        width = self.width()
-        height = self.height()
-        for p in ps:
-            r = p[-1]
-            nx = p[0] + p[2]
-            if self.progress_advancing:
-                p[2] = -abs(p[2])
-                if nx-r < 0:
-                    nx = width-r
-            elif (nx+r > width and p[2] > 0) or (nx-r < 0 and p[2] < 0):
-                p[2] = -p[2]
-            ny = p[1] + p[3]
-            if (ny+r > height and p[3] > 0) or (ny-r < 0 and p[3] < 0):
-                p[3] = -p[3]
-
-            p[0] = nx
-            p[1] = ny
-
     def set_progress(self, percent=0.0):
         '''set the progress [0-1], animation changes'''
-        # accelerate particles in x direction
-        if not self.progress_advancing:
-            for p in self.particles:
-                p[2] *= 4
-        self.progress_advancing = True
         self.progress = percent
-        self.start()
-
-    def pause_progress(self):
-        # randomly set x velocity sign
-        if self.progress_advancing:
-            for p in self.particles:
-                p[2] //= 4 * (1 if random.choice([True, False]) else -1)
-        self.progress_advancing = False
-
-    def stop_progress(self):
-        if self.progress is not None:
-            self.pause_progress()
-        self.progress = None
 
     def paintEvent (self, event):
         '''Paint the widget'''
-        if not self.particles:
-            self.init_particles()
-
-        if self.animating:
-            self.advance()
 
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
 
+        # background
         rect = self.rect()
-
-        # draw the particles
-        pc = QtGui.QColor(self.particle_color)
-        pc.setAlpha(150)
-        painter.setBrush(pc)
-        for x, y, vx, vy, r in self.particles:
-            painter.drawEllipse(x-r, y-r, 2*r, 2*r)
+        rect.setHeight(self.height()-8)
+        rect.moveTop(4)
+        rect.setWidth(self.width()-8)
+        rect.moveLeft(4)
+        gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient.setColorAt(0, QtGui.QColor(0,0,0,80))
+        gradient.setColorAt(1, QtGui.QColor(0,0,0,0))
+        painter.setBrush(gradient)
+        painter.drawRoundedRect(rect, 4, 4)
 
         # progress bar
         if self.progress:
-            rect.setWidth(int(self.width()*self.progress))
+            rect.setWidth(int(rect.width()*self.progress))
             gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
-            gradient.setColorAt(0, self.particle_color)
-            gradient.setColorAt(1, self.particle_color.darker())
+            gradient.setColorAt(0, self.progressbar_color.lighter())
+            gradient.setColorAt(1, self.progressbar_color)
             painter.setBrush(gradient)
-
-            painter.drawRoundedRect(rect, 5, 5)
+            painter.drawRoundedRect(rect, 4, 4)
 
         # draw the text
         font = painter.font()
         font.setPointSize(12)
         painter.setFont(font)
         painter.setPen(self.text_color)
-        painter.drawText(self.rect(), Qt.AlignRight|Qt.AlignVCenter,self.text)
+        painter.drawText(self.rect(), Qt.AlignCenter|Qt.AlignVCenter,self.text)
 
 
 
@@ -213,7 +168,7 @@ if __name__  == '__main__':
     si.setGeometry(QtCore.QRect(100, 0, 500, 25))
     si.show()
     si.start(50)
-    si.set_progress(.6)
+    si.set_progress(.005)
 
     qapp.exec_()
     sys.exit()
