@@ -54,25 +54,41 @@ https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=
 > pip install mfixgui-2017.1-cp35-cp35m-linux_x86_64.whl
 ```
 
+### macOS
 Download the latest version of the package for your platform:
 
 TODO: replace with link to website for actual release
 https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_mac_py3
 
-### macOS
 ```shell
 > pip install mfixgui-2017.1-cp35-cp35m-macosx_10_6_x86_64.whl
 ```
 
+### Windows
 Download the latest version of the package for your platform:
 
 TODO: replace with link to website for actual release
 https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py2
 
-### Windows
 
 ```shell
 C:\> pip install mfixgui-2017.1-cp27-cp27m-win_amd64.whl
+```
+
+## Uninstalling MFIX
+
+MFIX can be uninstalled with:
+
+(Mac or Linux)
+```shell
+> pip uninstall mfixgui
+```
+
+or
+
+(Windows)
+```shell
+C:\> pip uninstall mfixgui
 ```
 
 
@@ -179,3 +195,23 @@ Start MFIX with:
 ```shell
 C:\> mfixgui
 ```
+
+# Building for UDFs
+
+When running cases with User Defined Files (UDFs), it is necessary to build a separate mfixsolver extension module for that case.
+
+This requires building from a source distribution of MFIX ([Building MFIX](#building-mfix)), not installed from a binary distribution.
+
+Assume the source distribution is installed to `MFIX_HOME`.
+
+```shell
+> cd my_example_case
+> ls *.f
+usr0.f   write_usr0.f
+> $MFIX_HOME/configure_mfix --python
+> make mfixsolver.so
+> ls *.so
+mfixsolver.so
+```
+
+When running `pymfix` from `mfixgui`, the case-specific MFIX solver will override the default mfixsolver implementation.
