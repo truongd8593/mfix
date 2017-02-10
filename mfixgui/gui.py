@@ -471,8 +471,9 @@ class MfixGui(QtWidgets.QMainWindow,
         self.job_manager = JobManager(self)
         self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
         self.job_manager.sig_update_job_status.connect(self.slot_update_residuals)
-        self.rundir_watcher = QFileSystemWatcher() # Move to monitor class
-        self.rundir_watcher.directoryChanged.connect(self.slot_rundir_changed)
+        self.watch_run_dir_timer = QtCore.QTimer()# Move to monitor class
+        self.watch_run_dir_timer.timeout.connect(self.slot_rundir_changed)
+        self.watch_run_dir_timer.start(1000)
 
         self.monitor = Monitor(self)
 
@@ -2031,8 +2032,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.save_project()
 
         # change file watcher
-        self.rundir_watcher.removePath(old_dir)
-        self.rundir_watcher.addPath(new_dir)
         self.slot_rundir_changed()
         self.signal_update_runbuttons.emit('')
         self.handle_main_menu_hide()
@@ -2434,7 +2433,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_source_view()
 
         # set up rundir watcher
-        self.rundir_watcher.addPath(project_dir)
         self.slot_rundir_changed()
 
         ### Geometry
