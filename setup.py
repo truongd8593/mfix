@@ -130,7 +130,7 @@ class BuildExtPrereqCommand(build_ext):
     pass
 
 setup(
-    name='mfixgui',
+    name='mfix',
 
     cmdclass={
         'build_mfix': BuildMfixCommand,
