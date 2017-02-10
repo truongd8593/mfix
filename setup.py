@@ -232,7 +232,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mfixgui=mfixgui.gui:main',
-            'pymfix=mfixgui.pymfix:main',
+            'pymfixsolver=mfixgui.pymfixsolver:main',
         ],
     },
 )
