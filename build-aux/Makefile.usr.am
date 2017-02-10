@@ -27,29 +27,29 @@ obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix$(EXEEXT)
+.DEFAULT_GOAL := mfixsolver$(EXEEXT)
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
-bin_PROGRAMS = mfix$(EXEEXT)
-mfix_SOURCES = $(src_overrides)
+bin_PROGRAMS = mfixsolver$(EXEEXT)
+mfixsolver_SOURCES = $(src_overrides)
 
 # We need to add mfix.f to mfix_SOURCES because gfortran 4.4 complains about not
 # finding MAIN if mfix.o is only in libmfix.a and not in the link command.
 # However, we can't add model/mfix.f to mfix_SOURCES for Makefile.usr because
 # then mfix.o is in $MFIX_HOME/model. So we copy it under $RUNDDIR.
-mfix_SOURCES += $(builddir)/.build/mfix.f
+mfixsolver_SOURCES += $(builddir)/.build/mfix.f
 
-mfix_LDADD = $(obj_overrides)
-mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
-mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
-mfix_LDADD += $(LIBMFIX)
+mfixsolver_LDADD = $(obj_overrides)
+mfixsolver_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
+mfixsolver_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
+mfixsolver_LDADD += $(LIBMFIX)
 
 .PHONY: TAGS test $(LIBMFIX) .build
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
+	$(MAKE) -C $(top_builddir) mfixsolver$(EXEEXT)
 
 $(LIBMFIX).md5: $(LIBMFIX)
 	@$(MD5SUM) $< | cmp -s $@ -; if test $$? -ne 0; then $(MD5SUM) $< > $@; fi
@@ -185,7 +185,7 @@ F2PY_FILES = \
 	fortranobject.o
 
 $(F2PY_FILES):
-	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
+	$(MAKE) -C $(top_builddir) mfixsolver$(EXEEXT)
 	$(PYTHON_BIN) -c 'import os; \
 	import numpy; \
 	from numpy.f2py import f2py2e; \
@@ -218,10 +218,10 @@ AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
 F2PY_FLAGS += $(FC_DEFINE)MPI
 
-test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
+test: postmfix$(EXEEXT) mfixsolver$(EXEEXT) ## Run tests
 	MPICMD="$(MPICMD)" ${top_srcdir}/runtests.sh
 else
-test: postmfix$(EXEEXT) mfix$(EXEEXT) ## Run tests
+test: postmfix$(EXEEXT) mfixsolver$(EXEEXT) ## Run tests
 	${top_srcdir}/runtests.sh
 endif
 
@@ -280,8 +280,8 @@ endif
 #      run this case
 ################################################################
 
-run_t0: postmfix$(EXEEXT) mfix$(EXEEXT) ## run case to TSTOP=0 to run checks
-	OMP_NUM_THREADS=1 ./mfix$(EXEEXT) TSTOP=0 NODESI=1 NODESJ=1 NODESK=1
+run_t0: postmfix$(EXEEXT) mfixsolver$(EXEEXT) ## run case to TSTOP=0 to run checks
+	OMP_NUM_THREADS=1 ./mfixsolver$(EXEEXT) TSTOP=0 NODESI=1 NODESJ=1 NODESK=1
 
 ################################################################
 #                                                              #

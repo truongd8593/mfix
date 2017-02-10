@@ -30,32 +30,32 @@ DISTCLEANFILES += tutorials
 DISTCLEANFILES += fdep
 
 INCS = $(FC_MODINC)./../../../model/include \
-       $(FC_MODINC)$(MODDIR)
+			 $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS = $(INCS) \
-             $(FC_MODOUT)$(MODOUTDIR)
+						 $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix$(EXEEXT)
+.DEFAULT_GOAL := mfixsolver$(EXEEXT)
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #
-#           mfix executable                                    #
+#           mfixsolver executable                              #
 #                                                              #
 ################################################################
-bin_PROGRAMS = mfix$(EXEEXT)
+bin_PROGRAMS = mfixsolver$(EXEEXT)
 
-mfix_LDADD = libmfix.a
+mfixsolver_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-# mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
-mfix_SOURCES = ../model/mfix.f
-mfix_SOURCES += ../model/read_database.f
-mfix_SOURCES += ../model/read_namelist.f
+# mfix.f needs to be in mfixsolver_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
+mfixsolver_SOURCES = ../model/mfix.f
+mfixsolver_SOURCES += ../model/read_database.f
+mfixsolver_SOURCES += ../model/read_namelist.f
 libmfix_a_SOURCES = ../model/ODEPACK.F
 
 ################################################################
@@ -110,7 +110,7 @@ DEP_IGN := -i omp_lib -i netcdf -i mpi
 # Use generated module dependency rules
 CLEANS := clean distclean mostlyclean
 @make_ifnotclean@
-$(eval -include $(mfix_SOURCES:%.f=%.d) )
+$(eval -include $(mfixsolver_SOURCES:%.f=%.d) )
 $(eval -include $(libmfix_src:%.f=%.d) )
 $(eval -include $(postmfix_SOURCES:%.f=%.d) )
 @make_endif@
@@ -191,8 +191,8 @@ endif
 ################################################################
 #      libmfix_a_SOURCES                                       #
 #                                                              #
-#      The majority of source files for mfix and postmfix      #
-#      are listed here.                                        #
+#   The majority of source files for mfixsolver and postmfix   #
+#   are listed here.                                           #
 ################################################################
 
 libmfix_a_SOURCES += \
@@ -394,11 +394,11 @@ libmfix_src = \
 	../model/dbg_mod.f \
 	../model/deprecated.f \
 	../model/des/calc_collision_wall_mod.f \
-  ../model/des/calc_des_2fluid.f \
+	../model/des/calc_des_2fluid.f \
 	../model/des/calc_drag_des.f \
 	../model/des/calc_epg_des.f \
 	../model/des/calc_force_dem.f \
-  ../model/des/calc_gamma_des.f \
+	../model/des/calc_gamma_des.f \
 	../model/des/calc_grad_des.f \
 	../model/des/calc_interp_weights.f \
 	../model/des/calc_pg_grad.f \
@@ -485,7 +485,7 @@ libmfix_src = \
 	../model/des/read_res0_des.f \
 	../model/des/read_res1_des_mod.f \
 	../model/des/resize.f \
-  ../model/des/rxns_gs_des1.f \
+	../model/des/rxns_gs_des1.f \
 	../model/des/sendrecvnode_mod.f \
 	../model/des/set_bc_dem.f \
 	../model/des/set_bc_dem_mi.f \
@@ -848,9 +848,9 @@ cases := $(shell find . -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
-	  echo "BUILDING: $$case"; \
-	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
-	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
+		echo "BUILDING: $$case"; \
+		cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
+		$(MAKE) -C $$(dirname $$case) mfixsolver$(EXEEXT) || exit; \
 	done
 
 TESTS = build-aux/test.sh

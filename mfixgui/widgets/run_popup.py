@@ -35,7 +35,7 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe', 'mfix', 'mfix.exe']
+MFIX_EXE_NAMES = ['pymfixsolver', 'pymfixsolver.exe', 'mfixsolver', 'mfixsolver.exe']
 
 
 class RunPopup(QDialog):
