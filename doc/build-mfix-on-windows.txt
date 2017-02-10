@@ -31,7 +31,7 @@ except steps 0/1 can be skipped
    On the VM host:
    $ mkdir /somewhere/VBOX_SHARE
    $ cd /somewhere/VBOX_SHARE
-   $ git clone -b gui <working_dir>/mfix  # can clone local mfix repo
+   $ git clone -b gui <working_dir>/mfixsolver  # can clone local mfix repo
 
    Then setup a shared folder pointing to VBOX_SHARE, and you should see
    E:\mfix in the Windows file browser

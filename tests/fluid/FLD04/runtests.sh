@@ -12,7 +12,7 @@ rm -f POST_* &> /dev/null
 
 for SCHEME in 0 1 2 3 5 6 7 8 9; do
    rm -f ${RUN_NAME}* &> /dev/null
-   ./mfix Discretize=9*${SCHEME}
+   ./mfixsolver Discretize=9*${SCHEME}
 done
 
 post_dats=AUTOTEST/POST*.dat

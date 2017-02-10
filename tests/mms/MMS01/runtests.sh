@@ -33,13 +33,13 @@ rm -f de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
-./mfix imax=8 jmax=8 #> out.log
+./mfixsolver imax=8 jmax=8 #> out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
-./mfix imax=16 jmax=16 > out.log
+./mfixsolver imax=16 jmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 

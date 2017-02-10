@@ -2,7 +2,7 @@
 
 # Run case
 echo "******** Running simulation..."
-./mfix > out.log
+./mfixsolver > out.log
 rm -f $CASE_DIR/{TFM02.*,out.log}
 #rm -f $CASE_DIR/de_norms.dat
 rm -f $CASE_DIR/mfix

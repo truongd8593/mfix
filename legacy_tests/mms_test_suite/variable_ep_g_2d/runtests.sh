@@ -14,8 +14,8 @@ cp ../usr_common/usr3.f ./usr3.f
 # compile MFIX
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
-#../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
+../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfixsolver.exe -j
+#../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfixsolver.exe -j
 
 # remove these files if exist:
 echo "******** Removing old files..."
@@ -28,7 +28,7 @@ echo "******** Creating backup for mfix.dat..."
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
 #cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
-$CASE_DIR/mfix.exe imax=8 jmax=8 > out.log
+$CASE_DIR/mfixsolver.exe imax=8 jmax=8 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{MMS2DVEPG.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
@@ -38,7 +38,7 @@ rm $CASE_DIR/solution_*.dat
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
 #cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
-$CASE_DIR/mfix.exe imax=16 jmax=16 > out.log
+$CASE_DIR/mfixsolver.exe imax=16 jmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{MMS2DVEPG.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
@@ -48,7 +48,7 @@ rm $CASE_DIR/solution_*.dat
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
 #cat $CASE_DIR/mfix_backup.dat mesh_32.dat > mfix.dat
-mpirun -np 8 $CASE_DIR/mfix.exe imax=32 jmax=32 nodesi=4 nodesj=2 nodesk=1 > out.log
+mpirun -np 8 $CASE_DIR/mfixsolver.exe imax=32 jmax=32 nodesi=4 nodesj=2 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{MMS2DVEPG.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
@@ -58,7 +58,7 @@ rm $CASE_DIR/solution_*.dat
 ## Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
 #echo "******** Running mesh_64..."
 ##cat $CASE_DIR/mfix_backup.dat mesh_64.dat > mfix.dat
-#mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
+#mpirun -np 16 $CASE_DIR/mfixsolver.exe imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 #rm $CASE_DIR/{MMS2DVEPG.*,de_norms.dat,out.log}
 ##rm $CASE_DIR/solution_*.dat
@@ -68,7 +68,7 @@ rm $CASE_DIR/solution_*.dat
 ## Run mesh_128 (i.e., 128x128 for 2D, 128x128x128 for 3D)
 #echo "******** Running mesh_128..."
 ##cat $CASE_DIR/mfix_backup.dat mesh_128.dat > mfix.dat
-#mpirun -np 16 $CASE_DIR/mfix.exe imax=128 jmax=128 nodesi=4 nodesj=4 nodesk=1 > out.log
+#mpirun -np 16 $CASE_DIR/mfixsolver.exe imax=128 jmax=128 nodesi=4 nodesj=4 nodesk=1 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 #rm $CASE_DIR/{MMS2DVEPG.*,de_norms.dat,out.log}
 #rm $CASE_DIR/solution_*.dat
