@@ -1,10 +1,26 @@
 import os
 import json
+
+# FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
+try:
+    # Python 3
+    import urllib.request as urlparse
+    import urllib.request as urllib
+except ImportError:
+    # Python 2
+    import urlparse
+    import urllib
+
 from qtpy import QtCore, QtWidgets, QtGui
 
 from mfixgui.tools.general import get_icon, get_mfix_home, get_separator, get_pixmap
 from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
+
+
+def path2url(path):
+    return urlparse.urljoin(
+      'file:', urllib.pathname2url(path))
 
 class MainMenu(object):
     main_menu_animation_speed = 150
@@ -331,6 +347,20 @@ class MainMenu(object):
         hw_layout.addWidget(l, 0, 0, 1, -1)
 
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
+
+        # link only works after running: python setup.py build_doc
+        help_info = QtWidgets.QLabel('''
+        See <a href="%s">User Guide</a> for documentation
+        ''' % path2url(os.path.join(get_mfix_home(), 'USER_GUIDE.html')))
+        help_info.setStyleSheet('background-color: white;')
+        help_info.setWordWrap(True)
+        hw_layout.addWidget(help_info, 2, 0, 1, -1)
+
+        def open_user_guide(linkStr):
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
+
+        help_info.linkActivated.connect(open_user_guide)
+        help_info.setOpenExternalLinks(True)
 
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 

@@ -86,6 +86,25 @@ mfixsolver = Extension(name = 'mfixsolver',
                            path.join(build_dir, 'build-aux/libmfix.a'),
                        ]
 )
+
+class BuildDocCommand(setuptools.Command):
+    """ builds libmfix (Python version agnostic) """
+    description = "build mfix documentation (setup guide and user guide)"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+
+        import pypandoc
+
+        pypandoc.convert_file('INSTALL.md', 'html', outputfile='INSTALL.html')
+        pypandoc.convert_file('USER_GUIDE.md', 'html', outputfile='USER_GUIDE.html')
+
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
     description = "build mfix (Fortran code)"
@@ -133,8 +152,9 @@ setup(
     name='mfix',
 
     cmdclass={
-        'build_mfix': BuildMfixCommand,
+        'build_doc': BuildDocCommand,
         'build_ext': BuildExtPrereqCommand,
+        'build_mfix': BuildMfixCommand,
     },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing

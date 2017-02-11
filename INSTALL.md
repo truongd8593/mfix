@@ -17,9 +17,9 @@ Potential users may find reviewing the Frequently Asked Questions section of the
 
 For information on running MFIX, please see the user guide: [USER_GUIDE.md](USER_GUIDE.md)
 
-- If you want to install MFIX with binary packages, see [Installing MFIX](installing-mfix)
-- If you want to build and install MFIX from source , see [Building MFIX](building-mfix)
-- If you want to run the command line version of MFIX from previous versions, see [Building MFIX Solver](building-mfix-solver)
+- If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix)
+- If you want to build and install MFIX from source , see [Building MFIX](#building-mfix)
+- If you want to run the command line version of MFIX from previous versions, see [Building MFIX Solver](#building-mfix-solver)
 
 
 # Installing MFIX
@@ -47,11 +47,9 @@ version needs to be installed. The pyqt library must be installed manually as we
 ```
 
 ### MFIX install
-Download the [latest Linux binaries] of the package for your platform:
+Download the [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3) for MFIX.
 
 <!-- TODO: replace with link to website for actual release -->
-[latest Linux binaries]: https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3
-
 ```shell
 > pip install mfix-17.1-cp35-cp35m-linux_x86_64.whl
 ```
@@ -69,10 +67,8 @@ If you ever want to uninstall MFIX:
 ```
 
 ### MFIX install
-Download the [latest Mac binaries] of the package for your platform:
-
+Download the [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py2) for MFIX.
 <!-- TODO: replace with link to website for actual release -->
-[latest Mac binaries]: https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py2
 
 ```shell
 > pip install mfix-17.1-cp35-cp35m-macosx_10_6_x86_64.whl
@@ -92,10 +88,10 @@ C:\> conda install numpy==1.11.3 pyqt
 ```
 
 ### MFIX install
-Download the [latest Windows binaries] of the package for your platform:
+
+Download the [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py2) for MFIX.
 
 <!-- TODO: replace with link to website for actual release -->
-[latest Windows binaries]: https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py2
 
 
 ```shell
@@ -123,12 +119,11 @@ Building also requires gcc, autoconf, automake, and GNU Make.
 Building with other compilers is not yet supported.
 
 Building the package requires numpy 1.11.3 is another build dependency. (The
-other dependencies in [Installing MFIX](installing-mfix) are run-time, but not
+other dependencies in [Installing MFIX](#installing-mfix) are run-time, but not
 build-time depedencies.)
 
-Building MFIX from source requires the source tarball [mfix-17.1.tar.gz].
+Building from source requires the MFIX source tarball [mfix-17.1.tar.gz](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build%3Asrc)
 <!-- TODO: replace with link to website for actual release -->
-[mfix-17.1.tar.gz]: https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build%3Asrc
 
 
 ## Linux
