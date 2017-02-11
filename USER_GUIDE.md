@@ -49,17 +49,95 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 
 <img alt="command line" src="doc/tutorial_4.png" style="width:800;height:600" />
 
-## Main menu
+# User Interface Reference
 
-| | |
-|--------------------------------------|------------------------------------------------------------------------|
-| ![File menu](mfixgui/icons/menu.png) | The file menu is for creating, opening, and saving MFIX project files. |
-| ![Save button](mfixgui/icons/save.png) | The save button saves the MFIX project file.
-| ![Start button](mfixgui/icons/play.png) | The Start button starts or unpauses an MFIX simulation.
-| ![Pause button](mfixgui/icons/pause.png) | The Pause button pauses an MFIX simulation.
-| ![Stop button](mfixgui/icons/stop.png) | The Stop button stops an MFIX simulation.
-| ![Clear button](mfixgui/icons/restore_delete.png) | The Clear button deletes MFIX simulation data.
-| ![Parameters button](mfixgui/icons/functions.png) | The Parameters menu adjusts MFIX parameters.
+## Toolbar
+
+|                                                                                                                              |
+|------------------------------------------------------------------------------------------------------------------------------|
+| ![File menu](mfixgui/icons/menu.png)               Shows the  file menu for creating, opening, and saving MFIX project files.|
+| ![Save button](mfixgui/icons/save.png)             The save button saves the MFIX project file.                              |
+| ![Start button](mfixgui/icons/play.png)            The Start button displays the Run dialog, or unpauses an MFIX simulation. |
+| ![Pause button](mfixgui/icons/pause.png)           The Pause button pauses an MFIX simulation.                               |
+| ![Stop button](mfixgui/icons/stop.png)             The Stop button stops an MFIX simulation.                                 |
+| ![Clear button](mfixgui/icons/restore_delete.png)  The Clear button deletes MFIX simulation data.                            |
+| ![Parameters button](mfixgui/icons/functions.png)  The Parameters menu adjusts MFIX parameters.                              |
+
+If no MFIX job is currently running, the Start button shows the run dialog.
+If an MFIX job is running, you can pause it with the pause button and unpause it with the start button.
+You can stop a running MFIX job with the stop button. A stopped job leaves restart (\*.RES) files to resume the simulation.
+Starting a job with \*.RES files present will resume the job where it stopped.
+The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
+
+### Run dialog
+
+The run dialog
+
+ - Threads (number of threads used for OpenMP)
+ - NODESI (number divisions in X direction)
+ - NODESJ (number divisions in Y direction)
+ - NODESK (number divisions in Z direction)
+
+ $NODESI \times NODESJ \times NODESK = n$ where $n$ is the number of MPI processes running. If not using MPI, $NODESI=NODESJ=NODESK=1$.
+
+ - Submit to Queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM. Currently only supported on Joule)
+ - Run local MFIX executable (Runs MFIX solver on same system running the GUI)
+
+ To run the MFIX solver, select an executable. Usually the default
+ `pymfixsolver` command in PATH should be sufficient. If running a case with
+ UDFs, you need to first build a case-specific MFIX as described in
+ the [setup guide](INSTALL.md#building-for-udfs). You may want to build your own
+ solver for other reasons.
+
+ Click "Run" in the Run dialog starts the simulation.
+
+## File menu
+
+### Project Info
+
+Displays metadata about the current project file.
+
+ - Project Version
+ - MFIX Release version that created this project file
+ - Author
+ - Modified By
+ - Last Modified
+ - Created
+ - Notes
+
+### New
+
+Create a new project file from a list of templates. The list of templates can be filtered by:
+
+![single](mfixgui/icons/single.png)
+![tfm](mfixgui/icons/tfm.png)
+![pic](mfixgui/icons/pic.png)
+![dem](mfixgui/icons/dem.png)
+![hybrid](mfixgui/icons/hybrid.png)
+![geometry](mfixgui/icons/geometry.png)
+![chemistry](mfixgui/icons/chemistry.png)
+
+
+### Open
+
+Open a existing project. You can import mfix.dat files from previous releases of MFIX, but the GUI will save them as a new filename with a \*.mfx extension.
+
+### Save
+
+Saves the current project.
+
+### Save As
+Saves the current project as a new filenmae.
+### Export Project
+### Settings
+### Help
+### About
+
+Displays the current MFIX version.
+
+### Quit
+
+Exits MFIX. Will as for confirmation if project is unsaved or if a job is running.
 
 ## Model panes
 
@@ -76,6 +154,10 @@ on what is selected, other panes may be enabled or disabled.
 
 ### Geometry
 ### Mesh
+
+ - Background
+ - Mesher
+
 ### Regions
 
 The Regions pane is used to define spatial regions of the simulation space that
@@ -116,7 +198,20 @@ The boundary conditions pane is used to define boundary conditions for each Regi
 ### Internal Surfaces
 ### Chemistry
 ### Numerics
+
+ - Residuals
+ - Discretization
+ - Linear Solver
+ - Preconditioner
+ - Advanced
+
 ### Outputs
+
+ - Basic
+ - VTK
+ - SPx
+ - NetCDF
+
 ### Monitors
 ### Run
 
@@ -146,10 +241,16 @@ about the simulation as it is running.
 
 ## Terminal window
 
-The terminal window
+The terminal window displays the output of the mfixsolver job that would be displayed when running the solver on the command line.
+
+Error messages and warnings are colored in red.
+
+Informational messages from the GUI unrelated to the solver are colored in blue.
 
 ## Status bar
 
+ - Modeler
+ - Workflow
 
 
 # Running MFIX with the command line
