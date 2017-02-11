@@ -136,6 +136,14 @@ The visualization window provides a 3D image of the simulation boundary
 condition. The visualization window can also be used to graph live statistics
 about the simulation as it is running.
 
+ - ![overscan](mfixgui/icons/overscan.png)
+ - ![xy](mfixgui/icons/xy.png)
+ - ![xz](mfixgui/icons/xz.png)
+ - ![yz](mfixgui/icons/yz.png)
+ - ![perspective](mfixgui/icons/perspective.png)
+ - ![c](mfixgui/icons/camera.png)
+ - ![v](mfixgui/icons/visibility.png)
+
 ## Terminal window
 
 The terminal window
