@@ -127,9 +127,17 @@ Open a existing project. You can import mfix.dat files from previous releases of
 Saves the current project.
 
 ### Save As
-Saves the current project as a new filenmae.
+
+Saves the current project as a new filename.
+
 ### Export Project
 ### Settings
+
+ - Style
+ - Enable animations
+ - Animation Speed
+ - Enable Developer Tools
+
 ### Help
 ### About
 
