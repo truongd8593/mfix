@@ -15,7 +15,7 @@ be processed.
 
 Potential users may find reviewing the Frequently Asked Questions section of the MFIX website useful before downloading the code.
 
-For information on running MFIX, please see the user guide: [mfix_user_guide.pdf](mfix_user_guide.pdf)
+For information on running MFIX, please see the user guide: [USER_GUIDE.md](USER_GUIDE.md)
 
 - If you want to install MFIX with binary packages, see [Installing MFIX](installing-mfix)
 - If you want to build and install MFIX from source , see [Building MFIX](building-mfix)
