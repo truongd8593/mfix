@@ -102,8 +102,8 @@ class BuildDocCommand(setuptools.Command):
 
         import pypandoc
 
-        pypandoc.convert_file('INSTALL.md', 'html', outputfile='INSTALL.html')
-        pypandoc.convert_file('USER_GUIDE.md', 'html', outputfile='USER_GUIDE.html')
+        pypandoc.convert_file('INSTALL.md', 'html', outputfile='INSTALL.html', extra_args=['-s', '--toc',])
+        pypandoc.convert_file('USER_GUIDE.md', 'html', outputfile='USER_GUIDE.html', extra_args=['-s', '--toc',])
 
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
