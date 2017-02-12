@@ -6,6 +6,7 @@ http://mfix.netl.doe.gov/
 """
 
 import errno
+import logging
 import platform
 import shutil
 import subprocess
@@ -42,6 +43,8 @@ for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_t
         for f in files:
             dir_files.append(path.join(root, f))
         data_files.append((path.join('share', NAME, root), dir_files))
+
+data_files.append((path.join('share', NAME), ('USER_GUIDE.html', 'INSTALL.html')))
 
 if platform.system() == 'Windows':
     zf = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
@@ -146,6 +149,10 @@ def mfix_prereq(command_subclass):
 
     def modified_run(self):
         self.run_command('build_mfix')
+        try:
+            self.run_command('build_doc')
+        except ImportError:
+            logging.getLogger(__filename__).warning("Unable to build documentation")
         orig_run(self)
 
     command_subclass.run = modified_run
