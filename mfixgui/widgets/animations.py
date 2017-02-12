@@ -120,7 +120,7 @@ class StatusIndicator(Base):
 
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(Qt.NoPen)
+
 
         # background
         rect = self.rect()
@@ -129,23 +129,28 @@ class StatusIndicator(Base):
         rect.setWidth(self.width()-8)
         rect.moveLeft(4)
         gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        gradient.setColorAt(0, QtGui.QColor(0,0,0,80))
-        gradient.setColorAt(1, QtGui.QColor(0,0,0,0))
+        gradient.setColorAt(0, QtGui.QColor(200,200,200,200))
+        gradient.setColorAt(1, QtGui.QColor(200,200,200,255))
         painter.setBrush(gradient)
+        painter.setPen(QtGui.QColor(0,0,0,80))
         painter.drawRoundedRect(rect, 4, 4)
 
         # progress bar
         if self.progress:
+            rect.setHeight(rect.height()-4)
+            rect.moveTop(6)
+            rect.setWidth(rect.width()-4)
+            rect.moveLeft(6)
             rect.setWidth(int(rect.width()*self.progress))
             gradient = QtGui.QLinearGradient(rect.topLeft(), rect.bottomLeft())
             gradient.setColorAt(0, self.progressbar_color.lighter())
             gradient.setColorAt(1, self.progressbar_color)
             painter.setBrush(gradient)
+            painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(rect, 4, 4)
 
         # draw the text
         font = painter.font()
-        font.setPointSize(12)
         painter.setFont(font)
         painter.setPen(self.text_color)
         painter.drawText(self.rect(), Qt.AlignCenter|Qt.AlignVCenter,self.text)
@@ -157,18 +162,21 @@ if __name__  == '__main__':
     # create the QApplication
     qapp = QtWidgets.QApplication([])
 
-    bi = BusyIndicator()
-    bi.setStyleSheet('''QWidget{
-                    	   background-color: #E0E0E0;
-                        }''')
-    bi.show()
-    bi.start(50)
+#    bi = BusyIndicator()
+#    bi.setStyleSheet('''QWidget{
+#                    	   background-color: #E0E0E0;
+#                        }''')
+#    bi.show()
+#    bi.start(50)
 
     si = StatusIndicator()
     si.setGeometry(QtCore.QRect(100, 0, 500, 25))
+    si.setStyleSheet('''QWidget{
+                    	   background-color: #E0E0E0;
+                        }''')
     si.show()
     si.start(50)
-    si.set_progress(.005)
+    si.set_progress(.5)
 
     qapp.exec_()
     sys.exit()
