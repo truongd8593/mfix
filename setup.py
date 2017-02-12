@@ -88,7 +88,8 @@ mfixsolver = Extension(name = 'mfixsolver',
 )
 
 class BuildDocCommand(setuptools.Command):
-    """ builds libmfix (Python version agnostic) """
+    """ renders setup guide and user guide from Markdown to HTML """
+
     description = "build mfix documentation (setup guide and user guide)"
     user_options = []
 
@@ -102,8 +103,14 @@ class BuildDocCommand(setuptools.Command):
 
         import pypandoc
 
-        pypandoc.convert_file('INSTALL.md', 'html', outputfile='INSTALL.html', extra_args=['-s', '--toc',])
-        pypandoc.convert_file('USER_GUIDE.md', 'html', outputfile='USER_GUIDE.html', extra_args=['-s', '--toc',])
+        pandoc_args = ['-s', '--toc', '-N']
+
+        pypandoc.convert_file('INSTALL.md', 'html',
+                              outputfile='INSTALL.html',
+                              extra_args=pandoc_args)
+        pypandoc.convert_file('USER_GUIDE.md', 'html',
+                              outputfile='USER_GUIDE.html',
+                              extra_args=pandoc_args)
 
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
@@ -130,7 +137,7 @@ class BuildMfixCommand(setuptools.Command):
 
 
 
-def prereq(command_subclass):
+def mfix_prereq(command_subclass):
     """A decorator for classes subclassing one of the setuptools commands.
 
     It modifies the run() method to run build_mfix before build_ext
@@ -144,7 +151,7 @@ def prereq(command_subclass):
     command_subclass.run = modified_run
     return command_subclass
 
-@prereq
+@mfix_prereq
 class BuildExtPrereqCommand(build_ext):
     pass
 
