@@ -232,6 +232,7 @@ Starting a job with \*.RES files present will resume the job where it stopped.
 The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
 
 ### Run dialog
+
 The run dialog allows for running the simulation from the GUI. The following options can be changed in this
 dialog:
 
@@ -245,22 +246,27 @@ dialog:
 The GUI supports running both locally as well as submitting to a queue.
 
 #### Run Local
-To run locally, select the "Run local MFiX executable" tab. Select an executable from the dropdown list or
-click the browse button to specify an executable that is not in the list. Usually the default
-`pymfixsolver` command in PATH should be sufficient. If running a case with UDFs, you need to first build
-a case-specific MFIX as described in the [setup guide](INSTALL.md#building-for-udfs). You may want to build
-your own solver for other reasons, such as specifying various compiler flags to optimize the executable
-for your specific hardware.
+
+To run locally, select the "Run local MFiX executable" tab. Select an executable
+from the dropdown list or click the browse button to specify an executable that
+is not in the list. Usually the default installed solver should be sufficient.
+If running a case with UDFs, you need to first build a case-specific MFIX as
+described in the [setup guide](INSTALL.html#building-custom-mfixsolver). You may
+want to build your own solver for other reasons, such as specifying various
+compiler flags to optimize the executable for your specific hardware.
 
 Click "Run" in the Run dialog to start the simulation.
 
 #### Submit to Queue
 
-To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM), select the "Submit to Queue"
-tab. Select an executable from the dropdown list or click the browse button to specify an executable that is not
-in the list. Next, select a template from the dropdown list or click the browse button to choose a template that is
-not in the dropdown list. Based on the selected template, the widgets in the "queue options" section will update
-automatically. Once the options are specified, click "submit" in the run dialog to submit the job to the queue.
+To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS,
+SLURM), select the "Submit to Queue" tab. Select an executable from the dropdown
+list or click the browse button to specify an executable that is not in the
+list. Next, select a template from the dropdown list or click the browse button
+to choose a template that is not in the dropdown list. Based on the selected
+template, the widgets in the "queue options" section will update automatically.
+Once the options are specified, click "submit" in the run dialog to submit the
+job to the queue.
 
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
@@ -300,7 +306,6 @@ by selecting one or more of the following model types:
 | ![geometry](mfixgui/icons/geometry.png)   | Cartesian cut-cell (complex) geometry  |
 | ![chemistry](mfixgui/icons/chemistry.png) | Chemistry                              |
 
-
 ### Open
 
 Open a existing project. You can import mfix.dat files from previous releases of
@@ -336,7 +341,7 @@ Change settings that affect how the GUI acts.
 ### Help
 
 Shows available documentation (including this document) and tutorial videos
-(if connected to the internet) to help users utilize the features of the GUI.
+(if connected to the internet) demonstrating features of the GUI.
 
 ### About
 
@@ -745,10 +750,11 @@ help: email to send notifications to
 
 The value of this widget can now be referenced throughout the template with `${my_email}`
 
-The rest of the configuration file, outside of the  `## CONFIG` to `## END CONFIG` section is the script that needs to
-be executed to submit a job to your specific queue system. For example, with Grid Engine on Joule, the following script
-specifies the job name, job type, cores, and queue as well as loads the required modules and finally runs mfix with
-`${COMMAND}`.
+The rest of the configuration file, outside of the `## CONFIG` to `## END
+CONFIG` section is the script that needs to be executed to submit a job to your
+specific queue system. For example, with Grid Engine on Joule, the following
+script specifies the job name, job type, cores, and queue as well as loads the
+required modules and finally runs mfix with `${COMMAND}`.
 
 ```
 ## Change into the current working directory
