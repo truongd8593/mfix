@@ -208,14 +208,14 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 |---------------------------------------------------|---------------------------------------------------------------------------|
 | ![File menu](mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
 | ![Save button](mfixgui/icons/save.png)            | The save button saves the project file.                                   |
-| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or unpauses a simulation.       |
+| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or un-pauses a simulation.       |
 | ![Pause button](mfixgui/icons/pause.png)          | The Pause button pauses a simulation.                                     |
 | ![Stop button](mfixgui/icons/stop.png)            | The Stop button stops a simulation.                                       |
 | ![Rest button](mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
 | ![Parameters button](mfixgui/icons/functions.png) | The Parameters menu allows changing of parameters.                        |
 
 If no MFIX job is currently running, the Start button shows the run dialog.
-If an MFIX job is running, you can pause it with the pause button and unpause it with the start button.
+If an MFIX job is running, you can pause it with the pause button and un-pause it with the start button.
 You can stop a running MFIX job with the stop button. A stopped job leaves restart (\*.RES) files to resume the simulation.
 Starting a job with \*.RES files present will resume the job where it stopped.
 The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
@@ -238,7 +238,7 @@ To run locally, select the "Run local MFiX executable" tab. Select an executable
 click the browse button to specify an executable that is not in the list. Usually the default
 `pymfixsolver` command in PATH should be sufficient. If running a case with UDFs, you need to first build
 a case-specific MFIX as described in the [setup guide](INSTALL.md#building-for-udfs). You may want to build
-your own solver for other reasons, such as specifing various compiler flags to optimize the executable
+your own solver for other reasons, such as specifying various compiler flags to optimize the executable
 for your specific hardware.
 
 Click "Run" in the Run dialog to start the simulation.
@@ -255,7 +255,7 @@ Custom queue scripts are supported. The format for this script is described in t
 
 ## File menu
 The file menu allows for opening, creating, copying, and exporting projects as well
-as viewing project meta data, changing settings, and viewing avalible help
+as viewing project meta data, changing settings, and viewing available help
 documentation, including this document.
 
 ### Project Info
@@ -270,7 +270,7 @@ Displays metadata about the current project file.
 
 ### New
 Create a new project file from a template file. The list of templates can be filtered
-by selecting one or more of the following model model types:
+by selecting one or more of the following model types:
 
 | Icon                                      | Description                            |
 |-------------------------------------------|----------------------------------------|
@@ -287,8 +287,8 @@ by selecting one or more of the following model model types:
 
 Open a existing project. You can import mfix.dat files from previous releases of
 MFIX, but the GUI will save them as a new filename with a \*.mfx extension. The
-GUI also perfroms a number of conversions, including converting old keywords to
-new keywords and converion from CGS units to SI units.
+GUI also performs a number of conversions, including converting old keywords to
+new keywords and conversion from CGS units to SI units.
 
 ### Save
 
@@ -498,17 +498,17 @@ To define a new variable and widget to edit that variable in the GUI, create a n
 [my_value]
 ```
 
-The widget and options for that widget can then be selected by specifying various paraemters including:
+The widget and options for that widget can then be selected by specifying various parameters including:
 
 | Parameter | Description | Values |
 |-----------|-------------|--------|
 | widget | the widget to be used | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox`
 | label | text to be placed beside the widget | `any string`
 | value | default value | a value such as `1`, `10.3`, `True`, `some text`
-| items | list of items for the combobox | items seporated by `|`, `one|2|three`
+| items | list of items for the combobox | items separated by `|`, `one|2|three`
 | help | text to be displayed in the tooltip for that widget | `this widget does this`
 | true | value to be returned if a checkbox is checked | a value such as `1`, `10.3`, `True`, `some text`
-| false | value to be returned if a chceckbox is un-checked | a value such as `1`, `10.3`, `True`, `some text`
+| false | value to be returned if a checkbox is un-checked | a value such as `1`, `10.3`, `True`, `some text`
 
 An example defining a combo box:
 
