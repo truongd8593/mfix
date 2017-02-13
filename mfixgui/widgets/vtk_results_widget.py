@@ -42,7 +42,7 @@ except:
 from qtpy import QtCore, QtWidgets, QtGui, uic
 from mfixgui.widgets.base_vtk import BaseVtkWidget
 from mfixgui.widgets.base import CustomPopUp
-from mfixgui.tools.general import get_icon
+from mfixgui.tools.general import get_icon, to_unicode_from_fs
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
@@ -81,8 +81,9 @@ def build_time_dict(search_str):
     files = glob.glob(search_str)
     for f in sorted(files):
         time = None
-        with open(f) as xml:
+        with open(f, 'rb') as xml:
             for i, line in enumerate(xml):
+                line = to_unicode_from_fs(line)
                 if '<!-- Time =' in line:
                     try:
                         time = float(line.replace('<!-- Time =', '').replace('sec. -->', ''))
@@ -368,6 +369,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # more buttons
         self.toolbutton_visible = QtWidgets.QToolButton()
+        self.toolbutton_visible.setToolTip('Change Visibility')
         self.toolbutton_visible.setIcon(get_icon('visibility.png'))
         self.visible_menu = CustomPopUp(self, self.toolbutton_visible)
         self.toolbutton_visible.clicked.connect(self.show_visible_menu)
@@ -454,24 +456,34 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 layout.addWidget(toolbutton, i, 11)
                 btns['more'] = toolbutton
 
-        self.toolbutton_back = QtWidgets.QToolButton(self.visible_menu)
-        self.toolbutton_back.clicked.connect(self.handle_begining)
-        self.toolbutton_back.setIcon(get_icon('previous.png'))
+        self.toolbutton_first = QtWidgets.QToolButton()
+        self.toolbutton_first.clicked.connect(self.handle_first)
+        self.toolbutton_first.setIcon(get_icon('first.png'))
+        self.toolbutton_first.setToolTip('First')
 
-        self.toolbutton_play = QtWidgets.QToolButton(self.visible_menu)
+        self.toolbutton_back = QtWidgets.QToolButton()
+        self.toolbutton_back.clicked.connect(self.handle_back)
+        self.toolbutton_back.setIcon(get_icon('back.png'))
+        self.toolbutton_back.setToolTip('Previous')
+
+        self.toolbutton_play = QtWidgets.QToolButton()
         self.toolbutton_play.clicked.connect(self.handle_play_stop)
         self.toolbutton_play.setIcon(get_icon('play.png'))
+        self.toolbutton_play.setToolTip('Play')
 
-        self.toolbutton_forward = QtWidgets.QToolButton(self.visible_menu)
-        self.toolbutton_forward.clicked.connect(self.handle_end)
-        self.toolbutton_forward.setIcon(get_icon('next.png'))
+        self.toolbutton_next = QtWidgets.QToolButton()
+        self.toolbutton_next.clicked.connect(self.handle_next)
+        self.toolbutton_next.setIcon(get_icon('next.png'))
+        self.toolbutton_next.setToolTip('Next')
 
-        self.frame_spinbox = QtWidgets.QSpinBox(self.visible_menu)
-        self.frame_spinbox.valueChanged.connect(self.change_frame)
-        self.frame_spinbox.setMaximum(9999999)
+        self.toolbutton_last = QtWidgets.QToolButton()
+        self.toolbutton_last.clicked.connect(self.handle_last)
+        self.toolbutton_last.setIcon(get_icon('last.png'))
+        self.toolbutton_last.setToolTip('Last')
 
-        self.toolbutton_play_speed = QtWidgets.QToolButton(self.visible_menu)
+        self.toolbutton_play_speed = QtWidgets.QToolButton()
         self.toolbutton_play_speed.setIcon(get_icon('speed.png'))
+        self.toolbutton_play_speed.setToolTip('Play Speed')
 
         self.speed_menu = CustomPopUp(self, self.toolbutton_play_speed)
         self.speed_menu.finished.connect(lambda ignore: self.toolbutton_play_speed.setDown(False))
@@ -483,13 +495,26 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.speed_menu.layout.addWidget(self.speed_slider)
         self.toolbutton_play_speed.clicked.connect(self.speed_menu.popup)
 
-        self.checkbox_snap = QtWidgets.QCheckBox('Save Snapshots', self.visible_menu)
+        hspacer = QtWidgets.QSpacerItem(99999, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
 
-        for btn in [self.toolbutton_visible, self.toolbutton_back,
-                    self.toolbutton_play, self.toolbutton_forward,
-                    self.frame_spinbox, self.toolbutton_play_speed,
-                    self.checkbox_snap]:
-            self.button_bar_layout.addWidget(btn)
+        self.frame_spinbox = QtWidgets.QSpinBox()
+        self.frame_spinbox.valueChanged.connect(self.change_frame)
+        self.frame_spinbox.setMaximum(9999999)
+        self.frame_spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
+
+        self.checkbox_snap = QtWidgets.QCheckBox('Save Snapshots')
+
+        for btn in [self.toolbutton_visible,
+                    self.toolbutton_first, self.toolbutton_back,
+                    self.toolbutton_play,
+                    self.toolbutton_next, self.toolbutton_last,
+                    self.toolbutton_play_speed,
+                    hspacer, self.frame_spinbox,
+                    ]:
+            if btn == hspacer:
+                self.button_bar_layout.addSpacerItem(btn)
+            else:
+                self.button_bar_layout.addWidget(btn)
             if isinstance(btn, QtWidgets.QToolButton):
                 btn.setAutoRaise(True)
                 if btn is not self.toolbutton_visible:
@@ -543,10 +568,16 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.toolbutton_play.setIcon(get_icon('stop.png'))
             self.play_timer.start(self.speed_slider.value())
 
-    def handle_begining(self):
+    def handle_first(self):
         self.change_frame(0)
 
-    def handle_end(self):
+    def handle_back(self):
+        self.change_frame(self.frame_index - 1)
+
+    def handle_next(self):
+        self.change_frame(self.frame_index + 1)
+
+    def handle_last(self):
         self.change_frame(max(len(self.vtu_files), len(self.vtp_files)))
 
     def forward(self):
@@ -576,12 +607,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 time = list(self.vtp_files.keys())[index]
                 self.read_vtp(self.vtp_files[time])
                 if n_vtu:
-                    self.read_vtu(self.vtu_files.values()[bisect_left(self.vtu_files.keys(), time)-1])
+                    self.read_vtu(list(self.vtu_files.values())[bisect_left(list(self.vtu_files.keys()), time)-1])
             else:
                 time = list(self.vtu_files.keys())[index]
                 self.read_vtu(self.vtu_files[time])
                 if n_vtp:
-                    self.read_vtp(self.vtp_files.values()[bisect_left(self.vtp_files.keys(), time)-1])
+                    self.read_vtp(list(self.vtp_files.values())[bisect_left(list(self.vtp_files.keys()), time)-1])
             self.render()
 
             if self.checkbox_snap.isChecked():

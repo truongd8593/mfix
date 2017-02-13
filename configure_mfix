@@ -75,3 +75,9 @@ if [[ $(uname -a) =~ "CYGWIN" ]]; then
     cp Makefile Makefile.cyg
     sed 's=/cygdrive/\(.\)/=\1:/=' Makefile.cyg > Makefile
 fi
+
+if [[ $(uname -a) =~ "MSYS" ]]; then
+    cd ${RUN_DIR}
+    cp Makefile Makefile.msys
+    sed 's=/c/Users=c:/Users=' Makefile.msys > Makefile
+fi

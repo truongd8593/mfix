@@ -12,8 +12,8 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 1 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 1 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -25,8 +25,8 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 2 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 2 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -51,8 +51,8 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 1 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 1 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -64,8 +64,8 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 2 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 2 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -90,8 +90,8 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 1 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 1 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -103,8 +103,8 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 2 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 2 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -129,8 +129,8 @@ cd 1proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=1 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 1 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 1 mfixsolver.exe > outrun
 #
 cd ../
 #
@@ -142,8 +142,8 @@ cd 2proc
 /bin/cp ../mfix.dat mfix.dat.bak
 /bin/rm mfix00*.dat
 awk -f ../../script.awk -v ni=1 -v nj=1 -v nk=2 < mfix.dat.bak > mfix.dat
-/bin/cp ../../mfix.exe .
-mpirun -np 2 mfix.exe > outrun
+/bin/cp ../../mfixsolver.exe .
+mpirun -np 2 mfixsolver.exe > outrun
 #
 cd ../
 #

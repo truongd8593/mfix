@@ -338,8 +338,8 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -444,7 +444,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         if self.project.solver == SINGLE: # Should not get here! this pane is disabled.
             return
         else:
-            model = [None, 'TFM', 'DEM', 'PIC', 'TEM'][self.project.solver]
+            model = [None, 'TFM', 'DEM', 'PIC', 'TFM'][self.project.solver]
 
         ui = self.ui.solids
         tw = ui.tablewidget_solids

@@ -46,7 +46,6 @@ class RegionsPopup(QtWidgets.QDialog):
         types_match = len(set(region_types)) < 2
 
         if self.boundary:
-            #  (would be nicer if this were in bcs.py)
             #  Pressure Inflow
             #     Not available for STL regions
             #     Not available for volume regions

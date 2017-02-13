@@ -265,8 +265,8 @@ class Output(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -870,7 +870,7 @@ class Output(object):
     def setup_output_spx_tab(self):
         ui = self.ui.output
         #SPx (tab)
-        #Note: Technically, MFIX will now permit a user to mix-and-match the SPx output files meaning that
+        #Note: Technically, MFiX will now permit a user to mix-and-match the SPx output files meaning that
         #some can be written and others not. However, this is likely to break the ParaView reader.
         #Therefore, if the “Write binary SPx” checkbox is enabled, output is required for all SPx files.
         #Otherwise, all should remain unspecified to skip writing the SPx files.
@@ -1233,8 +1233,9 @@ class Output(object):
                    else self.vtk_current_solid)
         line = ui.line_subtab
         btn_layout = ui.bottom_tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
         # Don't stay on disabled tab TODO
 

@@ -40,7 +40,7 @@ cp $CASE_DIR/mfix.dat $CASE_DIR/mfix_backup.dat
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
 cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
-./mfix imax=8 jmax=8 kmax=8 > out.log
+./mfixsolver imax=8 jmax=8 kmax=8 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS02.*,de_norms.dat,out.log}
 rm -f $CASE_DIR/solution_*.dat
@@ -50,7 +50,7 @@ rm -f $CASE_DIR/solution_*.dat
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
 cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
-./mfix imax=16 jmax=16 kmax=16 > out.log
+./mfixsolver imax=16 jmax=16 kmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS02.*,de_norms.dat,out.log,solution_*.dat}
 rm -f $CASE_DIR/solution_*.dat
@@ -129,4 +129,3 @@ ndselect \
 numdiff \
   -a 0.001 -r 0.05 \
   ooa_linf.dat tmp.dat
-

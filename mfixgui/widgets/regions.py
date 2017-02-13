@@ -143,13 +143,16 @@ class RegionsWidget(QtWidgets.QWidget):
             btn.setIcon(get_icon(region + '_region.png'))
             btn.setToolTip(region)
 
+
     def reset_regions(self):
         self.tablewidget_regions.value.clear()
         self.parameter_key_map = {}
 
+
     def get_visibility_image(self, visible=True):
         return get_pixmap('visibility.png' if visible else 'visibilityofftransparent.png',
                           16, 16)
+
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -167,8 +170,8 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.tablewidget_regions.set_value(data)
 
-    def new_default_region(self, region):
 
+    def new_default_region(self, region):
         f = ['xmin', 'ymin', 'zmin']
         t = ['xmax', 'ymax', 'zmax']
         typ = 'box'
@@ -194,6 +197,7 @@ class RegionsWidget(QtWidgets.QWidget):
         # convert strings to equations
         extents = [[Equation(e) for e in f], [Equation(e) for e in t]]
         self.new_region(region, extents, typ)
+
 
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
@@ -229,6 +233,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
 
+
     def delete_region(self):
         'remove the currently selected region'
         rows = self.tablewidget_regions.current_rows()
@@ -261,6 +266,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
 
+
     def copy_region(self):
         'copy the currently selected region'
         rows = self.tablewidget_regions.current_rows()
@@ -285,6 +291,7 @@ class RegionsWidget(QtWidgets.QWidget):
             self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
+
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -346,6 +353,14 @@ class RegionsWidget(QtWidgets.QWidget):
                                   data['filter']):
             widget.updateValue(None, value)
 
+
+    def setup_regions(self):
+        # Set up all widgets in pane to current state,
+        # including updates we deferred during extract_region
+        self.update_region_parameters()
+        self.tablewidget_regions.fit_to_contents()
+
+
     def stl_type_changed(self):
         checked = self.checkbox_region_stl.isChecked()
 
@@ -353,6 +368,7 @@ class RegionsWidget(QtWidgets.QWidget):
         if checked:
             type_ = 'STL'
         self.region_value_changed(self.checkbox_region_stl, {'type': type_}, [])
+
 
     def region_value_changed(self, widget, value, args, name=None, update_param=True):
         'one of the region widgets values changed, update'
@@ -368,6 +384,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.parent.set_unsaved_flag()
 
+        shape = row_data['type']
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
@@ -477,9 +494,11 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.update_parameter_map(value[key], name, key)
 
         self.tablewidget_regions.set_value(data)
+        self.label_region_type.setText(shape)
 
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
+
 
     def enable_disable_widgets(self, name, enable_all=False):
         data = self.tablewidget_regions.value
@@ -498,6 +517,7 @@ class RegionsWidget(QtWidgets.QWidget):
         for widget, enable in zip(self.extent_lineedits, enable_list):
             widget.setEnabled(enable)
 
+
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
 
@@ -515,8 +535,10 @@ class RegionsWidget(QtWidgets.QWidget):
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
+
     def check_region_in_use(self, name):
         return self.parent.check_region_in_use(name)
+
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
@@ -526,6 +548,7 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in data['order']:
             data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
         return ExtendedJSON.dumps(data)
+
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
@@ -555,6 +578,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.tablewidget_regions.set_value(data)
         self.tablewidget_regions.fit_to_contents()
+
 
     def extract_regions(self, proj, proj_dir=None):
         """ extract regions from IC, BC, PS, IS, VTK"""
@@ -623,6 +647,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 if add:
                     self.new_region(name, extents, rtype, defer_update=True)
 
+
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """
         region_dict = self.tablewidget_regions.value
@@ -632,6 +657,7 @@ class RegionsWidget(QtWidgets.QWidget):
             if extents == region_extent:
                 return True
         return False
+
 
     def get_region_type(self, extents):
         """ given the extents, guess the region type """
@@ -646,10 +672,12 @@ class RegionsWidget(QtWidgets.QWidget):
                     break
         return rtype
 
+
     def get_region_dict(self):
         """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
         return deepcopy_dict(region_dict) # Allow clients to modify dict
+
 
     def get_value(self, name, key):
         """given a region name and value key, return the value"""
@@ -665,6 +693,7 @@ class RegionsWidget(QtWidgets.QWidget):
         else:
             val = data[key]
         return val
+
 
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
@@ -689,17 +718,20 @@ class RegionsWidget(QtWidgets.QWidget):
         for param in remove:
             self.remove_namekey(param, name_key)
 
+
     def add_namekey(self, param, name_key):
         """add the name_key to the parameter list"""
         if param not in self.parameter_key_map:
             self.parameter_key_map[param] = set()
         self.parameter_key_map[param].add(name_key)
 
+
     def remove_namekey(self, param, name_key):
         """remove the name_key from the parameter list"""
         self.parameter_key_map[param].remove(name_key)
         if len(self.parameter_key_map[param]) == 0:
             self.parameter_key_map.pop(param)
+
 
     def update_parameters(self, params):
         """parameters have changed, update regions"""
@@ -711,6 +743,7 @@ class RegionsWidget(QtWidgets.QWidget):
                         None, {key: self.get_value(name, key)}, None,
                         name=name, update_param=False)
 
+
     def remove_from_parameter_map(self, name, del_region):
         """a region was deleted, make sure to remove from parameter map"""
         for key, value in del_region.items():
@@ -720,6 +753,7 @@ class RegionsWidget(QtWidgets.QWidget):
                     self._remove_key('_'.join([name_key, xyz]), item)
             else:
                 self._remove_key(key, value)
+
 
     def update_parameter_name(self, old_name, new_name, region):
         """a region name changed, update map"""
@@ -731,6 +765,7 @@ class RegionsWidget(QtWidgets.QWidget):
                     self.update_parameter_map(item, new_name, '_'.join([k, xyz]))
             else:
                 self.update_parameter_map(v, new_name, k)
+
 
     def _remove_key(self, name_key, value):
         if not isinstance(value, Equation): return

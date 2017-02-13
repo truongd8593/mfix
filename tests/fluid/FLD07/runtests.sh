@@ -7,7 +7,7 @@ rm -f POST_*.dat &> /dev/null
 #IMAX=64
 for IMAX in 6 12 18; do
   rm -f ${RUN_NAME}.* &> /dev/null
-  time -p ./mfix IMAX=${IMAX}
+  time -p ./mfixsolver IMAX=${IMAX}
 done
 
 post_dats=AUTOTEST/POST*.dat

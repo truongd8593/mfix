@@ -7,7 +7,7 @@ rm -f POST_* &> /dev/null
 
 for GMAX in 8 16 32 64; do
    rm -f ${RUN_NAME}* &> /dev/null
-   time -p ./mfix IMAX=${GMAX} JMAX=${GMAX}
+   time -p ./mfixsolver IMAX=${GMAX} JMAX=${GMAX}
 done
 
 post_dats=AUTOTEST/POST*.dat

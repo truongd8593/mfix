@@ -42,7 +42,7 @@ cp $CASE_DIR/mfix.dat $CASE_DIR/mfix_backup.dat
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
 cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
-mpirun -np 1 ./mfix imax=8 jmax=8 kmax=8 DISCRETIZE=9*2 UR_FAC=9*0.05 > out.log
+mpirun -np 1 ./mfixsolver imax=8 jmax=8 kmax=8 DISCRETIZE=9*2 UR_FAC=9*0.05 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS05.*,de_norms.dat,out.log}
 rm -f $CASE_DIR/solution_*.dat
@@ -52,7 +52,7 @@ rm -f $CASE_DIR/solution_*.dat
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
 cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
-mpirun -np 1 ./mfix imax=16 jmax=16 kmax=16 > out.log
+mpirun -np 1 ./mfixsolver imax=16 jmax=16 kmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS05.*,de_norms.dat,out.log}
 rm -f $CASE_DIR/solution_*.dat

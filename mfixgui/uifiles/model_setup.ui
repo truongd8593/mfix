@@ -73,22 +73,22 @@
        </item>
        <item>
         <property name="text">
-         <string>Two-Fluid Model (MFIX-TFM)</string>
+         <string>Two-Fluid Model (MFiX-TFM)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Discrete Element Model (MFIX-DEM)</string>
+         <string>Discrete Element Model (MFiX-DEM)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Particle-in-Cell (MFIX-PIC)</string>
+         <string>Particle-in-Cell (MFiX-PIC)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>MFIX-Hybrid</string>
+         <string>MFiX-Hybrid</string>
         </property>
        </item>
       </widget>
@@ -279,7 +279,7 @@
        <number>0</number>
       </property>
       <item row="0" column="0">
-       <widget class="QGroupBox" name="">
+       <widget class="QGroupBox" name="groupbox_gravity">
         <property name="font">
          <font>
           <weight>75</weight>
@@ -288,6 +288,9 @@
         </property>
         <property name="title">
          <string>Gravity</string>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
         <layout class="QHBoxLayout" name="layout_gravity">
          <property name="leftMargin">

@@ -853,7 +853,7 @@ class VariableGridCollection(Collection):
 
 
 class Project(object):
-    """holds keywords and thermodynamic data for an MFIX project,
+    """holds keywords and thermodynamic data for an MFiX project,
     reads and writes project file"""
 
     def __init__(self, dat_file=None, keyword_doc=None):

@@ -77,7 +77,7 @@ class PSS(object):
         rp.save.connect(self.pss_add_regions)
         rp.cancel.connect(self.pss_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
@@ -92,7 +92,7 @@ class PSS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -208,11 +208,12 @@ class PSS(object):
             (indices, regions) = table.item(row,0).data(UserRole)
         self.pss_current_indices, self.pss_current_regions = indices, regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ui.detail_pane):
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -235,8 +236,8 @@ class PSS(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -424,8 +425,9 @@ class PSS(object):
             row = 0
             ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
 
         #Tabs group point source parameters for phases. Tabs are unavailable if no input
         #is required from the user.
@@ -458,7 +460,7 @@ class PSS(object):
                 widget.setParent(None)
                 widget.deleteLater()
             # And make new ones
-            for (i, solid_name) in enumerate(self.solids.keys(),1):
+            for (i, solid_name) in enumerate(solids_names, 1):
                 b = QPushButton(text=solid_name)
                 w = b.fontMetrics().boundingRect(solid_name).width() + 20
                 b.setMaximumWidth(w)
@@ -468,6 +470,7 @@ class PSS(object):
                 b.setFont(font)
                 ui.tab_layout.addWidget(b, 0, i)
                 b.pressed.connect(lambda i=i: self.pss_change_tab(SOLIDS_TAB, i))
+        self.pss_saved_solids_names = solids_names
 
         for (i, solid_name) in enumerate(self.solids.keys(),1):
             model = self.project.get_value('solids_model', args=[i])
@@ -482,7 +485,7 @@ class PSS(object):
                 b.setToolTip("Only TFM solids can be defined as point sources""")
 
         # Don't stay on disabled tab TODO
-        # if self.pss_current_tab == 1 and ...
+        # if self.pss_current_tab == SOLIDS_TAB and ...
         change_tab = False
         if change_tab:
             pass
@@ -495,16 +498,12 @@ class PSS(object):
         # don't want to call here)
         tab = self.pss_current_tab
         line_to = (0 if tab==FLUID_TAB
-                   #else len(self.solids)+1 if tab==SCALAR_TAB
-                   #else len(self.solids)+2 if tab==CYCLIC_TAB
                    else self.pss_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
-
-
-
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
 
     def pss_setup_current_tab(self):
@@ -512,8 +511,6 @@ class PSS(object):
             self.setup_pss_fluid_tab()
         elif self.pss_current_tab == SOLIDS_TAB:
             self.setup_pss_solids_tab(self.pss_current_solid)
-        #elif self.pss_current_tab == SCALAR_TAB:
-        #    self.setup_pss_scalar_tab()
 
 
     def update_pss_fluid_mass_fraction_table(self):
@@ -600,7 +597,7 @@ class PSS(object):
 
         if total == 0.0 and self.fluid_species:
             for PS in self.pss_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Skip last species
                     self.update_keyword('ps_x_g', 0.0, args=[PS, i])
                 self.update_keyword('ps_x_g', 1.0, args=[PS, len(self.fluid_species)]) # Last defined species
             self.update_pss_fluid_mass_fraction_table()
@@ -697,7 +694,7 @@ class PSS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for PS in self.pss_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Skip last species
                     self.update_keyword('ps_x_s', 0.0, args=[PS, P, i])
                 self.update_keyword('ps_x_s', 1.0, args=[PS, P, len(species)]) # Last defined species
             self.update_pss_solids_mass_fraction_table()
@@ -860,8 +857,6 @@ class PSS(object):
 
         PS0 = self.pss_current_indices[0]
 
-
-
         # Generic!
         def get_widget(key):
             for pat in ('lineedit_keyword_%s_args_PS_P',
@@ -945,7 +940,3 @@ class PSS(object):
             self.update_pss_solids_mass_fraction_table()
         else:
             comp.setEnabled(False)
-
-
-    #def setup_pss_scalar_tab():
-        # No scalar tab for point sources

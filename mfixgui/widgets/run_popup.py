@@ -16,7 +16,7 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import PYQT5
+from qtpy import PYQT5, uic
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
                             QDialogButtonBox, QLabel, QComboBox, QSpinBox,
@@ -25,11 +25,6 @@ from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
 from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
 from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
-
-try:
-    from PyQt5 import uic
-except ImportError:
-    from PyQt4 import uic
 
 try: #2.7
     import ConfigParser as configparser
@@ -40,7 +35,7 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe', 'mfix', 'mfix.exe']
+MFIX_EXE_NAMES = ['pymfixsolver', 'pymfixsolver.exe', 'mfixsolver', 'mfixsolver.exe']
 
 
 class RunPopup(QDialog):
@@ -51,9 +46,7 @@ class RunPopup(QDialog):
     set_run_mfix_exe = Signal()
 
     def __init__(self, mfix_exe, parent):
-
         super(RunPopup, self).__init__(parent)
-
         self.commandline_option_exe = mfix_exe if mfix_exe else None
         self.mfix_available = False
         self.mfix_exe = None
@@ -66,12 +59,10 @@ class RunPopup(QDialog):
         self.settings = parent.settings
         self.project_dir = parent.get_project_dir()
         self.gui_comments = self.project.mfix_gui_comments
-
         # load ui
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
-
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
@@ -80,7 +71,6 @@ class RunPopup(QDialog):
             self.title = 'Resume'
         else:
             self.title = 'Run'
-
         self.signal_run.connect(self.handle_run)
         self.signal_submit.connect(self.handle_submit)
         self.signal_cancel.connect(self.close)
@@ -127,7 +117,7 @@ class RunPopup(QDialog):
             self.mfix_exe = None
             self.parent.message(
                 icon='warning',
-                text='MFIX not found. Please browse for an executable.',
+                text='MFiX not found. Please browse for an executable.',
                 buttons=['ok','cancel'],
                 default='ok')
 
@@ -136,7 +126,7 @@ class RunPopup(QDialog):
     def init_templates(self):
 
         # look for templates in mfixgui/queue_templates
-        search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
+        search_p = os.path.join(get_mfix_home(), 'queue_templates')
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
             for f in files:
@@ -285,7 +275,7 @@ class RunPopup(QDialog):
         self.ui.button_local_run.setEnabled(ok)
         self.ui.button_queue_submit.setEnabled(ok)
         if not ok:
-            self.parent.print_internal("Warning: no MFIX executables available")
+            self.parent.print_internal("Warning: no MFiX executables available")
 
     def popup(self):
         self.show()
@@ -386,7 +376,7 @@ class RunPopup(QDialog):
             self.parent.message(
                 icon='warning',
                 title='Warning',
-                text='The selected file is not an executable MFIX binary')
+                text='The selected file is not an executable MFiX binary')
             return
         self.mfix_available = True
         self.mfix_exe = new_exe
@@ -538,13 +528,13 @@ class RunPopup(QDialog):
             _, flags = self.mfix_exe_cache[(stat, mfix_exe)]
             return flags
         try:
-            log.debug('Feature testing MFIX %s' % mfix_exe)
+            log.debug('Feature testing MFiX %s' % mfix_exe)
             exe_dir = os.path.dirname(mfix_exe)
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
             if err:
-                log.error('MFIX %s' % str(err))
+                log.error('MFiX %s' % str(err))
         except:
             log.error("could not run %s --print-flags", mfix_exe)
             return None
@@ -656,9 +646,9 @@ class RunPopup(QDialog):
 
         def slot_start():
             # Keep a copy because it gets reset
-            msg = "MFIX process %d is running" % self.mfixproc.pid()
+            msg = "MFiX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", self.cmdline)
+            log.debug("Full MFiX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
@@ -669,7 +659,7 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
-            msg = "MFIX process has stopped"
+            msg = "MFiX process has stopped"
             self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_error(error):

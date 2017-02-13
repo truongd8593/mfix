@@ -112,6 +112,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
 
         self.defer_render = False
         self.view_flip = [False]*3
+        self.offscreen_vtkrenderer = None
 
         # --- layout ---
         self.grid_layout = QtWidgets.QGridLayout(self)
@@ -183,26 +184,32 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.toolbutton_reset = QtWidgets.QToolButton()
         self.toolbutton_reset.clicked.connect(self.reset_view)
         self.toolbutton_reset.setIcon(get_icon('overscan.png'))
+        self.toolbutton_reset.setToolTip('Reset View')
 
         self.toolbutton_perspective = QtWidgets.QToolButton()
         self.toolbutton_perspective.clicked.connect(lambda ignore: self.perspective())
         self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
+        self.toolbutton_perspective.setToolTip('Perspective')
 
         self.toolbutton_view_xy = QtWidgets.QToolButton()
         self.toolbutton_view_xy.clicked.connect(lambda: self.set_view('xy'))
         self.toolbutton_view_xy.setIcon(get_icon('xy.png'))
+        self.toolbutton_view_xy.setToolTip('XY View')
 
         self.toolbutton_view_yz = QtWidgets.QToolButton()
         self.toolbutton_view_yz.clicked.connect(lambda: self.set_view('yz'))
         self.toolbutton_view_yz.setIcon(get_icon('yz.png'))
+        self.toolbutton_view_yz.setToolTip('YZ View')
 
         self.toolbutton_view_xz = QtWidgets.QToolButton()
         self.toolbutton_view_xz.clicked.connect(lambda: self.set_view('xz'))
         self.toolbutton_view_xz.setIcon(get_icon('xz.png'))
+        self.toolbutton_view_xz.setToolTip('XZ View')
 
         self.toolbutton_screenshot = QtWidgets.QToolButton()
         self.toolbutton_screenshot.clicked.connect(self.screenshot)
         self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
+        self.toolbutton_screenshot.setToolTip('Save scene as image')
 
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
@@ -222,7 +229,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not self.defer_render or force_render:
             self.vtkRenderWindow.Render()
 
-    def screenshot(self, checked, fname=None):
+    def screenshot(self, checked, fname=None, size=[1920, 1080]):
         """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 
@@ -242,11 +249,17 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not fname:
             return
 
+        notvisible = not self.isVisible()
+        if notvisible:
+            self.init_offscreen_render(size)
+
         # screenshot code:
         # TODO: get resolution from user
         window_image = vtk.vtkWindowToImageFilter()
-        window_image.SetInput(self.vtkRenderWindow)
-        window_image.SetMagnification(3)
+        if notvisible:
+            window_image.SetInput(self.offscreen_vtkrenderwindow)
+        else:
+            window_image.SetInput(self.vtkRenderWindow)
         window_image.SetInputBufferTypeToRGBA()
 #        window_image.ReadFrontBufferOff()
         window_image.Update()
@@ -265,6 +278,32 @@ class BaseVtkWidget(QtWidgets.QWidget):
         writer.SetFileName(fname)
         writer.SetInputConnection(window_image.GetOutputPort())
         writer.Write()
+
+    def init_offscreen_render(self, size=[1920, 1080]):
+        self.offscreen_vtkrenderer = vtk.vtkRenderer()
+        self.offscreen_vtkrenderer.GradientBackgroundOn()
+        self.offscreen_vtkrenderer.SetBackground(0.4, 0.4, 0.4)
+        self.offscreen_vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
+        self.offscreen_vtkrenderwindow = vtk.vtkRenderWindow()
+        self.offscreen_vtkrenderwindow.SetAlphaBitPlanes(1)
+        self.offscreen_vtkrenderwindow.SetOffScreenRendering(1)
+        self.offscreen_vtkrenderwindow.AddRenderer(self.offscreen_vtkrenderer)
+        self.offscreen_vtkrenderwindow.SetSize(*size)
+
+        actors = self.vtkrenderer.GetActors()
+
+        for i in range(actors.GetNumberOfItems()):
+            actor = actors.GetItemAsObject(i)
+            if actor:
+                mapper = actor.GetMapper()
+                new_actor = vtk.vtkActor()
+                new_actor.SetMapper(mapper)
+                new_actor.SetProperty(actor.GetProperty())
+                self.offscreen_vtkrenderer.AddActor(new_actor)
+
+        self.offscreen_vtkrenderer.ResetCamera()
+
+        self.offscreen_vtkrenderer.Render()
 
     def change_interaction(self, style_2d=False):
         if style_2d:
