@@ -19,7 +19,18 @@ and accepted, you will receive an email notification and instructions on how to
 download the code. Please allow for 2-3 business days for your registration to
 be processed.
 
-Potential users may find reviewing the Frequently Asked Questions section of the MFIX website useful before downloading the code.
+Potential users may find reviewing the Frequently Asked Questions section of the
+MFIX website useful before downloading the code.
+
+## About the GUI
+The GUI is written in pure Python, leveraging the strengths of Python for quick
+code development, extensive existing libraries, and flexibility. The GUI will
+run on any operating system that Python can be installed in including Linux,
+Windows, and Mac. The GUI uses Qt either through PyQt4, PyQt5 or PySide
+wrappers as the GUI library. The
+[Visualization Toolkit (VTK)](http://www.vtk.org/) is used to visualize and
+manipulate the input geometry.
+
 
 ## Development state of MFIX models
 
@@ -341,22 +352,144 @@ simulation.
 ### Model Setup
 
 The Model pane is used to specify overall options for the simulation. Depending
-on what is selected, other panes may be enabled or disabled.
+on what is selected, other panes may be enabled or disabled. Options that are
+specified on this pane include:
 
  - Solver (Single Phase, Two-Fluid Model, DEM, PIC, Hybrid)
- - Gravity
- - Drag Model
+ - Option to disable the fluid phase
+ - Option to enable thermal energy equations
+ - Option to enable turbulence, if the fluid phase is enabled
+ - Gravity in teh x, y, and z directions
+ - Drag Model including parameters for the selected drag model
+
+Other advanced options that can be selected include:
+
+ - Momentum formulation (Model a, Model B, Jackson, or Ishii)
+ - Subgrid model (only avaliable with TFM, Wen-Yu drag model, etc...)
+ - Subgird filter size
+ - Subgrid wall correction
 
 ### Geometry
+
+The Geometry pane allows the specification of the model geometry. This includes
+specifiying the domain extents (xmin, xmax, ymin, ymax, zmin, zmax) and 2D/3D
+selection. If there is complex geometry, the "Autosize" button can automatically
+set the extents to encompass the geometry.
+
+The geometry section provides tools for adding, applying filters, using
+automated wizards to create and copy geometry, remove, copy, and perform boolean
+opartions on the geometry. All the geometry operations and visualizations are
+perfromed using the [Visualization Toolkit (VTK)](http://www.vtk.org/)'s methods
+and functions.
+
+Geometry toolbar icons:
+
+| Icon                                        | Description                                       |
+|---------------------------------------------|---------------------------------------------------|
+| ![geometry](mfixgui/icons/geometry.png)     | add geometry to model                             |
+| ![filter](mfixgui/icons/filter.png)         | apply a filter to the currently selected geometry |
+| ![wizard](mfixgui/icons/wand.png)           | use a wizard to create or copy geometry           |
+| ![remove](mfixgui/icons/remove.png)         | remove the selected geometry                      |
+| ![copy](mfixgui/icons/copy.png)             | copy the selected geometry                        |
+| ![union](mfixgui/icons/union.png)           | perform a union of the selected geometry          |
+| ![intersect](mfixgui/icons/intersect.png)   | perform a intersection of the selected geometry   |
+| ![difference](mfixgui/icons/difference.png) | perform a difference of the selected geometry     |
+
+
+#### Adding Geometry
+Geometry can be added by pressing the add geometry icon and selecting the
+geometry to add. There are two types of geometric objects supported in the GUI,
+polydata (triangles, like stl files) and implicit functions (quadrics). Boolean
+operations can not be perfromed between polydata and implicit geometry types.
+The implicit function needs to be converted to polydata by using the `sample
+implicit` filter. Converting the implicit function also needs to be done in
+order for the GUI to export a STL file that the mifxsolver can use.
+
+In the geomtry tree, the geometry object is described with an icon:
+
+| Icon                                        | Geometry Type |
+|---------------------------------------------|---------------|
+| ![geometry](mfixgui/icons/geometry.png)     | polydata      |
+| ![function](mfixgui/icons/function.png)     | implicit      |
+| ![filter](mfixgui/icons/filter.png)         | filter        |
+| ![union](mfixgui/icons/union.png)           | union         |
+| ![intersect](mfixgui/icons/intersect.png)   | intersect     |
+| ![difference](mfixgui/icons/difference.png) | difference    |
+
+
+The following geometric objects can be added:
+- STL file(s)
+- Implicit (Quadric) functions
+    - sphere
+    - box
+    - cylinder
+    - cone
+    - quadric
+    - superquadric
+- Primitives
+    - sphere
+    - box
+    - cylinder
+    - cone
+- Parametrics (torus, boy, conic spiral, etc.)
+
+#### Applying Filters
+Filters can be applied to selected geometry by first, selecting the geometry the
+filter will be applied to, next pressing the filter icon
+and finally, selecting a filter from the filter menu. The filter options can be
+edited in the parameter section. The following filters are included:
+
+| Filter | Description | vtk class |
+|--------|-------------|------------|
+| sample implicit | converts an implicit function to polydata | vtkSampleFunction |
+| transform | rotate, scale, translate polydata | vtkTransformPolyDataFilter |
+| clean | merge duplicate points and remove unused points and degenerate cells | vtkCleanPolyData |
+| fill holes | fill holes | vtkFillHolesFilter |
+| triangle | make sure all polys are triangles | vtkTriangleFilter |
+| decimate | reduce the number of triangles | vtkDecimatePro |
+| quadric decimation | reduce the number of triangles | vtkQuadricDecimation |
+| quadric clustering | reduce the number of triangles | vtkQuadricClustering |
+| linear subdivision | subdivide based on a linear scheme | vtkLinearSubdivisionFilter |
+| loop subdivision | subdivide based on the Loop scheme | vtkLoopSubdivisionFilter |
+| butterfly subdivision | subdivide based on 8-point butterfly scheme | vtkButterflySubdivisionFilter |
+| smooth | move points based on Laplacian smoothing | vtkSmoothPolyDataFilter |
+| windowed sinc | mve points based on a windowed sinc function interpolation kernel| vtkWindowedSincPolyDataFilter |
+| reverse sense | reverse order and/or normals of triangles | vtkReverseSense |
+
+
+#### Wizards
+Four wizards have been included to perform routine tasks when setting up
+multiphase flow simulations. These wizards allow for creating cyclones,
+reactors, and hoppers. The distributed wizard can also be used to distribute one
+geometry inside another geometry with random, cubic, or body centered cubic
+positions. Random rotations can also be applied with the wizard.
+
+#### Boolean Operations
+Boolean operations can be performed with geomtry objects of the same type
+(implicit, polydata). Boolean operations can not be perfromed between polydata
+and implicit geometry types. The implict object needs to be first converted to
+a polydata object using the sample implicit filter.
+
+> Note: boolean operation between two polydata objects can crash the GUI due to
+> segfaults in vtk.
+
 ### Mesh
 
  - Background
+Specify control points (location, cells, stretch)
  - Mesher
+•	Specify remove small cells tolerances
+•	Specify snap tolerances
+
 
 ### Regions
 
 The Regions pane is used to define spatial regions of the simulation space that
 are referred to in the Initial Conditions and Boundary Conditions panes.
+
+•	Specify an alias for easy referencing (e.g., outlet, solids-bed).
+•	Specify region extents (xmin, xmax, ymin, ymax, zmin, zmax )
+
 
 ### Fluid
 
