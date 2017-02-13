@@ -21,6 +21,153 @@ be processed.
 
 Potential users may find reviewing the Frequently Asked Questions section of the MFIX website useful before downloading the code.
 
+## Development state of MFIX models
+
+MFIX provides a suite of models that treat the carrier phase (typically
+the gas phase) and disperse phase (typically the solids phase)
+differently. Their current state of development is summarized in the
+tables below.
+
+**MFIX-TFM (Two-Fluid Model)** is an Eulerian-Eulerian model, which
+supports a broad range of capabilities for dense, reacting, multiphase
+flows by representing the fluid and solids as interpenetrating continua.
+This is the most mature MFIX model and is capable of modeling multiphase
+reactors ranging in size from benchtop to industry-scale. Approximation
+of the solid phase as a continuum typically allows for faster simulation
+time than Lagrangian techniques; however, it also introduces the need
+for accurate mathematical models to capture realistic solids phase
+behavior. This includes transport properties, heterogeneous reaction
+kinetics, and constitutive relations for interaction between fluid and
+solid phases, e.g., solids phase drag and interphase heat transfer.
+
+<div>
+
+<div style="float:left">
+                       Serial   ^†^DMP   ^‡^SMP
+  -------------------- -------- -------- --------
+  Momentum Equations   ●        ●        ●
+  Energy Equations     ●        ●        ●
+  Species Equations    ●        ●        ●
+  Chemical Reactions   ●        ●
+  Cartesian cut-cell   ●        ●        **□**
+
+</div>
+
+<div>
+
+[]{#TFM_pic .anchor}![](doc/media/devstate_tfm.png){width="3.022222222222222in"
+height="1.8520833333333333in"}
+
+</div>
+
+</div>
+
+**MFIX-DEM (Discrete Element Model)** is an Eulerian-Lagrangian model
+that treats the fluid phase as a continuum and models the individual
+particles of the solid phase. This is a relatively new variation on
+MFIX. While the treatment of individual particles can provide higher
+fidelity over a broad range of flow regimes (from dilute to packed), it
+also very challenging when dealing with very large numbers of particles
+for large-scale simulations. These large-scale applications will require
+high performance computing (HPC) resources and large amounts of computer
+time. Code optimization and speed up are critical research fronts to
+support industrial scale applications.
+
+<div>
+
+<div style="float:left">
+                       Serial   ^†^DMP   ^‡^SMP
+  -------------------- -------- -------- --------
+  Momentum Equations   ●        ●        ●
+  Energy Equations     ●        ●
+  Species Equations    ●        ●
+  Chemical Reactions   ●        ●
+  Cartesian cut-cell   ○        ○
+
+</div>
+
+<div>
+
+[]{#DEM_pic .anchor}![](doc/media/devstate_dem.png){width="3.0125in"
+height="1.5895833333333333in"}
+
+</div>
+
+</div>
+
+**MFIX-PIC (Multiphase Particle in Cell)** is another
+Eulerian-Lagrangian model that represents the fluid as a continuum while
+using "parcels" to represent groups of real particles with similar
+physical characteristics. The MFIX-PIC approach offers reduced
+computational cost over MFIX-DEM as there are typically few parcels to
+track and parcel collisions are not resolved. However, the added
+modeling approximations influence the overall accuracy of the method.
+Development, validation, and optimization of modeling approximations are
+critical research fronts.
+
+<div>
+
+<div style="float:left">
+                       Serial   ^†^DMP   ^‡^SMP
+  -------------------- -------- -------- --------
+  Momentum Equations   ●                 ○
+  Energy Equations
+  Species Equations
+  Chemical Reactions
+  Cartesian cut-cell   ○                 □
+
+</div>
+
+<div>
+
+[]{#MPPIC_pic
+.anchor}![](doc/media/devstate_pic.png){width="3.0104166666666665in"
+height="1.7055555555555555in"}
+
+</div>
+
+</div>
+
+**MFIX-Hybrid (Eulerian-Lagrangian-Eulerian)** is a blend of MFIX-TFM
+and MFIX-DEM that represents the fluid as a continuum and models solids
+as either a continuous phase (TFM) or discrete particles (DEM). This
+technique is presently restricted to solving only the momentum equations
+to yield hydrodynamic predictions. This model is still in its infancy
+and has seen only limited testing.
+
+<div>
+
+<div style="float:left">
+                       Serial   ^†^DMP   ^‡^SMP
+  -------------------- -------- -------- ---------------------------------------------------------------------------------------------------------------
+  Momentum Equations   ○        ○        ○
+  Energy Equations
+  Species Equations
+  Chemical Reactions
+  Cartesian cut-cell   ○        ○        ○
+
+</div>
+
+[]{#Hybrid_pic .anchor}![](doc/media/devstate_hybrid.png){width="3.017361111111111in" height="1.601388888888889in"}
+
+<div>
+
+</div>
+
+</div>
+
+● – implemented and fully tested
+
+○ – implemented with limited testing
+
+**□** – not tested or status unknown
+
+† Models not extended to DMP-parallel are only available for serial
+runs.
+
+‡ Models not extended to SMP-parallel are available for SMP runs but do
+not scale with thread count.
+
 # Tutorial on Running MFIX with the GUI
 
 The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX GUI, run:
