@@ -202,7 +202,7 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 
 # User Interface Reference
 
-## Toolbar
+## Main Toolbar
 
 | Icon                                              | Description                                                               |
 |---------------------------------------------------|---------------------------------------------------------------------------|
@@ -260,13 +260,16 @@ documentation, including this document.
 
 ### Project Info
 Displays metadata about the current project file.
- - Project Version
- - MFIX Release version that created this project file
- - Author
- - Modified By
- - Last Modified
- - Created
- - Notes
+
+| Label | Description |
+|-------|-------------|
+| Project Version | a version that is increased by 1 everytime the project is saved |
+| Created with MFiX Version | the version of MFiX that the project was created with |
+| Author | the user that created the project |
+| Modified By | list of users that edited the project |
+| Last Modified | the date that the project was last modified |
+| Created | the date the project was created |
+| Notes | area where the user can record notes about the project |
 
 ### New
 Create a new project file from a template file. The list of templates can be filtered
@@ -286,7 +289,7 @@ by selecting one or more of the following model types:
 ### Open
 
 Open a existing project. You can import mfix.dat files from previous releases of
-MFIX, but the GUI will save them as a new filename with a \*.mfx extension. The
+MFiX, but the GUI will save them as a new filename with a \*.mfx extension. The
 GUI also performs a number of conversions, including converting old keywords to
 new keywords and conversion from CGS units to SI units.
 
@@ -297,31 +300,43 @@ Saves the current project.
 ### Save As
 
 Saves the current project to a new directory and/or as a new filename. The
-project is then opened.
+project is then opened in that location and with that filename.
 
 ### Export Project
 
-Export the current project to a new directory and/or as a new filename.
+Export the current project to a new directory and/or as a new filename, bit keep
+the original project opened.
 
 ### Settings
 
- - Style
- - Enable animations
- - Animation Speed
- - Enable Developer Tools
+Change settings that affect how the GUI acts.
+
+| Option | Description |
+|--------|-------------|
+| Style | Change the application style |
+| Enable animations | enable or disable animated widgets |
+| Animation Speed | set the speed at which animations occur |
+| Enable Developer Tools | hide/show widgets that are mainly for developers of the GUI |
 
 ### Help
+
+Shows available documentation (including this document) and tutorial videos
+(if connected to the internet) to help users utilize the features of the GUI.
+
 ### About
 
-Displays the current MFIX version.
+Displays the current MFIX version as well as the version of the various
+libraries that are currently being used.
 
 ### Quit
 
-Exits MFIX. Will as for confirmation if project is unsaved or if a job is running.
+Exits MFIX. Will ask for confirmation if project is unsaved or if a job is
+running.
 
 ## Model panes
 
-Each pane in the main window allow editing of different options for an MFIX simulation.
+Each pane in the main window allows editing of different options for an MFIX
+simulation.
 
 ### Model Setup
 
