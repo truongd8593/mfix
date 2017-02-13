@@ -204,15 +204,15 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 
 ## Toolbar
 
-|                                                                                                                              |
-|------------------------------------------------------------------------------------------------------------------------------|
-| ![File menu](mfixgui/icons/menu.png)               Shows the  file menu for creating, opening, and saving MFIX project files.|
-| ![Save button](mfixgui/icons/save.png)             The save button saves the MFIX project file.                              |
-| ![Start button](mfixgui/icons/play.png)            The Start button displays the Run dialog, or unpauses an MFIX simulation. |
-| ![Pause button](mfixgui/icons/pause.png)           The Pause button pauses an MFIX simulation.                               |
-| ![Stop button](mfixgui/icons/stop.png)             The Stop button stops an MFIX simulation.                                 |
-| ![Clear button](mfixgui/icons/restore_delete.png)  The Clear button deletes MFIX simulation data.                            |
-| ![Parameters button](mfixgui/icons/functions.png)  The Parameters menu adjusts MFIX parameters.                              |
+| Icon                                              | Description                                                               |
+|---------------------------------------------------|---------------------------------------------------------------------------|
+| ![File menu](mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
+| ![Save button](mfixgui/icons/save.png)            | The save button saves the project file.                                   |
+| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or unpauses a simulation.       |
+| ![Pause button](mfixgui/icons/pause.png)          | The Pause button pauses a simulation.                                     |
+| ![Stop button](mfixgui/icons/stop.png)            | The Stop button stops a simulation.                                       |
+| ![Rest button](mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
+| ![Parameters button](mfixgui/icons/functions.png) | The Parameters menu allows changing of parameters.                        |
 
 If no MFIX job is currently running, the Start button shows the run dialog.
 If an MFIX job is running, you can pause it with the pause button and unpause it with the start button.
@@ -221,8 +221,8 @@ Starting a job with \*.RES files present will resume the job where it stopped.
 The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
 
 ### Run dialog
-
-The run dialog
+The run dialog allows for running the simulation from the GUI. The following options can be changed in this
+dialog:
 
  - Threads (number of threads used for OpenMP)
  - NODESI (number divisions in X direction)
@@ -231,23 +231,34 @@ The run dialog
 
  $NODESI \times NODESJ \times NODESK = n$ where $n$ is the number of MPI processes running. If not using MPI, $NODESI=NODESJ=NODESK=1$.
 
- - Submit to Queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM. Currently only supported on Joule)
- - Run local MFIX executable (Runs MFIX solver on same system running the GUI)
+The GUI supports running both locally as well as submitting to a queue.
+#### Run Local
+To run locally, select the "Run local MFiX executable" tab. Select an executable from the dropdown list or
+click the browse button to specify an executable that is not in the list. Usually the default
+`pymfixsolver` command in PATH should be sufficient. If running a case with UDFs, you need to first build
+a case-specific MFIX as described in the [setup guide](INSTALL.md#building-for-udfs). You may want to build
+your own solver for other reasons, such as specifing various compiler flags to optimize the executable
+for your specific hardware.
+ 
+Click "Run" in the Run dialog to start the simulation.
 
- To run the MFIX solver, select an executable. Usually the default
- `pymfixsolver` command in PATH should be sufficient. If running a case with
- UDFs, you need to first build a case-specific MFIX as described in
- the [setup guide](INSTALL.md#building-for-udfs). You may want to build your own
- solver for other reasons.
+#### Submit to Queue
+To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM), select the "Submit to Queue"
+tab. Select an executable from the dropdown list or click the browse button to specify an executable that is not
+in the list. Next, select a template from the dropdown list or click the browse button to choose a template that is
+not in the dropdown list. Based on the selected template, the widgets in the "queue options" section will update
+automatically. Once the options are specified, click "submit" in the run dialog to submit the job to the queue.
 
- Click "Run" in the Run dialog starts the simulation.
+Custom queue scripts are supported. The format for this script is described in the
+[Queue Script](#queue-templates) section.
 
 ## File menu
+The file menu allows for opening, creating, copying, and exporting projects as well
+as viewing project meta data, changing settings, and viewing avalible help
+documentation, including this document.
 
 ### Project Info
-
 Displays metadata about the current project file.
-
  - Project Version
  - MFIX Release version that created this project file
  - Author
@@ -257,23 +268,26 @@ Displays metadata about the current project file.
  - Notes
 
 ### New
+Create a new project file from a template file. The list of templates can be filtered
+by selecting one or more of the following model model types:
 
-Create a new project file from a list of templates. The list of templates can be filtered by:
-
-|                                           |                                 |
-|-------------------------------------------|---------------------------------|
-| ![single](mfixgui/icons/single.png)       | single phase                    |
-| ![tfm](mfixgui/icons/tfm.png)             | two fluid model                 |
-| ![pic](mfixgui/icons/pic.png)             | particle in cell                |
-| ![dem](mfixgui/icons/dem.png)             | discrete element model          |
-| ![hybrid](mfixgui/icons/hybrid.png)       | hybrid two fluid and DEM model  |
-| ![geometry](mfixgui/icons/geometry.png)   | template has cartesian geometry |
-| ![chemistry](mfixgui/icons/chemistry.png) | template has chemistry          |
+| Icon                                      | Description                            |
+|-------------------------------------------|----------------------------------------|
+| ![single](mfixgui/icons/single.png)       | Single phase Model                     |
+| ![tfm](mfixgui/icons/tfm.png)             | Two Fuild Model (TFM)                  |
+| ![pic](mfixgui/icons/pic.png)             | Particle in Cell Model (PIC)           |
+| ![dem](mfixgui/icons/dem.png)             | Discrete Element Model (DEM)           |
+| ![hybrid](mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
+| ![geometry](mfixgui/icons/geometry.png)   | Cartesian cut-cell (complex) geometry  |
+| ![chemistry](mfixgui/icons/chemistry.png) | Chemistry                              |
 
 
 ### Open
 
-Open a existing project. You can import mfix.dat files from previous releases of MFIX, but the GUI will save them as a new filename with a \*.mfx extension.
+Open a existing project. You can import mfix.dat files from previous releases of
+MFIX, but the GUI will save them as a new filename with a \*.mfx extension. The
+GUI also perfroms a number of conversions, including converting old keywords to
+new keywords and converion from CGS units to SI units.
 
 ### Save
 
@@ -281,9 +295,13 @@ Saves the current project.
 
 ### Save As
 
-Saves the current project as a new filename.
+Saves the current project to a new directory and/or as a new filename. The
+project is then opened.
 
 ### Export Project
+
+Export the current project to a new directory and/or as a new filename. 
+
 ### Settings
 
  - Style
