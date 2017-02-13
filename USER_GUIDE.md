@@ -43,13 +43,14 @@ solid phases, e.g., solids phase drag and interphase heat transfer.
 <div>
 
 <div style="float:left">
-                       Serial   ^†^DMP   ^‡^SMP
-  -------------------- -------- -------- --------
-  Momentum Equations   ●        ●        ●
-  Energy Equations     ●        ●        ●
-  Species Equations    ●        ●        ●
-  Chemical Reactions   ●        ●
-  Cartesian cut-cell   ●        ●        **□**
+
+|                      | Serial   | ^†^DMP   | ^‡^SMP   |
+| -------------------- | -------- | -------- | -------- |
+| Momentum Equations   | ●        | ●        | ●        |
+| Energy Equations     | ●        | ●        | ●        |
+| Species Equations    | ●        | ●        | ●        |
+| Chemical Reactions   | ●        | ●        |          |
+| Cartesian cut-cell   | ●        | ●        | **□**    |
 
 </div>
 
@@ -76,13 +77,14 @@ support industrial scale applications.
 <div>
 
 <div style="float:left">
-                       Serial   ^†^DMP   ^‡^SMP
-  -------------------- -------- -------- --------
-  Momentum Equations   ●        ●        ●
-  Energy Equations     ●        ●
-  Species Equations    ●        ●
-  Chemical Reactions   ●        ●
-  Cartesian cut-cell   ○        ○
+
+|                      | Serial   | ^†^DMP   | ^‡^SMP   |
+| -------------------- | -------- | -------- | -------- |
+| Momentum Equations   | ●        | ●        | ●        |
+| Energy Equations     | ●        | ●        |          |
+| Species Equations    | ●        | ●        |          |
+| Chemical Reactions   | ●        | ●        |          |
+| Cartesian cut-cell   | ○        | ○        |          |
 
 </div>
 
@@ -108,13 +110,14 @@ critical research fronts.
 <div>
 
 <div style="float:left">
-                       Serial   ^†^DMP   ^‡^SMP
-  -------------------- -------- -------- --------
-  Momentum Equations   ●                 ○
-  Energy Equations
-  Species Equations
-  Chemical Reactions
-  Cartesian cut-cell   ○                 □
+
+|                      | Serial   | ^†^DMP   | ^‡^SMP   |
+| -------------------- | -------- | -------- | -------- |
+| Momentum Equations   | ●        |          | ○        |
+| Energy Equations     |          |          |          |
+| Species Equations    |          |          |          |
+| Chemical Reactions   |          |          |          |
+| Cartesian cut-cell   | ○        | □        |          |
 
 </div>
 
@@ -138,13 +141,14 @@ and has seen only limited testing.
 <div>
 
 <div style="float:left">
-                       Serial   ^†^DMP   ^‡^SMP
-  -------------------- -------- -------- ---------------------------------------------------------------------------------------------------------------
-  Momentum Equations   ○        ○        ○
-  Energy Equations
-  Species Equations
-  Chemical Reactions
-  Cartesian cut-cell   ○        ○        ○
+
+|                      | Serial   | ^†^DMP   | ^‡^SMP|
+| -------------------- | -------- | -------- | ------|
+| Momentum Equations   | ○        | ○        | ○     |
+| Energy Equations     |          |          |       |
+| Species Equations    |          |          |       |
+| Chemical Reactions   |          |          |       |
+| Cartesian cut-cell   | ○        | ○        | ○     |
 
 </div>
 
