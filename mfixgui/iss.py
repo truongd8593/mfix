@@ -69,8 +69,6 @@ class ISS(object):
         self.iss_setup_current_tab()
 
 
-
-
     def iss_show_regions_popup(self):
         #Select internal surface type
         # Selection is required
@@ -88,7 +86,8 @@ class ISS(object):
             # No region can define more than one internal surface.
 
             available = (data.get('available', True)
-                         and (shape=='box' or 'plane' in shape))
+                         and (shape=='box'
+                              or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
