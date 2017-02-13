@@ -255,6 +255,7 @@ for your specific hardware.
 Click "Run" in the Run dialog to start the simulation.
 
 #### Submit to Queue
+
 To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM), select the "Submit to Queue"
 tab. Select an executable from the dropdown list or click the browse button to specify an executable that is not
 in the list. Next, select a template from the dropdown list or click the browse button to choose a template that is
@@ -265,31 +266,34 @@ Custom queue scripts are supported. The format for this script is described in t
 [Queue Templates](#queue-templates) section.
 
 ## File menu
+
 The file menu allows for opening, creating, copying, and exporting projects as well
 as viewing project meta data, changing settings, and viewing available help
 documentation, including this document.
 
 ### Project Info
+
 Displays metadata about the current project file.
 
-| Label                     | Description                                                     |
-|---------------------------|-----------------------------------------------------------------|
-| Project Version           | a version that is increased by 1 everytime the project is saved |
-| Created with MFiX Version | the version of MFiX that the project was created with           |
-| Author                    | the user that created the project                               |
-| Modified By               | list of users that edited the project                           |
-| Last Modified             | the date that the project was last modified                     |
-| Created                   | the date the project was created                                |
-| Notes                     | area where the user can record notes about the project          |
+| Label                     | Description                                            |
+|---------------------------|--------------------------------------------------------|
+| Project Version           | version number incremented each time project is saved  |
+| Created with MFiX Version | version of MFiX that project was created with          |
+| Author                    | username that created the project                      |
+| Modified By               | list of usernames that edited the project              |
+| Last Modified             | date the project was last modified                     |
+| Created                   | date the project was created                           |
+| Notes                     | area where the user can record notes about the project |
 
 ### New
+
 Create a new project file from a template file. The list of templates can be filtered
 by selecting one or more of the following model types:
 
 | Icon                                      | Description                            |
 |-------------------------------------------|----------------------------------------|
 | ![single](mfixgui/icons/single.png)       | Single phase Model                     |
-| ![tfm](mfixgui/icons/tfm.png)             | Two Fuild Model (TFM)                  |
+| ![tfm](mfixgui/icons/tfm.png)             | Two Fluid Model (TFM)                 |
 | ![pic](mfixgui/icons/pic.png)             | Particle in Cell Model (PIC)           |
 | ![dem](mfixgui/icons/dem.png)             | Discrete Element Model (DEM)           |
 | ![hybrid](mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
@@ -315,18 +319,18 @@ project is then opened in that location and with that filename.
 
 ### Export Project
 
-Export the current project to a new directory and/or as a new filename, bit keep
+Export the current project to a new directory and/or as a new filename, but keep
 the original project opened.
 
 ### Settings
 
 Change settings that affect how the GUI acts.
 
-| Option | Description |
-|--------|-------------|
-| Style | Change the application style |
-| Enable animations | enable or disable animated widgets |
-| Animation Speed | set the speed at which animations occur |
+| Option                 | Description                                                 |
+|------------------------|-------------------------------------------------------------|
+| Style                  | change the application style                                |
+| Enable animations      | enable or disable animated widgets                          |
+| Animation Speed        | set the speed at which animations occur                     |
 | Enable Developer Tools | hide/show widgets that are mainly for developers of the GUI |
 
 ### Help
@@ -336,8 +340,7 @@ Shows available documentation (including this document) and tutorial videos
 
 ### About
 
-Displays the current MFIX version as well as the version of the various
-libraries that are currently being used.
+Displays the version of MFIX and the library dependencies it is using.
 
 ### Quit
 
@@ -359,7 +362,7 @@ specified on this pane include:
  - Option to disable the fluid phase
  - Option to enable thermal energy equations
  - Option to enable turbulence, if the fluid phase is enabled
- - Gravity in teh x, y, and z directions
+ - Gravity in the x, y, and z directions
  - Drag Model including parameters for the selected drag model
 
 Other advanced options that can be selected include:
@@ -372,13 +375,13 @@ Other advanced options that can be selected include:
 ### Geometry
 
 The Geometry pane allows the specification of the model geometry. This includes
-specifiying the domain extents (xmin, xmax, ymin, ymax, zmin, zmax) and 2D/3D
+specifying the domain extents (xmin, xmax, ymin, ymax, zmin, zmax) and 2D/3D
 selection. If there is complex geometry, the "Autosize" button can automatically
 set the extents to encompass the geometry.
 
 The geometry section provides tools for adding, applying filters, using
 automated wizards to create and copy geometry, remove, copy, and perform boolean
-opartions on the geometry. All the geometry operations and visualizations are
+operations on the geometry. All the geometry operations and visualizations are
 performed using the [Visualization Toolkit (VTK)](http://www.vtk.org/)'s methods
 and functions.
 
