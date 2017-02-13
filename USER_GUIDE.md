@@ -506,9 +506,7 @@ include:
 
 | Option | Description |
 |--------|-------------|
-| External flow | select internal or external flow. Note: this depends on which
-way the normals are pointing on the stl file. If they are pointing out of the
-geometry, then the text will be correct. |
+| External flow | select internal or external flow. Note: this depends on which way the normals are pointing on the stl file. If they are pointing out of the geometry, then the text will be correct. |
 | Small cell tolerance | tolerance to detect, and remove small cells |
 | Small area tolerance | tolerance to detect, and remove cells with small faces |
 | Merge tolerance | tolerance used to merge duplicate nodes |
