@@ -521,8 +521,29 @@ include:
 
 ### Regions
 
-The Regions pane is used to define spatial regions of the simulation space that
-are referred to in the Initial Conditions and Boundary Conditions panes.
+The Regions pane is used to define spatial regions (points, lines, planes,
+boxes, or stls) of the simulation space that are refered to later when
+creating:
+- [Initial Conditions](#initial-conditions)
+- [Boundary Conditions](#boundary-conditions)
+- [Point Sources](#point-sources)
+- [Outputs](#outputs)
+
+Tool bar: 
+
+| Icon                                        | Description|
+|---------------------------------------------|---------------|
+| ![add](mfixgui/icons/add.png)     | create a new region     |
+| ![remove](mfixgui/icons/remove.png) | delete the selected region |
+| ![copy](mfixgui/icons/copy.png) | duplicate the selected region |
+| ![all region](mfixgui/icons/all_region.png) | create a region the encompasses the entire domain |
+| ![left region](mfixgui/icons/left_region.png) | create a region on the left side of the domain |
+| ![right region](mfixgui/icons/right_region.png) | create a region on the right side of the domain |
+| ![top region](mfixgui/icons/top_region.png) | create a region on the top side of the domain |
+| ![bottom region](mfixgui/icons/bottom_region.png) | create a region on the bottom side of the domain |
+| ![front region](mfixgui/icons/front_region.png) | create a region on the front side of the domain |
+| ![back region](mfixgui/icons/back_region.png) | create a region on the back side of the domain |
+
 
 •	Specify an alias for easy referencing (e.g., outlet, solids-bed).
 •	Specify region extents (xmin, xmax, ymin, ymax, zmin, zmax )
