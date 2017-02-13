@@ -251,15 +251,15 @@ tarball on the MFIX website.
 
 ##     Extracting the MFIX directory
 
-MFIX is distributed as a compressed source tar ball named mfix-2017.1.tar.gz. To
+MFIX is distributed as a compressed source tar ball named mfix-17.1.tar.gz. To
 decompress and extract the tar file:
 
 ```shell
-> tar xzf mfixgui-2017.1.tar.gz
+> tar xzf mfixgui-17.1.tar.gz
 ```
 
 Here it is assumed that you are in the directory containing the tar ball.
-Extracting the tar ball creates a directory named mfix-2017.1 containing the
+Extracting the tar ball creates a directory named mfix-17.1 containing the
 MFIX and POSTMFIX source codes, tests and tutorials, as well as some additional
 documentation and utilities.
 
@@ -272,7 +272,7 @@ Alias creation (optional)
 For convenience, an alias can be created to avoid specifying the path to the MFIX configure script. Assuming the MFIX source was extracted in the home directory, and you are using the C shell, an alias can be created by executing:
 
 ```shell
-> echo "alias configure_mfix ~/mfix-2017.1/configure_mfix" >> ~/.cshrc
+> echo "alias configure_mfix ~/mfix-17.1/configure_mfix" >> ~/.cshrc
 ```
 This appends the quoted text to the .cshrc file located in the home directory. The alias will take effect the on the next login or after sourcing the .cshrc file. To source the .cshrc file in the current terminal, enter at the prompt:
 ```shell
@@ -282,7 +282,7 @@ Afterwards, MFIX can be configured from any directory by running the alias, conf
 Passing arguments to the build script
 Arguments may be passed to the build script to specify various options: compiler, optimization flags, SMP/DMP support, and other options. All configuration options can be displayed with:
 ```shell
-> ~/mfix-2017.1/configure_mfix --help
+> ~/mfix-17.1/configure_mfix --help
 ```
 
 The most common arguments are given in the following table.
@@ -388,7 +388,7 @@ example assumes you have the GNU Fortran compiler (gfortran) installed.
 To begin, go to the fluidbed1 tutorial directory and list its contents:
 
 ```shell
-> cd ~/mfix-2017.1/tutorials/fluidbed1
+> cd ~/mfix-17.1/tutorials/fluidbed1
 > ls
 mfix.dat
 ```
@@ -412,7 +412,7 @@ The above commands run `configure_mfix` by specifying the relative path (two
 levels up). Alternatively, we could specify the absolute path:
 
 ```shell
-> ~/mfix-2017.1/configure_mfix FC=gfortran FCFLAGS='-g -O2'
+> ~/mfix-17.1/configure_mfix FC=gfortran FCFLAGS='-g -O2'
 ```
 
 or use the alias created in section 4.3.1:
