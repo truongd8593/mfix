@@ -35,7 +35,8 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['pymfixsolver', 'pymfixsolver.exe', 'mfixsolver', 'mfixsolver.exe']
+MFIXSOLVER_GLOB_NAMES = ['mfixsolver*.so', 'mfixsolver*.pyd', 'mfixsolver', 'mfixsolver.exe']
+DEFAULT_SOLVER = '< Default >'
 
 
 class RunPopup(QDialog):
@@ -93,7 +94,7 @@ class RunPopup(QDialog):
         ui = self.ui
         self.setWindowTitle(self.title)
         # create initial executable list
-        self.generate_exe_list()
+        self.mfix_exe_list = self.get_exe_list()
 
         # set OMP_NUM_THREADS
         project_threads = self.gui_comments.get('OMP_NUM_THREADS', None)
@@ -425,16 +426,7 @@ class RunPopup(QDialog):
                         'recent_executables',
                         str(os.pathsep).join(recent_list))
 
-    def prepend_to_exe_list(self, exe):
-        """ Verify exe exists, is executable, and appears only once in list."""
-        if not (self.exe_exists(exe) and self.get_exe_flags(exe)):
-            return False
-        if exe in self.mfix_exe_list:
-            self.mfix_exe_list.pop(self.mfix_exe_list.index(exe))
-        self.mfix_exe_list.insert(0, exe)
-        return True
-
-    def generate_exe_list(self):
+    def get_exe_list(self):
         """ assemble list of executables from:
         - command line
         - project file 'mfix_exe'
@@ -452,7 +444,7 @@ class RunPopup(QDialog):
                     yield recent_exe
 
         def project_directory_executables():
-            for name in MFIX_EXE_NAMES:
+            for name in MFIXSOLVER_GLOB_NAMES:
                 for exe in glob(os.path.join(self.project_dir, name)):
                     yield os.path.abspath(exe)
 
@@ -460,6 +452,15 @@ class RunPopup(QDialog):
             project_exe = self.project.get_value('mfix_exe')
             if project_exe:
                 yield project_exe
+
+        def python_path():
+            for d in sys.path:
+                # filter out empty strings and current directory from $PATH
+                if d and d != os.path.curdir and os.path.isdir(d):
+                    print("LOOKING for pyext IN DIR ", d, ' with ', MFIXSOLVER_GLOB_NAMES)
+                    for name in MFIXSOLVER_GLOB_NAMES:
+                        for exe in glob(os.path.join(d, name)):
+                            yield exe
 
         def os_path():
             PATH = os.environ.get("PATH")
@@ -471,7 +472,8 @@ class RunPopup(QDialog):
             for d in dirs.keys():
                 # filter out empty strings and current directory from $PATH
                 if d and d != os.path.curdir and os.path.isdir(d):
-                    for name in MFIX_EXE_NAMES:
+                    print("LOOKING for exe IN DIR ", d, ' with ', MFIXSOLVER_GLOB_NAMES)
+                    for name in MFIXSOLVER_GLOB_NAMES:
                         for exe in glob(os.path.join(d, name)):
                             yield exe
 
@@ -482,7 +484,7 @@ class RunPopup(QDialog):
             if os.path.isdir(bin_dir):
                 dir_list.add(bin_dir)
             for d in dir_list:
-                for name in MFIX_EXE_NAMES:
+                for name in MFIXSOLVER_GLOB_NAMES:
                     for exe in glob(os.path.join(d, name)):
                         yield exe
 
@@ -498,23 +500,31 @@ class RunPopup(QDialog):
         exe_list_order = [
             recently_used_executables,
             project_directory_executables,
+            python_path,
             os_path,
             mfix_build_directories,
             get_saved_exe,
             project_file_executable,
             command_line_option]
 
+        od = OrderedDict()
         # look for executables in the order listed in exe_list_order
         for exe_spec in exe_list_order:
             for exe in exe_spec():
-                self.prepend_to_exe_list(exe)
+                print ("SHITTER ", exe)
+                exe_exists = os.path.isfile(exe) and os.access(exe, os.X_OK)
+                if exe_exists and self.get_exe_flags(exe):
+                    od[exe] = True
 
-    def exe_exists(self, exe):
-        """ Verify exe exists and is executable """
-        return (os.path.isfile(exe) and os.access(exe, os.X_OK))
+        return list(od.keys())
 
     def get_exe_flags(self, mfix_exe):
         """ get and cache (and update) executable features """
+
+        # let non-exe solvers through
+        if mfix_exe and os.path.splitext(mfix_exe)[1] in ['.so', '.pyd']:
+            return {'flags': 'python'}
+
         if mfix_exe is None:
             return None
         try:
@@ -570,7 +580,17 @@ class RunPopup(QDialog):
         else:
             smp = []
 
-        run_cmd = smp + dmp + [self.mfix_exe]
+        # FIXME: code-cleanup; mfix_exe really should be renamed to mfixsolver everywhere
+        if self.mfix_exe == DEFAULT_SOLVER:
+            pymfix = ['pymfix']
+        else:
+            extension = os.path.splitext(self.mfix_exe)[1]
+            if extension == '.so' or extension == '.pyd':
+                pymfix = ['pymfix', '--solver']
+            else:
+                pymfix = []
+
+        run_cmd = smp + dmp + pymfix + [self.mfix_exe]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !

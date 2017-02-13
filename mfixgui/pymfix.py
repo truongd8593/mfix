@@ -3,57 +3,34 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
-from mfixgui.version import __version__
-
 import argparse
 import copy
 import json
 import logging
-import numpy.core # used?
 import os
-try:
-    import packaging
-    import packaging.requirements
-    import packaging.specifiers
-    import packaging.version
-except ImportError:
-    print("warning: can't import the module packaging")
 import random
 import socket
 import string
 import sys
 import tempfile
+from timeit import default_timer as timer
+from functools import wraps
 import threading
 import time
 import traceback
 
-from timeit import default_timer as timer
-from functools import wraps
-from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
+from flask import Flask, jsonify, make_response, request
 
-# current working directory has priority for mfixsolver (for test cases with UDFs)
-sys.path.insert(0, os.getcwd())
+from mfixgui.version import __version__
+
 pidfilename = None
-
-# Fortran modules are in uppercase since Fortran uses uppercase (even though it's
-# conventional to only use uppercase for constants)
-from mfixsolver import compar as COMPAR
-from mfixsolver import des_time_march as DES_TIME_MARCH
-from mfixsolver import discretelement as DEM
-from mfixsolver import iterate as ITERATE
-from mfixsolver import main as MAIN
-from mfixsolver import debug as DEBUG
-from mfixsolver import parallel_mpi as PARALLEL_MPI
-from mfixsolver import residual as RESIDUAL
-from mfixsolver import run as RUN
-from mfixsolver import step as STEP
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 
 FLASK_APP = Flask(__name__)
 FLASK_APP.config['SECRET_KEY'] = \
             ''.join([random.choice(string.digits + string.ascii_letters)
-            for x in range(0,64)])
+            for x in range(0, 64)])
 FLASK_APP.config['TOKEN_NAME'] = 'x-pymfix-auth'
 DEBUG_FLAG = False
 
@@ -97,7 +74,7 @@ FLASK_APP.wsgi_app = WSGICopyBody(FLASK_APP.wsgi_app)
 
 def find_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("",0))
+    sock.bind(("", 0))
     sock.listen(1)
     port = sock.getsockname()[1]
     sock.close()
@@ -106,11 +83,48 @@ def find_free_port():
 def get_run_name():
     return RUN.run_name.tobytes().decode('utf-8').replace('\x00', '').strip()
 
+def import_mfixsolver(solver=None):
+    """ imports the mfixsolver module passed in as solver """
+
+    if solver:
+        # solver passed on command line has priority
+        if os.path.isfile(solver):
+            sys.path.insert(0, os.path.dirname(solver))
+        else:
+            log.warning('invalid solver passed on command line: %s', solver)
+
+    import mfixsolver
+
+    # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
+    # conventional to only use uppercase for constants)
+    global COMPAR
+    global DEBUG
+    global DEM
+    global DES_TIME_MARCH
+    global ITERATE
+    global MAIN
+    global PARALLEL_MPI
+    global RESIDUAL
+    global RUN
+    global STEP
+    COMPAR = mfixsolver.compar
+    DEBUG = mfixsolver.debug
+    DEM = mfixsolver.discretelement
+    DES_TIME_MARCH = mfixsolver.des_time_march
+    ITERATE = mfixsolver.iterate
+    MAIN = mfixsolver.main
+    PARALLEL_MPI = mfixsolver.parallel_mpi
+    RESIDUAL = mfixsolver.residual
+    RUN = mfixsolver.run
+    STEP = mfixsolver.step
+
 def main():
     """The main function starts MFiX on a separate thread, then
        start the Flask server. """
 
-    mfix_dat, paused, port, keyword_args = parse_command_line_arguments()
+    mfix_dat, solver, paused, port, keyword_args = parse_command_line_arguments()
+
+    import_mfixsolver(solver)
 
     global mfix_thread
     mfix_thread = Mfix(mfix_dat, paused, keyword_args, port=port)
@@ -148,14 +162,14 @@ def main():
                 pid.write('token=%s:%s\n' % (
                                     FLASK_APP.config['TOKEN_NAME'],
                                     FLASK_APP.config['SECRET_KEY']))
-            log.debug('flask starting on port %d' % port)
+            log.debug('flask starting on port %d', port)
             FLASK_APP.run(host=host,
                           port=port, debug=debug,
                           use_reloader=use_reloader)
 
         except OSError:
             os.remove(pidfilename)
-            log.exception('cannot bind to port %d' % port)
+            log.exception('cannot bind to port %d', port)
             _start_flask(host=host,
                          port=find_free_port(), debug=DEBUG_FLAG,
                          use_reloader=use_reloader)
@@ -342,7 +356,7 @@ class Mfix(object):
         try:
             self.status = json.dumps(output)
         except UnicodeDecodeError:
-            log.exception("exception when decoding:  %s" % output)
+            log.exception("exception when decoding:  %s", output)
 
     def check_pidfile(self):
         if 0 != COMPAR.mype:
@@ -678,6 +692,8 @@ class DictAction(argparse.Action):
 
 class PrintFlagsAction(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
+            print("python ", end='')
+            import_mfixsolver()
             MAIN.print_flags()
             sys.exit(1)
 
@@ -700,6 +716,8 @@ def parse_command_line_arguments():
     parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
                         type=check_port,
                         help='specify a port number to use')
+    parser.add_argument('-s', '--solver',  metavar='FILE', action='store',
+                        help='specify a filename for the mfixsolver Python extension (mfixsolver.so or mfixsolver.pyd)')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
     parser.add_argument('-v', '--version', action='version', version=__version__)
@@ -707,7 +725,7 @@ def parse_command_line_arguments():
     args = parser.parse_args()
 
     passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
-    return args.file.ljust(80), not args.wait, args.port, passed_kwargs
+    return args.file.ljust(80), args.solver, not args.wait, args.port, passed_kwargs
 
 if __name__ == '__main__':
     main()

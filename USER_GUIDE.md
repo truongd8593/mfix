@@ -232,6 +232,7 @@ Starting a job with \*.RES files present will resume the job where it stopped.
 The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
 
 ### Run dialog
+
 The run dialog allows for running the simulation from the GUI. The following options can be changed in this
 dialog:
 
@@ -245,31 +246,39 @@ dialog:
 The GUI supports running both locally as well as submitting to a queue.
 
 #### Run Local
-To run locally, select the "Run local MFiX executable" tab. Select an executable from the dropdown list or
-click the browse button to specify an executable that is not in the list. Usually the default
-`pymfixsolver` command in PATH should be sufficient. If running a case with UDFs, you need to first build
-a case-specific MFIX as described in the [setup guide](INSTALL.md#building-for-udfs). You may want to build
-your own solver for other reasons, such as specifying various compiler flags to optimize the executable
-for your specific hardware.
+
+To run locally, select the "Run local MFiX executable" tab. Select an executable
+from the dropdown list or click the browse button to specify an executable that
+is not in the list. Usually the default installed solver should be sufficient.
+If running a case with UDFs, you need to first build a case-specific MFIX as
+described in the [setup guide](INSTALL.html#building-custom-mfixsolver). You may
+want to build your own solver for other reasons, such as specifying various
+compiler flags to optimize the executable for your specific hardware.
 
 Click "Run" in the Run dialog to start the simulation.
 
 #### Submit to Queue
-To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS, SLURM), select the "Submit to Queue"
-tab. Select an executable from the dropdown list or click the browse button to specify an executable that is not
-in the list. Next, select a template from the dropdown list or click the browse button to choose a template that is
-not in the dropdown list. Based on the selected template, the widgets in the "queue options" section will update
-automatically. Once the options are specified, click "submit" in the run dialog to submit the job to the queue.
+
+To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS,
+SLURM), select the "Submit to Queue" tab. Select an executable from the dropdown
+list or click the browse button to specify an executable that is not in the
+list. Next, select a template from the dropdown list or click the browse button
+to choose a template that is not in the dropdown list. Based on the selected
+template, the widgets in the "queue options" section will update automatically.
+Once the options are specified, click "submit" in the run dialog to submit the
+job to the queue.
 
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
 
 ## File menu
+
 The file menu allows for opening, creating, copying, and exporting projects as well
 as viewing project meta data, changing settings, and viewing available help
 documentation, including this document.
 
 ### Project Info
+
 Displays metadata about the current project file.
 
 | Label | Description |
@@ -283,6 +292,7 @@ Displays metadata about the current project file.
 | Notes | area where the user can record notes about the project |
 
 ### New
+
 Create a new project file from a template file. The list of templates can be filtered
 by selecting one or more of the following model types:
 
@@ -295,7 +305,6 @@ by selecting one or more of the following model types:
 | ![hybrid](mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
 | ![geometry](mfixgui/icons/geometry.png)   | Cartesian cut-cell (complex) geometry  |
 | ![chemistry](mfixgui/icons/chemistry.png) | Chemistry                              |
-
 
 ### Open
 
@@ -332,7 +341,7 @@ Change settings that affect how the GUI acts.
 ### Help
 
 Shows available documentation (including this document) and tutorial videos
-(if connected to the internet) to help users utilize the features of the GUI.
+(if connected to the internet) demonstrating features of the GUI.
 
 ### About
 

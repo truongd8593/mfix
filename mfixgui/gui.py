@@ -1761,6 +1761,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.handle_reinit()
                 self.job_manager.job.unpause()
         except Exception as e:
+            log.exception('wtf?')
             self.error('handle_run: %s' % str(e))
         self.signal_update_runbuttons.emit('')
 
