@@ -451,12 +451,12 @@ various options for those widgets. The second section is the actual script that 
 
 Variables can be used throughout the template, including with the widgets, and are reference by `${my_variable}`. There are a couple of built in variables including:
 
-| Variable | Description |
-|----------|-------------|
-| SCRIPT   | the path of this script, in the run directory |
-| PROJECT_NAME | the name of the project |
-| JOB_ID | the job id extracted from the submit command |
-| COMMAND | the command that executes mfix |
+| Variable     | Description                                   |
+|--------------|-----------------------------------------------|
+| SCRIPT       | the path of this script, in the run directory |
+| PROJECT_NAME | the name of the project                       |
+| JOB_ID       | the job id extracted from the submit command  |
+| COMMAND      | the command that executes mfix                |
 
 The configuration section starts with `## CONFIG` and ends with `## END CONFIG`. The format follows the `Microsoft Windows INI` format. Sections are defined with a `[section]` header, followed by a collection of `key=value` or `key: value` entries for defining parameters. For example:
 
@@ -472,14 +472,14 @@ long: this value continues
 
 The configuration section has a special section called `[options]` where the following options can be specified:
 
-| Key | Description |
-|-----|-------------|
-| name | name of the template, this is displayed in the template drop-down box in the gui |
-| job_id_regex | regular expression to extract the job id from the output of the submit command |
-| status_regex | regular expression to extract the job status from the status command |
-| submit | the submission command |
-| delete | the job cancel or delete command |
-| status | the job status command |
+| Key          | Description                                                                      |
+|--------------|----------------------------------------------------------------------------------|
+| name         | name of the template, this is displayed in the template drop-down box in the gui |
+| job_id_regex | regular expression to extract the job id from the output of the submit command   |
+| status_regex | regular expression to extract the job status from the status command             |
+| submit       | the submission command                                                           |
+| delete       | the job cancel or delete command                                                 |
+| status       | the job status command                                                           |
 
 An example of values that work with Grid Engine:
 
@@ -500,15 +500,15 @@ To define a new variable and widget to edit that variable in the GUI, create a n
 
 The widget and options for that widget can then be selected by specifying various parameters including:
 
-| Parameter | Description | Values |
-|-----------|-------------|--------|
-| widget | the widget to be used | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox`
-| label | text to be placed beside the widget | `any string`
-| value | default value | a value such as `1`, `10.3`, `True`, `some text`
-| items | list of items for the combobox | items separated by `|`, `one|2|three`
-| help | text to be displayed in the tooltip for that widget | `this widget does this`
-| true | value to be returned if a checkbox is checked | a value such as `1`, `10.3`, `True`, `some text`
-| false | value to be returned if a checkbox is un-checked | a value such as `1`, `10.3`, `True`, `some text`
+| Parameter | Description                                         | Values                                                         |         |   |        |
+|-----------|-----------------------------------------------------|----------------------------------------------------------------|---------|---|--------|
+| widget    | the widget to be used                               | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox` |         |   |        |
+| label     | text to be placed beside the widget                 | `any string`                                                   |         |   |        |
+| value     | default value                                       | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
+| items     | list of items for the combobox                      | items separated by `                                           | `, `one | 2 | three` |
+| help      | text to be displayed in the tooltip for that widget | `this widget does this`                                        |         |   |        |
+| true      | value to be returned if a checkbox is checked       | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
+| false     | value to be returned if a checkbox is un-checked    | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
 
 An example defining a combo box:
 
