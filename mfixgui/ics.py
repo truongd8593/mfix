@@ -81,7 +81,6 @@ class ICS(object):
         self.add_tooltip(widget, key)
 
 
-
     def handle_ic_p_star(self, widget, data, args):
         if not self.ics_current_indices:
             return
