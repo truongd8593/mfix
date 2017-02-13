@@ -474,12 +474,51 @@ a polydata object using the sample implicit filter.
 > segfaults in vtk.
 
 ### Mesh
+The Mesh pane allows for the specification of the background mesh, add/remove
+control points in the x, y, and z directions as well as change various
+cut-cell tolerances.
 
- - Background
-Specify control points (location, cells, stretch)
- - Mesher
-•	Specify remove small cells tolerances
-•	Specify snap tolerances
+#### Background Mesh
+On the Background sub-pane, a uniform mesh can be
+specified by entering the numner of cells in the x, y, and z directions. Control
+points can be added by pressing the ![add](mfixgui/icons/add.png) button. Once a
+control point ha sbeen added, the position, numner of cells, stretch, first and
+last parameters can be changed. A control point can be split evenly by
+`right-click` on the control point to be split and selecting split. This
+operation will create a new control point at the midpoint beteen the previous
+control point and the selected control point, divind the cells evenly between
+the two. Control points can be removed by pressing the
+![remove](mfixgui/icons/remove.png) button.
+
+The stretch parameter is a value that will apply a non-unifrom grid spacing to
+the cells. The value is defined as ${Last Width} \over {First Width}$. a value
+larger than 1 stretches the grid as x increases, while a value smaller than one
+compresses the grid as x increases. A value of 1 will keep the spacing uniform.
+
+The first and last values allow the specification of the first and last widths,
+the other cell widths adjust accordingly. If a negative value is specified for
+first, the last width from the previous grid segment is copied. If a negative
+value is specified, the first width from the next segment is copied.
+
+#### Mesher
+The Mesher sub-pane exposes options to adjust the cut-cell mesher. These options
+include:
+
+| Option | Description |
+|--------|-------------|
+| External flow | select internal or external flow. Note: this depends on which
+way the normals are pointing on the stl file. If they are pointing out of the
+geometry, then the text will be correct. |
+| Small cell tolerance | tolerance to detect, and remove small cells |
+| Small area tolerance | tolerance to detect, and remove cells with small faces |
+| Merge tolerance | tolerance used to merge duplicate nodes |
+| Snap tolerance | tolerance to move an intersection point to an exsiting cell corner |
+| Allocation Factor | factor used in allocation of cut-cell arrays |
+| Maximum iterations | maximum number of iterations used to find intersection points |
+| Intersection tolerance | tolerance used to find intersection of background mesh and stl triangles |
+| Facet angle tolerance | ignore stl facets that have an angle less than this tolerance |
+| Dot product tolerance | tolerence used to deterine if a point lies in a facet |
+| Max facets per cell | maximum number of facets allowed in a cell |
 
 
 ### Regions
