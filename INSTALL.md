@@ -56,7 +56,7 @@ Download the [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mf
 
 If you ever want to uninstall MFIX:
 ```shell
-> pip uninstall mfixgui
+> pip uninstall mfix
 ```
 
 ## macOS
@@ -76,7 +76,7 @@ Download the [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix
 
 If you ever want to uninstall MFIX:
 ```shell
-> pip uninstall mfixgui
+> pip uninstall mfix
 ```
 
 ## Windows
@@ -100,7 +100,7 @@ C:\> pip install mfix-17.1-cp27-cp27m-win_amd64.whl
 
 If you ever want to uninstall MFIX:
 ```shell
-C:\> pip uninstall mfixgui
+C:\> pip uninstall mfix
 ```
 
 # Building MFIX
@@ -141,14 +141,18 @@ Install numpy with:
 > conda install numpy==1.11.3
 ```
 
-Now that the prerequisites are installed, build MFIX with:
+Now that the prerequisites are installed, you can build and install MFIX with:
 
 ```shell
 > tar xzf mfix-17.1.tar.gz
 > cd mfix-17.1
-> python setup.py bdist_wheel
+> python setup.py install
 ```
 
+If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+```shell
+> python setup.py install --user
+```
 
 ## macOS
 
@@ -171,15 +175,19 @@ Now that the prerequisites are installed, build MFIX with the following command 
 ```shell
 > tar xzf mfix-17.1.tar.gz
 > cd mfix-17.1
-> python setup.py bdist_wheel
+> python setup.py install
 ```
 
+If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+```shell
+> python setup.py install --user
+```
 
 ## Windows
 
 Download and install Anaconda (as described in [Installing MFIX](#installing-mfix).)
 
-MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way to install MFIX build dependencies. The MSYS2 environment can be installed from anaconda
+MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way to install MFIX build dependencies. The MSYS2 environment can be installed from Anaconda:
 ```shell
 > conda install numpy==1.11.3
 > conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
@@ -189,9 +197,13 @@ Now that the prerequisites are installed, build MFIX with the following command 
 ```shell
 C:\> tar xzf mfix-17.1.tar.gz
 C:\> cd mfix-17.1
-C:\> python setup.py bdist_wheel
+C:\> python setup.py install
 ```
 
+If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+```shell
+C:\> python setup.py install --user
+```
 
 # Building for UDFs
 
