@@ -34,7 +34,7 @@ rm -f TFM04.*
 ./mfixsolver Discretize=9*9
 rm -f TFM04.*
 
-rm ./mfix
+rm ./mfixsolver
 
 echo "******** Done."
 

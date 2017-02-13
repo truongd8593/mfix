@@ -425,5 +425,5 @@ mfix.dat    mfix
 Finally, the simulation is started by entering:
 
 ```shell
-> ./mfix
+> ./mfixsolver
 ```
