@@ -19,8 +19,26 @@ For information on running MFIX, please see the user guide: [USER_GUIDE.md](USER
 
 - If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix)
 - If you want to build and install MFIX from source , see [Building MFIX](#building-mfix)
-- If you want to run the command line version of MFIX from previous versions, see [Building MFIX Solver](#building-mfix-solver)
+- If you want to run the command line version of MFIX from previous versions,
 
+### Ways to run the MFIX
+
+1) From the GUI, with default interactive solver (run, pause, stop simulation,
+the GUI receives info from the solver). This will use the mfixsolver Python
+library installed with the package. Only the location of pymfix needs to be
+defined in the GUI.
+
+1) From the GUI, with user interactive solver (run, pause, stop simulation).
+Here you use a source distribution of MFIX to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located in the project directory.
+When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you have just built.
+
+1) From the GUI, with user non-interactive mfixsolver executable (cannot pause or stop
+simulation, nor receive info from solver). The solver is built
+from [Building MFIX Solver](#building-mfixsolver)
+
+1) From the command line with a custom mfixsolver executable, not using the GUI.
+This is the same as in previous MFIX releases. The solver is built
+from [Building MFIX Solver](#building-mfixsolver)
 
 # Installing MFIX
 
@@ -205,13 +223,15 @@ If you do not have permission to install to your system Python (unlikely if you 
 C:\> python setup.py install --user
 ```
 
-# Building for UDFs
+# Building custom mfixsolver
 
-When running cases with User Defined Files (UDFs), it is necessary to build a separate mfixsolver extension module for that case.
+For some cases, you may want to use a custom mfixsolver. For instance, with when
+running cases with User Defined Files (UDFs), it is necessary to build a
+separate mfixsolver extension module for that case.
 
-This requires building from a source distribution of MFIX ([Building MFIX](#building-mfix)), not installed from a binary distribution.
+This requires downloading a source distribution of MFIX ([Building MFIX](#building-mfix)).
 
-Assume the source distribution is installed to `MFIX_HOME`.
+Assume the source distribution tarball is extracted to `MFIX_HOME`.
 
 ```shell
 > cd my_example_case
@@ -223,10 +243,14 @@ usr0.f   write_usr0.f
 mfixsolver.so
 ```
 
+<!-- FIXME: mention mfixsolver.so vs mfixsolver.pyd -->
+
+When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you have just built.
+
 When running `pymfix` from `mfixgui`, the case-specific MFIX solver will override the default mfixsolver implementation.
 
 
-#	Building and Running MFIX command-line solver
+#	Building mfixsolver
 
 If you are using the MFIX GUI, this section is not needed. However, you may want
 to use the command-line version of MFIX (same as in previous versions) if you do
