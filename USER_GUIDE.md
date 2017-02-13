@@ -232,6 +232,7 @@ dialog:
  $NODESI \times NODESJ \times NODESK = n$ where $n$ is the number of MPI processes running. If not using MPI, $NODESI=NODESJ=NODESK=1$.
 
 The GUI supports running both locally as well as submitting to a queue.
+
 #### Run Local
 To run locally, select the "Run local MFiX executable" tab. Select an executable from the dropdown list or
 click the browse button to specify an executable that is not in the list. Usually the default
@@ -239,7 +240,7 @@ click the browse button to specify an executable that is not in the list. Usuall
 a case-specific MFIX as described in the [setup guide](INSTALL.md#building-for-udfs). You may want to build
 your own solver for other reasons, such as specifing various compiler flags to optimize the executable
 for your specific hardware.
- 
+
 Click "Run" in the Run dialog to start the simulation.
 
 #### Submit to Queue
@@ -300,7 +301,7 @@ project is then opened.
 
 ### Export Project
 
-Export the current project to a new directory and/or as a new filename. 
+Export the current project to a new directory and/or as a new filename.
 
 ### Settings
 
