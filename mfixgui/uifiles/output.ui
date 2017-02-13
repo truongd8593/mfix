@@ -536,7 +536,7 @@ QPushButton:checked {
                 <item>
                  <widget class="QToolButton" name="toolbutton_add">
                   <property name="toolTip">
-                   <string>Define new VTK output over one or more regions</string>
+                   <string>Define new VTK output region</string>
                   </property>
                   <property name="text">
                    <string>Add</string>

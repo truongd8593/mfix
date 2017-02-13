@@ -101,7 +101,7 @@
             <item>
              <widget class="QToolButton" name="toolbutton_add">
               <property name="toolTip">
-               <string>Define new point source over one or more regions</string>
+               <string>Define new internal surface over one or more regions</string>
               </property>
               <property name="text">
                <string>Add</string>
