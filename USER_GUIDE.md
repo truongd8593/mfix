@@ -272,15 +272,15 @@ documentation, including this document.
 ### Project Info
 Displays metadata about the current project file.
 
-| Label | Description |
-|-------|-------------|
-| Project Version | a version that is increased by 1 everytime the project is saved |
-| Created with MFiX Version | the version of MFiX that the project was created with |
-| Author | the user that created the project |
-| Modified By | list of users that edited the project |
-| Last Modified | the date that the project was last modified |
-| Created | the date the project was created |
-| Notes | area where the user can record notes about the project |
+| Label                     | Description                                                     |
+|---------------------------|-----------------------------------------------------------------|
+| Project Version           | a version that is increased by 1 everytime the project is saved |
+| Created with MFiX Version | the version of MFiX that the project was created with           |
+| Author                    | the user that created the project                               |
+| Modified By               | list of users that edited the project                           |
+| Last Modified             | the date that the project was last modified                     |
+| Created                   | the date the project was created                                |
+| Notes                     | area where the user can record notes about the project          |
 
 ### New
 Create a new project file from a template file. The list of templates can be filtered
@@ -439,22 +439,22 @@ filter will be applied to, next pressing the filter icon
 and finally, selecting a filter from the filter menu. The filter options can be
 edited in the parameter section. The following filters are included:
 
-| Filter | Description | vtk class |
-|--------|-------------|------------|
-| sample implicit | converts an implicit function to polydata | vtkSampleFunction |
-| transform | rotate, scale, translate polydata | vtkTransformPolyDataFilter |
-| clean | merge duplicate points and remove unused points and degenerate cells | vtkCleanPolyData |
-| fill holes | fill holes | vtkFillHolesFilter |
-| triangle | make sure all polys are triangles | vtkTriangleFilter |
-| decimate | reduce the number of triangles | vtkDecimatePro |
-| quadric decimation | reduce the number of triangles | vtkQuadricDecimation |
-| quadric clustering | reduce the number of triangles | vtkQuadricClustering |
-| linear subdivision | subdivide based on a linear scheme | vtkLinearSubdivisionFilter |
-| loop subdivision | subdivide based on the Loop scheme | vtkLoopSubdivisionFilter |
-| butterfly subdivision | subdivide based on 8-point butterfly scheme | vtkButterflySubdivisionFilter |
-| smooth | move points based on Laplacian smoothing | vtkSmoothPolyDataFilter |
-| windowed sinc | mve points based on a windowed sinc function interpolation kernel| vtkWindowedSincPolyDataFilter |
-| reverse sense | reverse order and/or normals of triangles | vtkReverseSense |
+| Filter                | Description                                                          | vtk class                     |
+|-----------------------|----------------------------------------------------------------------|-------------------------------|
+| sample implicit       | converts an implicit function to polydata                            | vtkSampleFunction             |
+| transform             | rotate, scale, translate polydata                                    | vtkTransformPolyDataFilter    |
+| clean                 | merge duplicate points and remove unused points and degenerate cells | vtkCleanPolyData              |
+| fill holes            | fill holes                                                           | vtkFillHolesFilter            |
+| triangle              | make sure all polys are triangles                                    | vtkTriangleFilter             |
+| decimate              | reduce the number of triangles                                       | vtkDecimatePro                |
+| quadric decimation    | reduce the number of triangles                                       | vtkQuadricDecimation          |
+| quadric clustering    | reduce the number of triangles                                       | vtkQuadricClustering          |
+| linear subdivision    | subdivide based on a linear scheme                                   | vtkLinearSubdivisionFilter    |
+| loop subdivision      | subdivide based on the Loop scheme                                   | vtkLoopSubdivisionFilter      |
+| butterfly subdivision | subdivide based on 8-point butterfly scheme                          | vtkButterflySubdivisionFilter |
+| smooth                | move points based on Laplacian smoothing                             | vtkSmoothPolyDataFilter       |
+| windowed sinc         | move points based on a windowed sinc function interpolation kernel   | vtkWindowedSincPolyDataFilter |
+| reverse sense         | reverse order and/or normals of triangles                            | vtkReverseSense               |
 
 
 #### Wizards
@@ -467,7 +467,7 @@ positions. Random rotations can also be applied with the wizard.
 #### Boolean Operations
 Boolean operations can be performed with geomtry objects of the same type
 (implicit, polydata). Boolean operations can not be perfromed between polydata
-and implicit geometry types. The implict object needs to be first converted to
+and implicit geometry types. The implicit object needs to be first converted to
 a polydata object using the sample implicit filter.
 
 > Note: boolean operation between two polydata objects can crash the GUI due to
@@ -482,15 +482,15 @@ cut-cell tolerances.
 On the Background sub-pane, a uniform mesh can be
 specified by entering the numner of cells in the x, y, and z directions. Control
 points can be added by pressing the ![add](mfixgui/icons/add.png) button. Once a
-control point ha sbeen added, the position, numner of cells, stretch, first and
+control point has been added, the position, numner of cells, stretch, first and
 last parameters can be changed. A control point can be split evenly by
 `right-click` on the control point to be split and selecting split. This
-operation will create a new control point at the midpoint beteen the previous
-control point and the selected control point, divind the cells evenly between
+operation will create a new control point at the midpoint between the previous
+control point and the selected control point, dividing the cells evenly between
 the two. Control points can be removed by pressing the
 ![remove](mfixgui/icons/remove.png) button.
 
-The stretch parameter is a value that will apply a non-unifrom grid spacing to
+The stretch parameter is a value that will apply a non-uniform grid spacing to
 the cells. The value is defined as ${Last Width} \over {First Width}$. a value
 larger than 1 stretches the grid as x increases, while a value smaller than one
 compresses the grid as x increases. A value of 1 will keep the spacing uniform.
@@ -504,19 +504,19 @@ value is specified, the first width from the next segment is copied.
 The Mesher sub-pane exposes options to adjust the cut-cell mesher. These options
 include:
 
-| Option | Description |
-|--------|-------------|
-| External flow | select internal or external flow. Note: this depends on which way the normals are pointing on the stl file. If they are pointing out of the geometry, then the text will be correct. |
-| Small cell tolerance | tolerance to detect, and remove small cells |
-| Small area tolerance | tolerance to detect, and remove cells with small faces |
-| Merge tolerance | tolerance used to merge duplicate nodes |
-| Snap tolerance | tolerance to move an intersection point to an exsiting cell corner |
-| Allocation Factor | factor used in allocation of cut-cell arrays |
-| Maximum iterations | maximum number of iterations used to find intersection points |
-| Intersection tolerance | tolerance used to find intersection of background mesh and stl triangles |
-| Facet angle tolerance | ignore stl facets that have an angle less than this tolerance |
-| Dot product tolerance | tolerence used to deterine if a point lies in a facet |
-| Max facets per cell | maximum number of facets allowed in a cell |
+| Option                 | Description                                                                                                                                                                          |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| External flow          | select internal or external flow. Note: this depends on which way the normals are pointing on the stl file. If they are pointing out of the geometry, then the text will be correct. |
+| Small cell tolerance   | tolerance to detect, and remove small cells                                                                                                                                          |
+| Small area tolerance   | tolerance to detect, and remove cells with small faces                                                                                                                               |
+| Merge tolerance        | tolerance used to merge duplicate nodes                                                                                                                                              |
+| Snap tolerance         | tolerance to move an intersection point to an existing cell corner                                                                                                                   |
+| Allocation Factor      | factor used in allocation of cut-cell arrays                                                                                                                                         |
+| Maximum iterations     | maximum number of iterations used to find intersection points                                                                                                                        |
+| Intersection tolerance | tolerance used to find intersection of background mesh and stl triangles                                                                                                             |
+| Facet angle tolerance  | ignore stl facets that have an angle less than this tolerance                                                                                                                        |
+| Dot product tolerance  | tolerance used to determine if a point lies in a facet                                                                                                                               |
+| Max facets per cell    | maximum number of facets allowed in a cell                                                                                                                                           |
 
 
 ### Regions
