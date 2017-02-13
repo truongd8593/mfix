@@ -161,8 +161,8 @@ class ICS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         and (shape == 'box') or (no_k and shape=='XY-plane'))
-
+                         and (shape == 'box'
+                              or (no_k and shape=='XY-plane')))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
