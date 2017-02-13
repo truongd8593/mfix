@@ -251,7 +251,7 @@ not in the dropdown list. Based on the selected template, the widgets in the "qu
 automatically. Once the options are specified, click "submit" in the run dialog to submit the job to the queue.
 
 Custom queue scripts are supported. The format for this script is described in the
-[Queue Script](#queue-templates) section.
+[Queue Templates](#queue-templates) section.
 
 ## File menu
 The file menu allows for opening, creating, copying, and exporting projects as well
@@ -441,3 +441,111 @@ command from the `mfixgui`
 
 You may still want to run the GUI if you do not have Python on your platform, or
 if you want to use features not yet supported by the GUI.
+
+# Appendix
+
+## Queue Templates
+Custom queue templates allow users to customize the functionality of the GUI for their specific system. Queue templates
+included with the source can be found in the `MFIX_HOME\queue_templates` directory. Queue templates are files that contain two sections. The first section is the configuration section that tells the GUI what widgets to display as well as
+various options for those widgets. The second section is the actual script that is executed.
+
+Variables can be used throughout the template, including with the widgets, and are reference by `${my_variable}`. There are a couple of built in variables including:
+
+| Variable | Description |
+|----------|-------------|
+| SCRIPT   | the path of this script, in the run directory |
+| PROJECT_NAME | the name of the project |
+| JOB_ID | the job id extracted from the submit command |
+| COMMAND | the command that executes mfix |
+
+The configuration section starts with `## CONFIG` and ends with `## END CONFIG`. The format follows the `Microsoft Windows INI` format. Sections are defined with a `[section]` header, followed by a collection of `key=value` or `key: value` entries for defining parameters. For example:
+
+```
+## CONFIG
+[My Section]
+foodir: %(dir)s/whatever
+dir=frob
+long: this value continues
+   in the next line
+## END CONFIG
+```
+
+The configuration section has a special section called `[options]` where the following options can be specified:
+
+| Key | Description |
+|-----|-------------|
+| name | name of the template, this is displayed in the template drop-down box in the gui |
+| job_id_regex | regular expression to extract the job id from the output of the submit command |
+| status_regex | regular expression to extract the job status from the status command |
+| submit | the submission command |
+| delete | the job cancel or delete command |
+| status | the job status command |
+
+An example of values that work with Grid Engine:
+
+```
+[options]
+name: Joule
+job_id_regex: (\d+)
+status_regex: ([rqw])
+submit: qsub ${SCRIPT}
+delete: qdel ${JOB_ID}
+status: qstat -j ${JOB_ID}
+```
+To define a new variable and widget to edit that variable in the GUI, create a new section:
+
+```
+[my_value]
+```
+
+The widget and options for that widget can then be selected by specifying various paraemters including:
+
+| Parameter | Description | Values |
+|-----------|-------------|--------|
+| widget | the widget to be used | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox`
+| label | text to be placed beside the widget | `any string`
+| value | default value | a value such as `1`, `10.3`, `True`, `some text`
+| items | list of items for the combobox | items seporated by `|`, `one|2|three`
+| help | text to be displayed in the tooltip for that widget | `this widget does this`
+| true | value to be returned if a checkbox is checked | a value such as `1`, `10.3`, `True`, `some text`
+| false | value to be returned if a chceckbox is un-checked | a value such as `1`, `10.3`, `True`, `some text`
+
+An example defining a combo box:
+
+```
+[my_email]
+widget: combobox
+label: email
+value: you@mail.com
+items: you@mail.com|
+       me@mail.net|
+       hi@mail.org
+help: email to send notifications to
+```
+
+The value of this widget can now be referenced throughout the template with `${my_email}`
+
+The rest of the configuration file, outside of the  `## CONFIG` to `## END CONFIG` section is the script that needs to
+be executed to submit a job to your specific queue system. For example, with Grid Engine on Joule, the following script
+specifies the job name, job type, cores, and queue as well as loads the required modules and finally runs mfix with
+`${COMMAND}`.
+
+```
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N ${JOB_NAME}
+##
+## Number of cores to request
+#$ -pe ${JOB_TYPE} ${CORES}
+##
+## Queue Name
+#$ -q ${QUEUE}
+##
+
+##Load Modules
+module load ${MODULES}
+##Run the job
+${COMMAND}
+```
