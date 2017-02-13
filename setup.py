@@ -106,7 +106,7 @@ class BuildDocCommand(setuptools.Command):
 
         import pypandoc
 
-        pandoc_args = ['-s', '--toc', '-N']
+        pandoc_args = ['-s', '--toc', '-N', '-m']
 
         pypandoc.convert_file('INSTALL.md', 'html',
                               outputfile='INSTALL.html',
