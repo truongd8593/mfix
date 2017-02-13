@@ -232,7 +232,6 @@ class BCS(object):
         for (name,data) in self.bcs_region_dict.items():
             shape = data.get('type', '---')
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name)  # allow region sharing
                          and (shape in ('STL', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
@@ -666,8 +665,7 @@ class BCS(object):
         #     # then we have no input tabs on the BCs pane, so disable it completely
         #     regions = self.ui.regions.get_region_dict()
         #     nregions = sum(1 for (name, r) in regions.items()
-        #                    if not self.check_region_in_use(name)
-        #                    and (r.get('type')=='STL' or 'plane' in r.get('type')))
+        #                    if (r.get('type')=='STL' or 'plane' in r.get('type')))
         #     disabled = (nregions==0
         #                 or (self.fluid_solver_disabled
         #                     and self.project.get_value('nscalar',default=0)==0

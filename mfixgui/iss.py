@@ -88,7 +88,6 @@ class ISS(object):
             # No region can define more than one internal surface.
 
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape=='box' or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
@@ -341,8 +340,8 @@ class ISS(object):
             # then we have no input tabs on the ISs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
-                           if not self.check_region_in_use(name)
-                           and (r.get('type')=='box' or 'plane' in r.get('type')))
+                           if (r.get('type')=='box'
+                               or 'plane' in r.get('type')))
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and len(self.solids)==0))

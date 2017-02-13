@@ -161,7 +161,6 @@ class ICS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape == 'box') or (no_k and shape=='XY-plane'))
 
             row = (name, shape, available)
@@ -366,8 +365,7 @@ class ICS(object):
             # then we have no input tabs on the ICs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
-                           if not self.check_region_in_use(name)
-                           and r.get('type')=='box')
+                           if r.get('type')=='box')
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0

@@ -68,7 +68,6 @@ class PSS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name) # allow region sharing
                          and (shape in ('point', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
@@ -270,8 +269,7 @@ class PSS(object):
             # PS regions can be points, planes, or volumes (not STLs)
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
-                           if not self.check_region_in_use(name)
-                           and (r.get('type')  in ('point', 'box')
+                           if (r.get('type')  in ('point', 'box')
                                 or 'plane' in r.get('type','---')))
             #At this time, only TFM solids can be defined with point sources.
             tfm_solids = [s for (i,s) in enumerate(self.solids,1)
