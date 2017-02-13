@@ -15,13 +15,13 @@ be processed.
 
 Potential users may find reviewing the Frequently Asked Questions section of the MFIX website useful before downloading the code.
 
-For information on running MFIX, please see the user guide: [USER_GUIDE.md](USER_GUIDE.md)
+For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
 - If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix)
 - If you want to build and install MFIX from source , see [Building MFIX](#building-mfix)
 - If you want to run the command line version of MFIX from previous versions,
 
-### Ways to run the MFIX
+## Ways to run the MFIX
 
 1) From the GUI, with default interactive solver (run, pause, stop simulation,
 the GUI receives info from the solver). This will use the mfixsolver Python

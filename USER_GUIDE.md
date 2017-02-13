@@ -3,7 +3,7 @@
 This document explains how to run MFIX 17.1, using either the GUI or the command line.
 
 This document assumes MFIX is already installed. For information on building or
-installing MFIX, please see the setup guide: [INSTALL.md](INSTALL.md)
+installing MFIX, please see the setup guide: [INSTALL.html](INSTALL.html)
 
 Everything in this document applies to each platform (Linux, Mac, Windows)
 unless otherwise noted.
@@ -500,15 +500,15 @@ To define a new variable and widget to edit that variable in the GUI, create a n
 
 The widget and options for that widget can then be selected by specifying various parameters including:
 
-| Parameter | Description                                         | Values                                                         |         |   |        |
-|-----------|-----------------------------------------------------|----------------------------------------------------------------|---------|---|--------|
-| widget    | the widget to be used                               | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox` |         |   |        |
-| label     | text to be placed beside the widget                 | `any string`                                                   |         |   |        |
-| value     | default value                                       | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
-| items     | list of items for the combobox                      | items separated by `                                           | `, `one | 2 | three` |
-| help      | text to be displayed in the tooltip for that widget | `this widget does this`                                        |         |   |        |
-| true      | value to be returned if a checkbox is checked       | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
-| false     | value to be returned if a checkbox is un-checked    | a value such as `1`, `10.3`, `True`, `some text`               |         |   |        |
+| Parameter | Description                                         | Values                                                         |
+|-----------|-----------------------------------------------------|----------------------------------------------------------------|
+| widget    | the widget to be used                               | `lineedit`, `combobox`, `checkbox`, `spinbox`, `doublespinbox` |
+| label     | text to be placed beside the widget                 | `any string`                                                   |
+| value     | default value                                       | a value such as `1`, `10.3`, `True`, `some text`               |
+| items     | list of items for the combobox                      | items delimited by &#124; character                            |
+| help      | text to be displayed in the tooltip for that widget | `this widget does this`                                        |
+| true      | value to be returned if a checkbox is checked       | a value such as `1`, `10.3`, `True`, `some text`               |
+| false     | value to be returned if a checkbox is un-checked    | a value such as `1`, `10.3`, `True`, `some text`               |
 
 An example defining a combo box:
 
