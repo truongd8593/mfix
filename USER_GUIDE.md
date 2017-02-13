@@ -109,13 +109,15 @@ Displays metadata about the current project file.
 
 Create a new project file from a list of templates. The list of templates can be filtered by:
 
-![single](mfixgui/icons/single.png)
-![tfm](mfixgui/icons/tfm.png)
-![pic](mfixgui/icons/pic.png)
-![dem](mfixgui/icons/dem.png)
-![hybrid](mfixgui/icons/hybrid.png)
-![geometry](mfixgui/icons/geometry.png)
-![chemistry](mfixgui/icons/chemistry.png)
+|                                           |                                 |
+|-------------------------------------------|---------------------------------|
+| ![single](mfixgui/icons/single.png)       | single phase                    |
+| ![tfm](mfixgui/icons/tfm.png)             | two fluid model                 |
+| ![pic](mfixgui/icons/pic.png)             | particle in cell                |
+| ![dem](mfixgui/icons/dem.png)             | discrete element model          |
+| ![hybrid](mfixgui/icons/hybrid.png)       | hybrid two fluid and DEM model  |
+| ![geometry](mfixgui/icons/geometry.png)   | template has cartesian geometry |
+| ![chemistry](mfixgui/icons/chemistry.png) | template has chemistry          |
 
 
 ### Open
