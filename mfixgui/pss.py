@@ -81,7 +81,7 @@ class PSS(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('point source')
+        rp.popup('Select region(s) for point source')
 
 
     def pss_cancel_add(self):

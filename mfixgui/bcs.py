@@ -254,7 +254,7 @@ class BCS(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('boundary conditions')
+        rp.popup('Select region(s) for boundary conditions')
 
 
     def bcs_cancel_add(self):

@@ -320,7 +320,7 @@ class Output(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('VTK output') # repopulates combobox
+        rp.popup('Select region for VTK output')
         set_item_enabled(get_combobox_item(rp.combobox,1), enabled)
 
 

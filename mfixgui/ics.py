@@ -174,7 +174,7 @@ class ICS(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('initial conditions')
+        rp.popup('Select region(s) for initial conditions')
 
 
     def ics_cancel_add(self):

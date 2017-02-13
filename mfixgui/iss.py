@@ -100,7 +100,7 @@ class ISS(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('internal surface')
+        rp.popup('Select region(s) for internal surface')
 
 
     def iss_cancel_add(self):
