@@ -15,8 +15,7 @@ build:src:
   script:
     - python setup.py sdist
   stage: build:src
-  only:
-    - develop
+  except: gui
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -31,8 +30,7 @@ build:linux:
   script:
     - python setup.py build_mfix
   stage: build:libmfix
-  only:
-    - develop
+  except: gui
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -46,8 +44,7 @@ build:mac:
   script:
     - python3.5 setup.py build_mfix
   stage: build:libmfix
-  only:
-    - develop
+  except: gui
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -60,9 +57,8 @@ build:mac:
 build:windows:
   script:
     - python setup.py build_mfix
-  only:
-    - develop
   stage: build:libmfix
+  except: gui
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -79,8 +75,7 @@ build_linux_py2:
   script:
     - python2.7 setup.py bdist_wheel
   stage: build:py2
-  only:
-    - develop
+  except: gui
   dependencies:
     - build:linux
   artifacts:
@@ -88,8 +83,6 @@ build_linux_py2:
     expire_in: 1 week
     paths:
     - dist/mfix*.whl
-  only:
-    - branches
   tags:
     - linux
 
@@ -97,8 +90,7 @@ build_mac_py2:
   script:
     - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
   stage: build:py2
-  only:
-    - develop
+  except: gui
   dependencies:
     - build:mac
   artifacts:
@@ -106,8 +98,6 @@ build_mac_py2:
     expire_in: 1 week
     paths:
     - dist/mfix*.whl
-  only:
-    - branches
   tags:
     - mac
 
@@ -115,8 +105,7 @@ build_windows_py2:
   script:
     - python2.7 setup.py bdist_wheel
   stage: build:py2
-  only:
-    - develop
+  except: gui
   dependencies:
     - build:windows
   artifacts:
@@ -124,8 +113,6 @@ build_windows_py2:
     expire_in: 1 week
     paths:
     - dist/mfix*.whl
-  only:
-    - branches
   tags:
     - windows
 
@@ -136,8 +123,7 @@ build_linux_py3:
   script:
     - python3.5 setup.py bdist_wheel
   stage: build:py3
-  only:
-    - develop
+  except: gui
   dependencies:
     - build:linux
   artifacts:
@@ -145,8 +131,6 @@ build_linux_py3:
     expire_in: 1 week
     paths:
     - dist/mfix*.whl
-  only:
-    - branches
   tags:
     - linux
 
@@ -154,8 +138,7 @@ build_mac_py3:
   script:
     - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
   stage: build:py3
-  only:
-    - develop
+  except: gui
   dependencies:
     - build:mac
   artifacts:
@@ -163,8 +146,6 @@ build_mac_py3:
     expire_in: 1 week
     paths:
     - dist/mfix*.whl
-  only:
-    - branches
   tags:
     - mac
 
@@ -175,11 +156,8 @@ install:linux:py:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*27*.whl --prefix=${PYPATH}
   stage: deploy
-  only:
-    - develop
+  except: gui
   dependencies:
     - build_linux_py2
-  only:
-    - branches
   tags:
     - linux
