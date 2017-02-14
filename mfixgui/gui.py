@@ -1605,8 +1605,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 a = a.split(')')[0]
                 a = [int(x) for x in a.split(',')]
             else:
-                a = None
-            self.unset_keyword(k, a) #TODO FIXME does not weed out malformed keywords
+                k, a = key, None
+            self.unset_keyword(k, a)
 
         resp = buttons[message_box.exec_()].lower()
         if not resp or resp=='ignore': # User bailed out
