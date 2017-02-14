@@ -670,30 +670,70 @@ The Run pane is used to define parameters related to how long the simulation run
 
 ## Visualization window
 
-The visualization window provides a 3D image of the simulation boundary
-condition. The visualization window can also be used to graph live statistics
-about the simulation as it is running.
+The visualization window provides a collection 3D views and 2D plots for
+visualizing the model setup and model outputs. New windows, or tabs, can be
+created by pressing the ![add](mfixgui/icons/add.png) button. Once the tab has
+been added, the type of view can be selected. Tabs can be closed by pressing the
+![close](mfixgui/icons/close.png) button.
 
- - ![overscan](mfixgui/icons/overscan.png)
- - ![xy](mfixgui/icons/xy.png)
- - ![xz](mfixgui/icons/xz.png)
- - ![yz](mfixgui/icons/yz.png)
- - ![perspective](mfixgui/icons/perspective.png)
- - ![c](mfixgui/icons/camera.png)
- - ![v](mfixgui/icons/visibility.png)
+### Model
+
+The Model tab is always present and not closeable. This 3D view shows the setup
+of the simulation including the background mesh, geometry, and regions.
+
+| Icon | Description |
+|------|-------------|
+| ![overscan](mfixgui/icons/overscan.png) | Reset view, make all items visible |
+| ![xy](mfixgui/icons/xy.png) | Change to XY view |
+| ![xz](mfixgui/icons/xz.png) | Change to XZ view |
+| ![yz](mfixgui/icons/yz.png) | Change to YZ View |
+| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
+| ![camera](mfixgui/icons/camera.png) | Save an image of the current view |
+| ![visibility](mfixgui/icons/visibility.png) | Change the visibility and properties of actors |
+
+### Plots
+
+The plots can be used to graph live statistics about the simulation as it is
+running.
+
+### VTK
+
+| Icon | Description |
+|------|-------------|
+| ![overscan](mfixgui/icons/overscan.png) | Reset view, make all items visible |
+| ![xy](mfixgui/icons/xy.png) | Change to XY view |
+| ![xz](mfixgui/icons/xz.png) | Change to XZ view |
+| ![yz](mfixgui/icons/yz.png) | Change to YZ View |
+| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
+| ![camera](mfixgui/icons/camera.png) | Save an image of the current view |
+| ![visibility](mfixgui/icons/visibility.png) | Change the visibility and properties of actors |
+| ![first](mfixgui/icons/first.png) | Go to the first frame |
+| ![back](mfixgui/icons/back.png) | Go back one frame |
+| ![play](mfixgui/icons/play.png) | Play available frames, starting atr the current frame |
+| ![next](mfixgui/icons/next.png) | Go to the next frame |
+| ![last](mfixgui/icons/last.png) | Go to the last frame |
+| ![speed](mfixgui/icons/speed.png) | Change the playback speed, or the amount of time inbetween frames |
 
 ## Terminal window
 
-The terminal window displays the output of the mfixsolver job that would be displayed when running the solver on the command line.
-
-Error messages and warnings are colored in red.
+The terminal window displays the output of the mfixsolver job that would be
+displayed when running the solver on the command line. Error messages and
+warnings, from both the GUI and a running mfixsolver, are displayed and colored
+in red.
 
 Informational messages from the GUI unrelated to the solver are colored in blue.
 
-## Status bar
+## Mode bar
 
- - Modeler
- - Workflow
+The Mode bar allows switching the GUI between various modes including:
+
+ - Modeler, used to setup a simulation
+ - Workflow, future feature to support creation, managment, post processing, and
+ optimization of simulations.
+
+A status bar is also present, showing the current status of the GUI or a running
+simulation, including a progress bar showing the current progress of the
+simulation and elapsed time.
 
 
 # Running MFIX with the command line
@@ -795,11 +835,11 @@ help: email to send notifications to
 
 The value of this widget can now be referenced throughout the template with `${my_email}`
 
-The rest of the configuration file, outside of the `## CONFIG` to `## END
-CONFIG` section is the script that needs to be executed to submit a job to your
-specific queue system. For example, with Grid Engine on Joule, the following
-script specifies the job name, job type, cores, and queue as well as loads the
-required modules and finally runs mfix with `${COMMAND}`.
+The rest of the configuration file, outside of the `## CONFIG` to
+`## END CONFIG` section is the script that needs to be executed to submit a job
+to your specific queue system. For example, with Grid Engine on Joule, the
+following script specifies the job name, job type, cores, and queue as well as
+loads the required modules and finally runs mfix with `${COMMAND}`.
 
 ```
 ## Change into the current working directory
