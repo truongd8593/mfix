@@ -3,6 +3,10 @@
 """The pymfix script starts mfix from Python, with a web server running for
 interactive control of the run."""
 
+from __future__ import print_function
+from functools import wraps
+from timeit import default_timer as timer
+
 import argparse
 import copy
 import json
@@ -13,8 +17,6 @@ import socket
 import string
 import sys
 import tempfile
-from timeit import default_timer as timer
-from functools import wraps
 import threading
 import time
 import traceback
