@@ -165,20 +165,15 @@ Install numpy with:
 > conda install numpy==1.11.3
 ```
 
-Now that the prerequisites are installed, you can build and install MFIX with:
+Now that the prerequisites are installed, build MFIX with:
 
 ```shell
 > tar xzf mfix-17.1.tar.gz
 > cd mfix-17.1
-> python setup.py install
+> python setup.py bdist_wheel
 ```
 
-If you do not have permission to install to your system Python (unlikely if you
-installed Anaconda yourself), install to your home directory with:
-
-```shell
-> python setup.py install --user
-```
+You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
 
 ## macOS
 
@@ -203,15 +198,10 @@ Now that the prerequisites are installed, build MFIX with the following command
 ```shell
 > tar xzf mfix-17.1.tar.gz
 > cd mfix-17.1
-> python setup.py install
+> python setup.py bdist_wheel
 ```
 
-If you do not have permission to install to your system Python (unlikely if you
-installed Anaconda yourself), install to your home directory with:
-
-```shell
-> python setup.py install --user
-```
+You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
 
 ## Windows
 
@@ -240,15 +230,10 @@ Now that the prerequisites are installed, build MFIX with the following command
 ```shell
 C:\> tar xzf mfix-17.1.tar.gz
 C:\> cd mfix-17.1
-C:\> python setup.py install
+C:\> python setup.py bdist_wheel
 ```
 
-If you do not have permission to install to your system Python (unlikely if you
-installed Anaconda yourself), install to your home directory with:
-
-```shell
-C:\> python setup.py install --user
-```
+You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
 
 # Building custom mfixsolver
 
