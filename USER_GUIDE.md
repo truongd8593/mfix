@@ -215,6 +215,11 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 
 ## Main Toolbar
 
+The Main toolbar is always visible and contains the major actions of the GUI.
+This includes opening the File menu, Saving the project, Starting a simulation,
+Pausing a simulation, Stoping a simulation, Reseting the project, and opening
+the parameter dialog.
+
 | Icon                                              | Description                                                               |
 |---------------------------------------------------|---------------------------------------------------------------------------|
 | ![File menu](mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
@@ -225,16 +230,21 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 | ![Rest button](mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
 | ![Parameters button](mfixgui/icons/functions.png) | The Parameters menu allows changing of parameters.                        |
 
-If no MFIX job is currently running, the Start button shows the run dialog.
-If an MFIX job is running, you can pause it with the pause button and un-pause it with the start button.
-You can stop a running MFIX job with the stop button. A stopped job leaves restart (\*.RES) files to resume the simulation.
-Starting a job with \*.RES files present will resume the job where it stopped.
-The Clear button will delete the \*.RES files, and the next time the job is run it starts from the beginning.
+If no MFIX job is currently running, the Start button will open the run dialog
+where settings for job can be changed. The simulation can be started from this
+dialog. If an MFIX job is running, you can pause it with the pause button and
+un-pause it with the start button. You can stop a running MFIX job with the stop
+button. A stopped job leaves restart (\*.RES) and output files to resume the
+simulation. Starting a job by pressing the Start button with \*.RES files
+present will resume the job where it stopped. The Rest button will allow the 
+option to delete the \*.RES files and output files from the project directory.
+This will allow the simulation to start from the begining when the Start button
+is pressed.
 
 ### Run dialog
 
-The run dialog allows for running the simulation from the GUI. The following options can be changed in this
-dialog:
+The run dialog allows for running the simulation from the GUI. The following
+options can be changed in this dialog:
 
  - Threads (number of threads used for OpenMP)
  - NODESI (number divisions in X direction)
@@ -271,10 +281,19 @@ job to the queue.
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
 
+### Parameter Dialog
+
+The parameter dialog allows users to create paramters, or variables, that can
+then be referenced in widgets that support the use of these paraemters. This
+functionality allows user to create relationships among various inputs and
+change the values of multiple items by changing the value of a single parameter.
+In many respects, this is a similar feature that is present in most comercial
+CAD packages.
+
 ## File menu
 
-The file menu allows for opening, creating, copying, and exporting projects as well
-as viewing project meta data, changing settings, and viewing available help
+The file menu allows for opening, creating, copying, and exporting projects as
+well as viewing project meta data, changing settings, and viewing available help
 documentation, including this document.
 
 ### Project Info
@@ -293,13 +312,18 @@ Displays metadata about the current project file.
 
 ### New
 
-Create a new project file from a template file. The list of templates can be filtered
-by selecting one or more of the following model types:
+Create a new project file from a template file. When a template is selected, the
+GUI will ask for a project name and parent directory to save the project to. A
+new directory with the project name will be created in the parent directory. A
+<project_name>.mfx file will be created in that directory by copying the
+contents of the selected template file. Any other files, such as \*.stl files,
+will also be copied if present. The list of templates can be filtered by
+selecting one or more of the following model types:
 
 | Icon                                      | Description                            |
 |-------------------------------------------|----------------------------------------|
 | ![single](mfixgui/icons/single.png)       | Single phase Model                     |
-| ![tfm](mfixgui/icons/tfm.png)             | Two Fluid Model (TFM)                 |
+| ![tfm](mfixgui/icons/tfm.png)             | Two Fluid Model (TFM)                  |
 | ![pic](mfixgui/icons/pic.png)             | Particle in Cell Model (PIC)           |
 | ![dem](mfixgui/icons/dem.png)             | Discrete Element Model (DEM)           |
 | ![hybrid](mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
@@ -311,7 +335,8 @@ by selecting one or more of the following model types:
 Open a existing project. You can import mfix.dat files from previous releases of
 MFiX, but the GUI will save them as a new filename with a \*.mfx extension. The
 GUI also performs a number of conversions, including converting old keywords to
-new keywords and conversion from CGS units to SI units.
+new keywords and conversion from CGS units to SI units. It is strongly suggested
+that the project be checked after this conversion.
 
 ### Save
 
@@ -345,7 +370,8 @@ Shows available documentation (including this document) and tutorial videos
 
 ### About
 
-Displays the version of MFIX and the library dependencies it is using.
+Displays the version of MFIX and the versions of the various dependencies that
+the GUI is using.
 
 ### Quit
 
@@ -355,7 +381,11 @@ running.
 ## Model panes
 
 Each pane in the main window allows editing of different options for an MFIX
-simulation.
+simulation. Panes are ordered following a logical progression of how a
+simulation is created.
+
+> Note: selections on panes may enable or disable widgets based on what input
+> parameters are required or available.
 
 ### Model Setup
 
@@ -541,8 +571,6 @@ creating:
 - [Point Sources](#point-sources)
 - [Outputs](#outputs)
 
-Tool bar:
-
 | Icon                                              | Description                                       |
 |---------------------------------------------------|---------------------------------------------------|
 | ![add](mfixgui/icons/add.png)                     | create a new region                               |
@@ -556,10 +584,27 @@ Tool bar:
 | ![front region](mfixgui/icons/front_region.png)   | create a region on the front side of the domain   |
 | ![back region](mfixgui/icons/back_region.png)     | create a region on the back side of the domain    |
 
+A new region can be created by pressing the ![add](mfixgui/icons/add.png)
+button. Once the region is created, make sure to give the region a descriptive
+name so that it can be refered to later. You can change the color of the region
+by pressing the color icon. This will change the color in the model setup
+view. Next, define extents of the region in the x, y, and z directions. These
+widgets take special parameters, `min` and `max`, that reference the minimum and
+maximum values of the domain, as specified in the [geometry section](#geometry).
+These values will get automatically updated if the extents in the geometry
+section are ever updated. The region type will be infered from the specified
+extents.
 
-•	Specify an alias for easy referencing (e.g., outlet, solids-bed).
-•	Specify region extents (xmin, xmax, ymin, ymax, zmin, zmax )
+If the region needs to be a collection of triangles from the stl file, select
+the Select Facets (STL) checkbox. The selection shape can be changed between a
+box and an ellipsoid. Triangles to fall on the edge of the shape can be sliced
+by selecting the Slice Facets checkbox. The triangle can be further filtered by
+the normal direction be specifing an vector and an deviation angle around that
+vector.
 
+> Note: Once a region is in use, the region can not be deleted and the type can
+> not be cahnged. This is controled by disabiling those widgets. The Used By
+> feild will show what is using the region.
 
 ### Fluid
 
