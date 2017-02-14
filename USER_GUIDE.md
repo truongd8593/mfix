@@ -290,7 +290,29 @@ job to the queue.
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
 
-<img alt="command line" src="doc/media/gui_rundialog_queue.png" style="width:800;height:600" />
+<img alt="run dialog queue submission" src="doc/media/gui_rundialog_queue.png" style="width:800;height:600" />
+
+### Reset Dialog
+
+The Reset dialog allows for optional deleting of output files from the run
+directory. These files include:
+
+| File Type | Wild-card match |
+|-----------|-----------------|
+| Restart | \*.RES |
+| SPx | \*.SP? |
+| VTK | \*.vtp, \*.vtu, \*.pid |
+| Other | \*.OUT, \*.pid, \*.error, \*.e[0-9]\*, \*.pe[0-9]\*, \*.po[0-9]\* |
+
+\*.RES and \*.SPx files have to be removed from the run directory before a
+simulation can be played from the beginning. It is recommended to remove VTK
+files from the run directory as well because they will be over-written.
+
+> Note: If there are restart files present in the run directory, some widgets
+> will be disabled because certain model parameters can not be edited during a
+> resume, or restart state.
+
+<img alt="reset dialog" src="doc/media/gui_reset_dialog.png" style="width:800;height:600" />
 
 ### Parameter Dialog
 
@@ -714,7 +736,8 @@ setup of the simulation including the background mesh, geometry, and regions.
 ### Plots
 
 The plots can be used to graph live statistics about the simulation as it is
-running.
+running. Values such as the time step (dt), number of iterations (nit), and
+the simulated time (time).
 
 <img alt="command line" src="doc/media/gui_plot_dt.png" style="width:800;height:600" />
 
