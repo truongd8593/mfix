@@ -580,8 +580,9 @@ value is specified, the first width from the next segment is copied.
 
 #### Mesher
 
-The Mesher sub-pane exposes options to adjust the cut-cell mesher. These options
-include:
+Currently, meshing of complex geometry is performed at runtime of the
+mfixsolver. The Mesher sub-pane exposes options to adjust the cut-cell mesher.
+These options include:
 
 | Option                 | Description                                                                                                                                                                          |
 |------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -596,7 +597,6 @@ include:
 | Facet angle tolerance  | ignore STL facets that have an angle less than this tolerance                                                                                                                        |
 | Dot product tolerance  | tolerance used to determine if a point lies in a facet                                                                                                                               |
 | Max facets per cell    | maximum number of facets allowed in a cell                                                                                                                                           |
-
 
 ### Regions
 
@@ -629,13 +629,13 @@ view. Next, define extents of the region in the x, y, and z directions. These
 widgets take special parameters, `min` and `max`, that reference the minimum and
 maximum values of the domain, as specified in the [geometry section](#geometry).
 These values will get automatically updated if the extents in the geometry
-section are ever updated. The region type will be infered from the specified
+section are ever updated. The region type will be inferred from the specified
 extents.
 
-If the region needs to be a collection of triangles from the stl file, select
-the Select Facets (STL) checkbox. The selection shape can be changed between a
+If the region needs to be a collection of triangles from the STL file, select
+the Select Facets (STL) check-box. The selection shape can be changed between a
 box and an ellipsoid. Triangles to fall on the edge of the shape can be sliced
-by selecting the Slice Facets checkbox. The triangle can be further filtered by
+by selecting the Slice Facets check-box. The triangle can be further filtered by
 the normal direction be specifying an vector and an deviation angle around that
 vector.
 
@@ -714,12 +714,14 @@ The visualization window provides a collection 3D views and 2D plots for
 visualizing the model setup and model outputs. New windows, or tabs, can be
 created by pressing the ![add](mfixgui/icons/add.png) button. Once the tab has
 been added, the type of view can be selected. Tabs can be closed by pressing the
-![close](mfixgui/icons/close.png) button.
+![close](mfixgui/icons/close.png) button located on the tabs.
 
 ### Model
 
 The Model tab is always present and cannot be closed. This 3D view shows the
 setup of the simulation including the background mesh, geometry, and regions.
+
+The scene can be manipulated with the mouse and the tool-bar buttons:
 
 | Icon                                          | Description                                         |
 |-----------------------------------------------|-----------------------------------------------------|
@@ -731,17 +733,46 @@ setup of the simulation including the background mesh, geometry, and regions.
 | ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                   |
 | ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors      |
 
+The visibility menu allows for the manipulation of how the objects in the scene
+represented including:
+
+- changing the visibility with the ![visibility](mfixgui/icons/visibility.png)
+button
+- changing the representation (wire, solids, edges, and points)
+- changing the color
+- changing the transparency of the objects
+
+
 <img alt="command line" src="doc/media/gui_model_visible_menu.png" style="width:800;height:600" />
 
-### Plots
+### Plot Tab(s)
 
-The plots can be used to graph live statistics about the simulation as it is
-running. Values such as the time step (dt), number of iterations (nit), and
-the simulated time (time).
+The plot tab(s) can be used to graph live statistics about the simulation as it
+is running. Values such as the time step (dt), number of iterations (nit), and
+the simulated time (time) can be plotted. The plot can be manipulated with the
+mouse, and a `right-click` menu provides access to options that can be
+changed as well as export options for saving an image of the plot or exporting
+the data to a text file.
+
+> Note: plotting requires the optinal `pyqtgraph` dependency and a connection to
+> the pymfixsolver
 
 <img alt="command line" src="doc/media/gui_plot_dt.png" style="width:800;height:600" />
 
-### VTK
+### VTK Tab(s)
+
+The VTK tab has been designed to provide a simple way to quickly view results
+from the simulation. For more complex visualization of simulation data, please
+use software, such as Paraview, instead of this simple viewer. The tab
+automatically sets-up VTK pipelines for reading and showing \*.vtu and \*.vtp
+files.
+
+> Note: The directory is automatically searched every second for \*.pvd files.
+> If a \*.pvd file is found, the GUI will read and show the new VTK file if the
+> ![play](mfixgui/icons/play.png) button is pressed.
+
+Simulation results can be "played" as well as manipulated using the following
+tool-bar:
 
 | Icon                                          | Description                                                        |
 |-----------------------------------------------|--------------------------------------------------------------------|
@@ -758,6 +789,21 @@ the simulated time (time).
 | ![next](mfixgui/icons/next.png)               | Go to the next frame                                               |
 | ![last](mfixgui/icons/last.png)               | Go to the last frame                                               |
 | ![speed](mfixgui/icons/speed.png)             | Change the playback speed, or the amount of time in between frames |
+
+The visibility menu allows for the manipulation of how the objects in the scene
+represented including:
+
+- visibility
+- the data array used to color
+- color bars
+- transparency
+
+Further options for the points can be adjusted by clicking the
+![more](mfixgui/icons/right.png) button next to the label including:
+
+- Maximum number of particles to be displayed
+- The mapper (sprites requires VTK version 7.0+)
+- The glyph object
 
 ## Terminal window
 
@@ -779,7 +825,6 @@ The Mode bar allows switching the GUI between various modes including:
 A status bar is also present, showing the current status of the GUI or a running
 simulation, including a progress bar showing the current progress of the
 simulation and elapsed time.
-
 
 # Running MFIX with the command line
 
