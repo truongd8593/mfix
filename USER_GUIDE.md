@@ -217,7 +217,7 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 
 The Main toolbar is always visible and contains the major actions of the GUI.
 This includes opening the File menu, Saving the project, Starting a simulation,
-Pausing a simulation, Stoping a simulation, Reseting the project, and opening
+Pausing a simulation, Stopping a simulation, Resetting the project, and opening
 the parameter dialog.
 
 | Icon                                              | Description                                                               |
@@ -236,9 +236,9 @@ dialog. If an MFIX job is running, you can pause it with the pause button and
 un-pause it with the start button. You can stop a running MFIX job with the stop
 button. A stopped job leaves restart (\*.RES) and output files to resume the
 simulation. Starting a job by pressing the Start button with \*.RES files
-present will resume the job where it stopped. The Rest button will allow the 
+present will resume the job where it stopped. The Rest button will allow the
 option to delete the \*.RES files and output files from the project directory.
-This will allow the simulation to start from the begining when the Start button
+This will allow the simulation to start from the beginning when the Start button
 is pressed.
 
 ### Run dialog
@@ -283,11 +283,11 @@ Custom queue scripts are supported. The format for this script is described in t
 
 ### Parameter Dialog
 
-The parameter dialog allows users to create paramters, or variables, that can
-then be referenced in widgets that support the use of these paraemters. This
+The parameter dialog allows users to create parameters, or variables, that can
+then be referenced in widgets that support the use of these parameters. This
 functionality allows user to create relationships among various inputs and
 change the values of multiple items by changing the value of a single parameter.
-In many respects, this is a similar feature that is present in most comercial
+In many respects, this is a similar feature that is present in most commercial
 CAD packages.
 
 ## File menu
@@ -403,7 +403,7 @@ specified on this pane include:
 Other advanced options that can be selected include:
 
  - Momentum formulation (Model a, Model B, Jackson, or Ishii)
- - Subgrid model (only avaliable with TFM, Wen-Yu drag model, etc...)
+ - Subgrid model (only available with TFM, Wen-Yu drag model, etc...)
  - Subgird filter size
  - Subgrid wall correction
 
@@ -415,7 +415,7 @@ selection. If there is complex geometry, the "Autosize" button can automatically
 set the extents to encompass the geometry.
 
 The geometry section provides tools for adding, applying filters, using
-automated wizards to create and copy geometry, remove, copy, and perform boolean
+automated wizards to create and copy geometry, remove, copy, and perform Boolean
 operations on the geometry. All the geometry operations and visualizations are
 performed using the [Visualization Toolkit (VTK)](http://www.vtk.org/)'s methods
 and functions.
@@ -586,7 +586,7 @@ creating:
 
 A new region can be created by pressing the ![add](mfixgui/icons/add.png)
 button. Once the region is created, make sure to give the region a descriptive
-name so that it can be refered to later. You can change the color of the region
+name so that it can be referred to later. You can change the color of the region
 by pressing the color icon. This will change the color in the model setup
 view. Next, define extents of the region in the x, y, and z directions. These
 widgets take special parameters, `min` and `max`, that reference the minimum and
@@ -599,12 +599,12 @@ If the region needs to be a collection of triangles from the stl file, select
 the Select Facets (STL) checkbox. The selection shape can be changed between a
 box and an ellipsoid. Triangles to fall on the edge of the shape can be sliced
 by selecting the Slice Facets checkbox. The triangle can be further filtered by
-the normal direction be specifing an vector and an deviation angle around that
+the normal direction be specifying an vector and an deviation angle around that
 vector.
 
 > Note: Once a region is in use, the region can not be deleted and the type can
-> not be cahnged. This is controled by disabiling those widgets. The Used By
-> feild will show what is using the region.
+> not be changed. This is controlled by disabling those widgets. The Used By
+> field will show what is using the region.
 
 ### Fluid
 
@@ -678,18 +678,18 @@ been added, the type of view can be selected. Tabs can be closed by pressing the
 
 ### Model
 
-The Model tab is always present and not closeable. This 3D view shows the setup
+The Model tab is always present and cannot be closed. This 3D view shows the setup
 of the simulation including the background mesh, geometry, and regions.
 
-| Icon | Description |
-|------|-------------|
-| ![overscan](mfixgui/icons/overscan.png) | Reset view, make all items visible |
-| ![xy](mfixgui/icons/xy.png) | Change to XY view |
-| ![xz](mfixgui/icons/xz.png) | Change to XZ view |
-| ![yz](mfixgui/icons/yz.png) | Change to YZ View |
+| Icon                                          | Description                                         |
+|-----------------------------------------------|-----------------------------------------------------|
+| ![overscan](mfixgui/icons/overscan.png)       | Reset view, make all items visible                  |
+| ![xy](mfixgui/icons/xy.png)                   | Change to XY view                                   |
+| ![xz](mfixgui/icons/xz.png)                   | Change to XZ view                                   |
+| ![yz](mfixgui/icons/yz.png)                   | Change to YZ View                                   |
 | ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
-| ![camera](mfixgui/icons/camera.png) | Save an image of the current view |
-| ![visibility](mfixgui/icons/visibility.png) | Change the visibility and properties of actors |
+| ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                   |
+| ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors      |
 
 ### Plots
 
@@ -698,21 +698,21 @@ running.
 
 ### VTK
 
-| Icon | Description |
-|------|-------------|
-| ![overscan](mfixgui/icons/overscan.png) | Reset view, make all items visible |
-| ![xy](mfixgui/icons/xy.png) | Change to XY view |
-| ![xz](mfixgui/icons/xz.png) | Change to XZ view |
-| ![yz](mfixgui/icons/yz.png) | Change to YZ View |
-| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
-| ![camera](mfixgui/icons/camera.png) | Save an image of the current view |
-| ![visibility](mfixgui/icons/visibility.png) | Change the visibility and properties of actors |
-| ![first](mfixgui/icons/first.png) | Go to the first frame |
-| ![back](mfixgui/icons/back.png) | Go back one frame |
-| ![play](mfixgui/icons/play.png) | Play available frames, starting atr the current frame |
-| ![next](mfixgui/icons/next.png) | Go to the next frame |
-| ![last](mfixgui/icons/last.png) | Go to the last frame |
-| ![speed](mfixgui/icons/speed.png) | Change the playback speed, or the amount of time inbetween frames |
+| Icon                                          | Description                                                        |
+|-----------------------------------------------|--------------------------------------------------------------------|
+| ![overscan](mfixgui/icons/overscan.png)       | Reset view, make all items visible                                 |
+| ![xy](mfixgui/icons/xy.png)                   | Change to XY view                                                  |
+| ![xz](mfixgui/icons/xz.png)                   | Change to XZ view                                                  |
+| ![yz](mfixgui/icons/yz.png)                   | Change to YZ View                                                  |
+| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections                |
+| ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                                  |
+| ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors                     |
+| ![first](mfixgui/icons/first.png)             | Go to the first frame                                              |
+| ![back](mfixgui/icons/back.png)               | Go back one frame                                                  |
+| ![play](mfixgui/icons/play.png)               | Play available frames, starting at the current frame               |
+| ![next](mfixgui/icons/next.png)               | Go to the next frame                                               |
+| ![last](mfixgui/icons/last.png)               | Go to the last frame                                               |
+| ![speed](mfixgui/icons/speed.png)             | Change the playback speed, or the amount of time in between frames |
 
 ## Terminal window
 
@@ -728,7 +728,7 @@ Informational messages from the GUI unrelated to the solver are colored in blue.
 The Mode bar allows switching the GUI between various modes including:
 
  - Modeler, used to setup a simulation
- - Workflow, future feature to support creation, managment, post processing, and
+ - Workflow, future feature to support creation, management, post processing, and
  optimization of simulations.
 
 A status bar is also present, showing the current status of the GUI or a running
@@ -784,7 +784,7 @@ The configuration section has a special section called `[options]` where the fol
 
 | Key          | Description                                                                      |
 |--------------|----------------------------------------------------------------------------------|
-| name         | name of the template, this is displayed in the template drop-down box in the gui |
+| name         | name of the template, this is displayed in the template drop-down box in the GUI |
 | job_id_regex | regular expression to extract the job id from the output of the submit command   |
 | status_regex | regular expression to extract the job status from the status command             |
 | submit       | the submission command                                                           |
