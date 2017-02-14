@@ -1419,7 +1419,9 @@ class MfixGui(QtWidgets.QMainWindow,
         # line
         line_to = None
         if line is not None and to_btn is not None:
-            self.animation_setup(line, line.geometry().x(), line.geometry().y(), to_btn.geometry().x(), line.geometry().y())
+            self.animation_setup(line, line.geometry().x(), line.geometry().y(),
+                                       to_btn.geometry().x(), line.geometry().y(),
+                                       to_btn.geometry().width())
             if btn_layout is not None:
                 for i in range(0, btn_layout.columnCount()):
                     if btn_layout.itemAtPosition(0,i) == to_btn:
@@ -1434,14 +1436,27 @@ class MfixGui(QtWidgets.QMainWindow,
         self.animating = True
         self.stack_animation.start()
 
-    def animation_setup(self, target, x_start, y_start, x_end, y_end):
+    def animation_setup(self, target, x_start, y_start, x_end, y_end, width_end=None):
         """setup an animation widget"""
+        # TODO: this could probably be done better.
         animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
         animation.setDuration(ANIMATION_SPEED)
         animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))
         animation.setEndValue(QtCore.QPoint(x_end,y_end))
         self.stack_animation.addAnimation(animation)
+
+        # resize line width
+        if width_end is not None:
+            animation = QtCore.QPropertyAnimation(target, "size".encode('utf-8'))
+            animation.setDuration(ANIMATION_SPEED)
+            animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+            size = target.size()
+            animation.setStartValue(size)
+            animation.setEndValue(QtCore.QSize(width_end, size.height()))
+            self.stack_animation.addAnimation(animation)
+
+
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, to_btn=None, line=None, line_to=None):
