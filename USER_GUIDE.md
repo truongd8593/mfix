@@ -183,7 +183,7 @@ runs.
 ‡ Models not extended to SMP-parallel are available for SMP runs but do
 not scale with thread count.
 
-# Tutorial on Running MFIX with the GUI
+# Quick Start Running MFIX with the GUI
 
 The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX GUI, run:
 
@@ -191,25 +191,32 @@ The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX 
 > mfixgui
 ```
 
-<img alt="command line" src="doc/tutorial_0.png" style="width:400;height:300" />
+> Note: If this is the first time opening the GUI, the File menu will
+> automatically open. Otherwise, the previous project will automatically open.
 
- - Create a new project by double-clicking on 3dFluidbed.
- - Enter a new filename "my_3d_fluidbed" and click Ok.
- - Select a directory. "my_3d_fluidbed/my_3d_fluidbed.mfx" will be created in that directory.
+ - Click on the ![new](mfixgui/icons/newfolder.png) button
+ - Filter the templates by de-selecting the ![single](mfixgui/icons/single.png),
+![geometry](mfixgui/icons/geometry.png), and
+![chemistry](mfixgui/icons/chemistry.png) icons
+ - Create a new project by double-clicking on fluidbed1.
+ - Enter a project name and browse to a location for the new project.
 
-<img alt="create project" src="doc/tutorial_1.png" style="width:800;height:600" />
+ > Note: A new project directory will be created in the location directory, with
+ > the name being the project name.
+
+<img alt="create project" src="doc/media/gui_new_project.png" style="width:800;height:600" />
 
  - Click the Start button ![Start button](mfixgui/icons/play.png) to start the MFIX simulation.
 
-<img alt="command line" src="doc/tutorial_2.png" style="width:800;height:600" />
+<img alt="command line" src="doc/media/gui_fluidbed1.png" style="width:800;height:600" />
 
  - Click Ok to use the default mfixsolver installed with MFIX.
 
-<img alt="command line" src="doc/tutorial_3.png" style="width:800;height:600" />
+<img alt="command line" src="doc/media/gui_run_dialog.png" style="width:800;height:600" />
 
  - The simulation runs with output in the Terminal Window.
 
-<img alt="command line" src="doc/tutorial_4.png" style="width:800;height:600" />
+<img alt="command line" src="doc/media/gui_fluidbed1_running.png" style="width:800;height:600" />
 
 # User Interface Reference
 
@@ -224,7 +231,7 @@ the parameter dialog.
 |---------------------------------------------------|---------------------------------------------------------------------------|
 | ![File menu](mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
 | ![Save button](mfixgui/icons/save.png)            | The save button saves the project file.                                   |
-| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or un-pauses a simulation.       |
+| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or un-pauses a simulation.      |
 | ![Pause button](mfixgui/icons/pause.png)          | The Pause button pauses a simulation.                                     |
 | ![Stop button](mfixgui/icons/stop.png)            | The Stop button stops a simulation.                                       |
 | ![Rest button](mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
@@ -267,19 +274,23 @@ compiler flags to optimize the executable for your specific hardware.
 
 Click "Run" in the Run dialog to start the simulation.
 
+<img alt="command line" src="doc/media/gui_rundialog_local.png" style="width:800;height:600" />
+
 #### Submit to Queue
 
-To submit a job to a queue (submit to queueing system, e.g. Grid Engine, PBS,
-SLURM), select the "Submit to Queue" tab. Select an executable from the dropdown
+To submit a job to a queue (submit to queuing system, e.g. Grid Engine, PBS,
+SLURM), select the "Submit to Queue" tab. Select an executable from the drop-down
 list or click the browse button to specify an executable that is not in the
-list. Next, select a template from the dropdown list or click the browse button
-to choose a template that is not in the dropdown list. Based on the selected
+list. Next, select a template from the drop-down list or click the browse button
+to choose a template that is not in the drop-down list. Based on the selected
 template, the widgets in the "queue options" section will update automatically.
 Once the options are specified, click "submit" in the run dialog to submit the
 job to the queue.
 
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
+
+<img alt="command line" src="doc/media/gui_rundialog_queue.png" style="width:800;height:600" />
 
 ### Parameter Dialog
 
@@ -289,6 +300,8 @@ functionality allows user to create relationships among various inputs and
 change the values of multiple items by changing the value of a single parameter.
 In many respects, this is a similar feature that is present in most commercial
 CAD packages.
+
+<img alt="command line" src="doc/media/gui_parameter_dialog.png" style="width:800;height:600" />
 
 ## File menu
 
@@ -304,8 +317,8 @@ Displays metadata about the current project file.
 |---------------------------|--------------------------------------------------------|
 | Project Version           | version number incremented each time project is saved  |
 | Created with MFiX Version | version of MFiX that project was created with          |
-| Author                    | username that created the project                      |
-| Modified By               | list of usernames that edited the project              |
+| Author                    | user-name that created the project                     |
+| Modified By               | list of user-names that edited the project             |
 | Last Modified             | date the project was last modified                     |
 | Created                   | date the project was created                           |
 | Notes                     | area where the user can record notes about the project |
@@ -366,7 +379,7 @@ Change settings that affect how the GUI acts.
 ### Help
 
 Shows available documentation (including this document) and tutorial videos
-(if connected to the internet) demonstrating features of the GUI.
+(if connected to the Internet) demonstrating features of the GUI.
 
 ### About
 
@@ -403,16 +416,16 @@ specified on this pane include:
 Other advanced options that can be selected include:
 
  - Momentum formulation (Model a, Model B, Jackson, or Ishii)
- - Subgrid model (only available with TFM, Wen-Yu drag model, etc...)
- - Subgird filter size
- - Subgrid wall correction
+ - Sub-grid model (only available with TFM, Wen-Yu drag model, etc...)
+ - Sub-gird filter size
+ - Sub-grid wall correction
 
 ### Geometry
 
 The Geometry pane allows the specification of the model geometry. This includes
 specifying the domain extents (xmin, xmax, ymin, ymax, zmin, zmax) and 2D/3D
-selection. If there is complex geometry, the "Autosize" button can automatically
-set the extents to encompass the geometry.
+selection. If there is complex geometry, the "Auto-size" button can
+automatically set the extents to encompass the geometry.
 
 The geometry section provides tools for adding, applying filters, using
 automated wizards to create and copy geometry, remove, copy, and perform Boolean
@@ -420,7 +433,7 @@ operations on the geometry. All the geometry operations and visualizations are
 performed using the [Visualization Toolkit (VTK)](http://www.vtk.org/)'s methods
 and functions.
 
-Geometry toolbar icons:
+Geometry tool-bar icons:
 
 | Icon                                        | Description                                       |
 |---------------------------------------------|---------------------------------------------------|
@@ -502,6 +515,8 @@ multiphase flow simulations. These wizards allow for creating cyclones,
 reactors, and hoppers. The distributed wizard can also be used to distribute one
 geometry inside another geometry with random, cubic, or body centered cubic
 positions. Random rotations can also be applied with the wizard.
+
+![cyclone wizard](mfixgui/icons/cyclone_sketch.png) ![hopper wizard](mfixgui/icons/hopper_sketch.png) ![reactor wizard](mfixgui/icons/reactor_sketch.png)
 
 #### Boolean Operations
 
@@ -612,7 +627,8 @@ The fluid pane is used to defined the physical properties of each fluid phase.
 
 ### Solids
 
-The solids phase is used to defined the physical properties of each solids phase.
+The solids phase is used to defined the physical properties of each solids
+phase.
 
 #### TFM
 #### DEM
@@ -630,8 +646,9 @@ The initial conditions pane is used to define initial conditions for each Region
 
 ### Boundary Conditions
 
-The boundary conditions pane is used to define boundary conditions for each Region
-(defined on each Region pane) for each phase (defined on Fluid or Solids panes).
+The boundary conditions pane is used to define boundary conditions for each
+Region (defined on each Region pane) for each phase (defined on Fluid or Solids
+panes).
 
  - Volume fraction
  - Pressure
@@ -658,7 +675,8 @@ The boundary conditions pane is used to define boundary conditions for each Regi
 ### Monitors
 ### Run
 
-The Run pane is used to define parameters related to how long the simulation runs.
+The Run pane is used to define parameters related to how long the simulation
+runs.
 
  - Stop time
  - Time step
@@ -678,8 +696,8 @@ been added, the type of view can be selected. Tabs can be closed by pressing the
 
 ### Model
 
-The Model tab is always present and cannot be closed. This 3D view shows the setup
-of the simulation including the background mesh, geometry, and regions.
+The Model tab is always present and cannot be closed. This 3D view shows the
+setup of the simulation including the background mesh, geometry, and regions.
 
 | Icon                                          | Description                                         |
 |-----------------------------------------------|-----------------------------------------------------|
@@ -691,10 +709,14 @@ of the simulation including the background mesh, geometry, and regions.
 | ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                   |
 | ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors      |
 
+<img alt="command line" src="doc/media/gui_model_visible_menu.png" style="width:800;height:600" />
+
 ### Plots
 
 The plots can be used to graph live statistics about the simulation as it is
 running.
+
+<img alt="command line" src="doc/media/gui_plot_dt.png" style="width:800;height:600" />
 
 ### VTK
 
@@ -728,8 +750,8 @@ Informational messages from the GUI unrelated to the solver are colored in blue.
 The Mode bar allows switching the GUI between various modes including:
 
  - Modeler, used to setup a simulation
- - Workflow, future feature to support creation, management, post processing, and
- optimization of simulations.
+ - Workflow, future feature to support creation, management, post processing,
+ and optimization of simulations.
 
 A status bar is also present, showing the current status of the GUI or a running
 simulation, including a progress bar showing the current progress of the
@@ -756,7 +778,9 @@ contain two sections. The first section is the configuration section that tells
 the GUI what widgets to display as well as various options for those widgets.
 The second section is the actual script that is executed.
 
-Variables can be used throughout the template, including with the widgets, and are reference by `${my_variable}`. There are a couple of built in variables including:
+Variables can be used throughout the template, including with the widgets, and
+are reference by `${my_variable}`. There are a couple of built in variables
+including:
 
 | Variable     | Description                                   |
 |--------------|-----------------------------------------------|
@@ -780,7 +804,8 @@ long: this value continues
 ## END CONFIG
 ```
 
-The configuration section has a special section called `[options]` where the following options can be specified:
+The configuration section has a special section called `[options]` where the
+following options can be specified:
 
 | Key          | Description                                                                      |
 |--------------|----------------------------------------------------------------------------------|
@@ -802,13 +827,15 @@ submit: qsub ${SCRIPT}
 delete: qdel ${JOB_ID}
 status: qstat -j ${JOB_ID}
 ```
-To define a new variable and widget to edit that variable in the GUI, create a new section:
+To define a new variable and widget to edit that variable in the GUI, create a
+new section:
 
 ```
 [my_value]
 ```
 
-The widget and options for that widget can then be selected by specifying various parameters including:
+The widget and options for that widget can then be selected by specifying
+various parameters including:
 
 | Parameter | Description                                         | Values                                                         |
 |-----------|-----------------------------------------------------|----------------------------------------------------------------|
@@ -833,7 +860,8 @@ items: you@mail.com|
 help: email to send notifications to
 ```
 
-The value of this widget can now be referenced throughout the template with `${my_email}`
+The value of this widget can now be referenced throughout the template with
+`${my_email}`
 
 The rest of the configuration file, outside of the `## CONFIG` to
 `## END CONFIG` section is the script that needs to be executed to submit a job
