@@ -2735,9 +2735,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         path = os.path.join(self.get_project_dir(), '.thumbnail')
         solver = self.project.solver
-        for s, n in [('single', SINGLE), ('tfm', TFM), ('dem', DEM), ('pic', PIC), ('hybrid', HYBRID)]:
-            if n == solver:
-                break
+        solver_dict = {'single': SINGLE, 'tfm': TFM, 'dem': DEM, 'pic': PIC, 'hybrid':HYBRID}
+        s = solver_dict.get(solver, 'single')
+
         geo = self.project.get_value('cartesian_grid', False)
         chem = bool(self.project.reactions)
         # try to get image from vtk
