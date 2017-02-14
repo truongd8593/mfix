@@ -13,7 +13,8 @@ and accepted, you will receive an email notification and instructions on how to
 download the code. Please allow for 2-3 business days for your registration to
 be processed.
 
-Potential users may find reviewing the Frequently Asked Questions section of the MFIX website useful before downloading the code.
+Potential users may find reviewing the Frequently Asked Questions section of the
+MFIX website useful before downloading the code.
 
 For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
@@ -29,8 +30,12 @@ library installed with the package. Only the location of pymfix needs to be
 defined in the GUI.
 
 1) From the GUI, with user interactive solver (run, pause, stop simulation).
-Here you use a source distribution of MFIX to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located in the project directory.
-When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you have just built.
+
+Here you use a source distribution of MFIX
+to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
+in the project directory. When running `mfixgui`, in
+the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
+have just built.
 
 1) From the GUI, with user non-interactive mfixsolver executable (cannot pause or stop
 simulation, nor receive info from solver). The solver is built
@@ -148,7 +153,8 @@ Building from source requires the MFIX source tarball [mfix-17.1.tar.gz](https:/
 
 Download and install Anaconda (as described in [Installing MFIX](#installing-mfix).)
 
-Installation instructions for depedencies are distribution-specific. On Ubuntu Linux, they can be installed with:
+Installation instructions for dependencies are distribution-specific. On Ubuntu
+Linux, they can be installed with:
 
 ```shell
 > sudo apt install gcc autoconf automake make
@@ -167,7 +173,9 @@ Now that the prerequisites are installed, you can build and install MFIX with:
 > python setup.py install
 ```
 
-If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+If you do not have permission to install to your system Python (unlikely if you
+installed Anaconda yourself), install to your home directory with:
+
 ```shell
 > python setup.py install --user
 ```
@@ -189,36 +197,55 @@ Install numpy with:
 > conda install numpy==1.11.3
 ```
 
-Now that the prerequisites are installed, build MFIX with the following command (make sure the python command used is from Anaconda, not /usr/bin/python).
+Now that the prerequisites are installed, build MFIX with the following command
+(make sure the python command used is from Anaconda, not /usr/bin/python).
+
 ```shell
 > tar xzf mfix-17.1.tar.gz
 > cd mfix-17.1
 > python setup.py install
 ```
 
-If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+If you do not have permission to install to your system Python (unlikely if you
+installed Anaconda yourself), install to your home directory with:
+
 ```shell
 > python setup.py install --user
 ```
 
 ## Windows
 
-Download and install Anaconda (as described in [Installing MFIX](#installing-mfix).)
+Download and install Anaconda (as described
+in [Installing MFIX](#installing-mfix).) This section assumes you have it
+installed to the path ANACONDA_HOME.
 
-MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way to install MFIX build dependencies. The MSYS2 environment can be installed from Anaconda:
+MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way
+to install MFIX build dependencies. The MSYS2 environment can be installed from
+Anaconda:
+
 ```shell
 > conda install numpy==1.11.3
 > conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
 ```
 
-Now that the prerequisites are installed, build MFIX with the following command (make sure the python command used is from Anaconda).
+- Open Windows Control Panel
+- Open Environment Variables dialog
+- Add the following paths to beginning of your PATH environment variable:
+  - `ANACONDA_HOME/Library/mingw-w64`
+  - `ANACONDA_HOME/Library/usr/bin`
+
+Now that the prerequisites are installed, build MFIX with the following command
+(make sure the python command used is from Anaconda).
+
 ```shell
 C:\> tar xzf mfix-17.1.tar.gz
 C:\> cd mfix-17.1
 C:\> python setup.py install
 ```
 
-If you do not have permission to install to your system Python (unlikely if you installed Anaconda yourself), install to your home directory with:
+If you do not have permission to install to your system Python (unlikely if you
+installed Anaconda yourself), install to your home directory with:
+
 ```shell
 C:\> python setup.py install --user
 ```
@@ -287,13 +314,23 @@ Extracting the tar ball creates a directory named mfix-17.1 containing the
 MFIX and POSTMFIX source codes, tests and tutorials, as well as some additional
 documentation and utilities.
 
-MFIX is built using GNU Autoconf, which is a general tool for producing configure scripts for building and installing software on different computer systems.  First, run the shell script configure_mfix to create a Makefile, then run GNU Make to build the MFIX executable. A step-by-step tutorial is presented at the end of this section.
+MFIX is built using GNU Autoconf, which is a general tool for producing
+configure scripts for building and installing software on different computer
+systems. First, run the shell script configure_mfix to create a Makefile, then
+run GNU Make to build the MFIX executable. A step-by-step tutorial is presented
+at the end of this section.
 
 ##	Configuring with configure_mfix
 
-This section focuses on the configure_mfix script and the availability of several flags. configure_mfix is a wrapper for the usual GNU Autoconf configure script.
-Alias creation (optional)
-For convenience, an alias can be created to avoid specifying the path to the MFIX configure script. Assuming the MFIX source was extracted in the home directory, and you are using the C shell, an alias can be created by executing:
+This section focuses on the configure_mfix script and the availability of
+several flags. configure_mfix is a wrapper for the usual GNU Autoconf configure
+script.
+
+### Alias creation (optional)
+
+For convenience, an alias can be created to avoid specifying the path to the
+MFIX configure script. Assuming the MFIX source was extracted in the home
+directory, and you are using the C shell, an alias can be created by executing:
 
 ```shell
 > echo "alias configure_mfix ~/mfix-17.1/configure_mfix" >> ~/.cshrc
@@ -302,9 +339,19 @@ This appends the quoted text to the .cshrc file located in the home directory. T
 ```shell
 > source ~/.cshrc
 ```
-Afterwards, MFIX can be configured from any directory by running the alias, configure_mfix. Users familiar with the creation of aliases may choose other various ways to define an alias (e.g., directly editing the .cshrc or .cshrc_aliases files). Users that use a different shell should create an alias with the respective shell resource file (e.g. bash shell users ~/.bashrc).
-Passing arguments to the build script
-Arguments may be passed to the build script to specify various options: compiler, optimization flags, SMP/DMP support, and other options. All configuration options can be displayed with:
+
+Afterwards, MFIX can be configured from any directory by running the alias,
+`configure_mfix`. Users familiar with the creation of aliases may choose other
+various ways to define an alias (e.g., directly editing the `.cshrc` or
+`.cshrc_aliases` files). Users that use a different shell should create an alias
+with the respective shell resource file (e.g. bash shell users `~/.bashrc`).
+
+### Passing arguments to the build script
+
+Arguments may be passed to the build script to specify various options:
+compiler, optimization flags, SMP/DMP support, and other options. All
+configuration options can be displayed with:
+
 ```shell
 > ~/mfix-17.1/configure_mfix --help
 ```
@@ -386,7 +433,8 @@ Common compiler flags for Intel Fortran are given in the following table.
 
 ##	Building mfix with GNU make
 
-If the configure script successfully created a Makefile (see above), then the next step is to build MFIX by running GNU make command.
+If the configure script successfully created a Makefile (see above), then the
+next step is to build MFIX by running GNU make command.
 
 ```shell
 > make
