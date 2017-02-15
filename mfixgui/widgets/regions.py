@@ -6,7 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import glob
 from collections import OrderedDict
-from qtpy import QtWidgets
+from qtpy import QtWidgets, PYQT5
 
 from qtpy import uic
 
@@ -27,6 +27,8 @@ DEFAULT_REGION_DATA = {
     'type': 'box',
     'visibility': True}
 
+
+
 def safe_int(obj, default=None):
     try:
         return int(obj)
@@ -37,7 +39,7 @@ def clean_region_dict(region_dict):
     """remove qt objects and values that are equal to the default"""
     clean_dict = {}
     for key, value in region_dict.items():
-        if key in ['visible']:
+        if key in ['visible', 'used by']:
             pass
         elif key == 'color':
             clean_dict['color'] = region_dict['color'].color_hex
@@ -93,7 +95,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget._setModel()
         tablewidget.set_selection_model()
         tablewidget.set_value(OrderedDict())
-        tablewidget.set_columns(['visible', 'color', 'type'])
+        tablewidget.set_columns(['visible', 'color', 'type', 'used by'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
         tablewidget.new_selection.connect(self.update_region_parameters)
@@ -101,8 +103,8 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.default_value = OrderedDict()
         self.inhibit_toggle = True
 
-        self.groupbox_region_parameters.setEnabled(False)
-        for widget in widget_iter(self.groupbox_region_parameters):
+        self.widget_region_parameters.setEnabled(False)
+        for widget in widget_iter(self.widget_region_parameters):
             if hasattr(widget, 'value_updated'):
                 widget.value_updated.connect(self.region_value_changed)
 
@@ -132,7 +134,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
-        self.checkbox_region_stl.clicked.connect(self.stl_type_changed)
+        self.groupbox_stl.clicked.connect(self.stl_type_changed)
 
         # default region buttons
         for btn, region in [(self.toolbutton_region_a, 'all'),
@@ -169,6 +171,8 @@ class RegionsWidget(QtWidgets.QWidget):
             data[name]['visible'] = self.get_visibility_image(vis)
 
             self.tablewidget_regions.set_value(data)
+        elif index.column() == 1:
+            self.change_color()
 
 
     def new_default_region(self, region):
@@ -228,7 +232,8 @@ class RegionsWidget(QtWidgets.QWidget):
         if defer_update:
             return
 
-        self.tablewidget_regions.fit_to_contents()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
@@ -261,7 +266,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.tablewidget_regions.selectRow(nrows-1)
 
         enabled = (nrows > 0) # Any left?
-        self.groupbox_region_parameters.setEnabled(enabled)
+        self.widget_region_parameters.setEnabled(enabled)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
@@ -287,7 +292,8 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.vtkwidget.new_region(new_name, data[new_name])
 
             self.tablewidget_regions.set_value(data)
-            self.tablewidget_regions.fit_to_contents()
+            #self.tablewidget_regions.fit_to_contents()
+            self.fixup_regions_table(self.tablewidget_regions)
             self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
@@ -301,7 +307,7 @@ class RegionsWidget(QtWidgets.QWidget):
         enabled = bool(rows)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
-        self.groupbox_region_parameters.setEnabled(enabled)
+        self.widget_region_parameters.setEnabled(enabled)
 
         if enabled:
             data = self.tablewidget_regions.value
@@ -497,7 +503,7 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.update_parameter_map(value[key], name, key)
 
         self.tablewidget_regions.set_value(data)
-        self.label_region_type.setText(shape)
+        #self.lineedit_region_type.setText(shape)
 
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
@@ -576,7 +582,8 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.new_region(region, region_data)
 
         self.tablewidget_regions.set_value(data)
-        self.tablewidget_regions.fit_to_contents()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
 
 
     def extract_regions(self, proj, proj_dir=None):
