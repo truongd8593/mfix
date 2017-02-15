@@ -162,7 +162,8 @@ Linux, they can be installed with:
 
 Install numpy with:
 ```shell
-> conda install numpy==1.11.3
+> conda install numpy==1.11.3 pyqt qtpy pandoc
+> pip install pypandoc
 ```
 
 Now that the prerequisites are installed, build MFIX with:
@@ -189,7 +190,8 @@ Homebrew is the easiest way to install MFIX build dependencies.
 
 Install numpy with:
 ```shell
-> conda install numpy==1.11.3
+> conda install numpy==1.11.3 pyqt qtpy pandoc
+> pip install pypandoc
 ```
 
 Now that the prerequisites are installed, build MFIX with the following command
@@ -214,9 +216,28 @@ to install MFIX build dependencies. The MSYS2 environment can be installed from
 Anaconda:
 
 ```shell
-> conda install numpy==1.11.3
-> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
+C:\> conda install numpy==1.11.3 pyqt qtpy pandoc
+C:\> pip install pypandoc
+C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
 ```
+
+### Patch distutils for Python 3
+
+In `ANACONDA\_HOME/envs/py3/Lib/distutils/cygwinccompiler.py:85`  add the line
+
+```python
+   elif msc_ver == '1900':
+       $ VS2014 / MSVC 14.0
+       return ['msvcsr140']
+```
+
+In `ANACONDA\_HOME/envs/py3/Lib/site-packages/numpy/distutils/misc_util.py:402` add the line
+
+```python
+'1900': 'msvcr140',  # MVCS 14 (aka 2014)
+```
+
+### Set Windows PATH
 
 - Open Windows Control Panel
 - Open Environment Variables dialog

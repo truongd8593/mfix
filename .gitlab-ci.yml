@@ -158,6 +158,22 @@ build_mac_py3:
   tags:
     - mac
 
+build_windows_py3:
+  script:
+    - python setup.py bdist_wheel
+  stage: build:py3
+  except:
+    - gui
+  dependencies:
+    - build:windows
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+    - dist/mfix*.whl
+  tags:
+    - windows
+
 # install stage installs python2 linux package on Joule
 
 install:linux:py:

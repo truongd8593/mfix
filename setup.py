@@ -32,63 +32,75 @@ NAME = 'mfix'
 with codecs.open(path.join(HERE, 'README'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
+F90_TMP = tempfile.mkdtemp()
+CONFIGURE_ARGS = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
-data_files = []
+def get_data_files():
+    data_files = []
 
-for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
-    for root, dirs, files in walk(subdir):
-        dir_files = []
-        for f in files:
-            dir_files.append(path.join(root, f))
-        data_files.append((path.join('share', NAME, root), dir_files))
+    for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
+        for root, dirs, files in walk(subdir):
+            dir_files = []
+            for f in files:
+                dir_files.append(path.join(root, f))
+            data_files.append((path.join('share', NAME, root), dir_files))
 
-data_files.append((path.join('share', NAME), ('USER_GUIDE.html', 'INSTALL.html')))
+    data_files.append((path.join('share', NAME), ('USER_GUIDE.html', 'INSTALL.html')))
 
-if platform.system() == 'Windows':
-    zf = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
-    data_files += zf.namelist()
-    zf.extractall()
+    if platform.system() == 'Windows':
+        fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
+        data_files += fortran_dlls.namelist()
+        fortran_dlls.extractall()
 
-pymfix_src = [
-    'param_mod.f',
-    'param1_mod.f',
-    'dmp_modules/compar_mod.f',
-    'dmp_modules/debug_mod.f',
-    'dmp_modules/parallel_mpi_mod.f',
-    'fldvar_mod.f',
-    'des/discretelement_mod.f',
-    'des/des_time_march.f',
-    'iterate.f',
-    'residual_mod.f',
-    'time_step.f',
-    'main.f',
-    'run_mod.f',
-]
+    return data_files
 
-f90 = tempfile.mkdtemp()
-makedirs(path.join(f90, 'dmp_modules'))
-makedirs(path.join(f90, 'des'))
-for s in pymfix_src:
-    shutil.copyfile(path.join('model', s), path.join(f90, s)+'90')
+def get_pymfix_src():
+    pymfix_src = [
+        'param_mod.f',
+        'param1_mod.f',
+        'dmp_modules/compar_mod.f',
+        'dmp_modules/debug_mod.f',
+        'dmp_modules/parallel_mpi_mod.f',
+        'fldvar_mod.f',
+        'des/discretelement_mod.f',
+        'des/des_time_march.f',
+        'iterate.f',
+        'residual_mod.f',
+        'time_step.f',
+        'main.f',
+        'run_mod.f',
+    ]
 
-pymfix_src = [ path.join(f90, s)+'90' for s in pymfix_src ]
+    makedirs(path.join(F90_TMP, 'dmp_modules'))
+    makedirs(path.join(F90_TMP, 'des'))
+    for src in pymfix_src:
+        shutil.copyfile(path.join('model', src), path.join(F90_TMP, src)+'90')
+
+    return [path.join(F90_TMP, s)+'90' for s in pymfix_src]
+
+def cleanup_tmp():
+    # clean tempdir
+    try:
+        shutil.rmtree(F90_TMP)
+    except OSError as ex:
+        if ex.errno != errno.ENOENT:
+            raise
 
 
-configure_args = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
-build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_'))
+def make_mfixsolver():
+    build_dir = path.join('build', CONFIGURE_ARGS.replace(' ', '_').replace('=', '_'))
 
-mfixsolver = Extension(name = 'mfixsolver',
-                       sources = pymfix_src,
-                       extra_f90_compile_args = ['-cpp'],
-                       module_dirs = [ path.join(build_dir, 'model') ],
-                       extra_objects = [
-                           '.build/read_database.o',
-                           '.build/read_namelist.o',
-                           path.join(build_dir, 'build-aux/libmfix.a'),
-                       ]
-)
+    return Extension(name='mfixsolver',
+                     sources=get_pymfix_src(),
+                     extra_f90_compile_args=['-cpp'],
+                     module_dirs=[path.join(build_dir, 'model')],
+                     extra_objects=[
+                         '.build/read_database.o',
+                         '.build/read_namelist.o',
+                         path.join(build_dir, 'build-aux/libmfix.a'),
+                     ])
 
 class BuildDocCommand(setuptools.Command):
     """ renders setup guide and user guide from Markdown to HTML """
@@ -129,7 +141,7 @@ class BuildMfixCommand(setuptools.Command):
     def run(self):
 
         # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = 'bash ./configure_mfix %s' % configure_args
+        cmd = 'bash ./configure_mfix %s' % CONFIGURE_ARGS
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
@@ -152,7 +164,7 @@ def mfix_prereq(command_subclass):
         try:
             self.run_command('build_doc')
         except ImportError:
-            logging.getLogger(__filename__).warning("Unable to build documentation")
+            logging.getLogger(__file__).warning("Unable to build documentation")
         orig_run(self)
 
     command_subclass.run = modified_run
@@ -238,7 +250,7 @@ setup(
         'qtpy',
     ],
 
-    ext_modules=[mfixsolver,],
+    ext_modules=[make_mfixsolver(),],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -258,7 +270,7 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=data_files,
+    data_files=get_data_files(),
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -271,9 +283,4 @@ setup(
     },
 )
 
-# clean tempdir
-try:
-    shutil.rmtree(f90)
-except OSError as ex:
-    if ex.errno != errno.ENOENT:
-        raise
+cleanup_tmp()
