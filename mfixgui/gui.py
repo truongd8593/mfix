@@ -488,10 +488,11 @@ class MfixGui(QtWidgets.QMainWindow,
         self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
         # --- Register widgets ---
-        self.set_splash_text('Registering widgets')
+        self.set_splash_text('Enabling controls')
         self.register_keyword_widgets()
 
         # --- Create main menu ---
+        self.set_splash_text('Setting up menu')
         self.init_main_menu()
 
         # --- vtk setup ---
