@@ -214,26 +214,7 @@ def patch_distutils():
             else:
                 raise ValueError("Unknown MS Compiler version %s " % msc_ver)
 
-    def msvc_runtime_library():
-        "Return name of MSVC runtime library if Python was built with MSVC >= 7"
-        msc_pos = sys.version.find('MSC v.')
-        if msc_pos != -1:
-            msc_ver = sys.version[msc_pos+6:msc_pos+10]
-            lib = {'1300': 'msvcr70',    # MSVC 7.0
-                   '1310': 'msvcr71',    # MSVC 7.1
-                   '1400': 'msvcr80',    # MSVC 8
-                   '1500': 'msvcr90',    # MSVC 9 (VS 2008)
-                   '1600': 'msvcr100',   # MSVC 10 (aka 2010)
-                   '1900': 'msvcr140',   # MVCS 14 (aka 2014)
-            }.get(msc_ver, None)
-        else:
-            lib = None
-        return lib
-
-
-
     distutils.cygwinccompiler.get_msvcr = get_msvcr
-    numpy.distutils.misc_util.msvc_runtime_library = msvc_runtime_library
 
 setup(
     name='mfix',

@@ -34,12 +34,12 @@ It is also possible to build and install MFIX from source, but this will typical
 Finally, running the mfix solver without the GUI is still possible (Linux environment only). The solver must be built from source, and the simulation is set by editing a text file. This correspond to the way MFIX was run in previous versions (versions 2016-1 and earlier).
 
 To recap:
-- If you want to install MFIX from binary packages, see [Installing MFIX](#installing-mfix). 
-  This is the recommended starting point to learn and use MFIX for most users. 
+- If you want to install MFIX from binary packages, see [Installing MFIX](#installing-mfix).
+  This is the recommended starting point to learn and use MFIX for most users.
   The default solver will be installed which will allow basic simulations (no UDFs).
 - If you already have MFIX installed and want to build a custom solver (with UDFs), see [build a custom interactive mfixsolver](#building-custom-mfixsolver).
-- If you want to build the MFIX binary from source , see [Building MFIX](#building-mfix). 
-- If you want to run the command line version of MFIX without the GUI (Linux only, similar to previous versions), see 
+- If you want to build the MFIX binary from source , see [Building MFIX](#building-mfix).
+- If you want to run the command line version of MFIX without the GUI (Linux only, similar to previous versions), see
 
 
 
@@ -101,7 +101,7 @@ Once homebrew is installed, install MFIX  dependencies with the commands:
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
 
-To build MFIX from source or build the custom solver, install the following dependencies with: 
+To build MFIX from source or build the custom solver, install the following dependencies with:
 
 ```shell
 > brew install gcc autoconf automake make gnu-sed
@@ -128,7 +128,7 @@ C:\> conda install numpy==1.11.3 pyqt qtpy pandoc
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
 
-To build MFIX from source or build the custom solver: 
+To build MFIX from source or build the custom solver:
 
 ### Install MSYS2 environment (a Unix-like environment for Windows based on Cygwin):
 
@@ -140,23 +140,28 @@ C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-
 
 ### Patch distutils for Python 3
 
-If you are using Python 3, you need to make edits to the following files.
+If you are using Python 3, you need to make edits to the following file.
 
 <!-- TODO: Explain what ANACONDA_HOME is (maybe give an example) -->
 
-
-In `ANACONDA_HOME/envs/py3/Lib/distutils/cygwinccompiler.py:85`  add the line
-
-```python
-   elif msc_ver == '1900':
-       $ VS2014 / MSVC 14.0
-       return ['msvcsr140']
-```
-
 In `ANACONDA\_HOME/envs/py3/Lib/site-packages/numpy/distutils/misc_util.py:402` add the line
+
+<!-- This patch is in numpy master branch on Github. We can probably remove this patch once numpy 1.13 is released. -->
 
 ```python
 '1900': 'msvcr140',  # MVCS 14 (aka 2014)
+```
+
+to:
+
+```python
+        lib = {'1300': 'msvcr70',    # MSVC 7.0
+               '1310': 'msvcr71',    # MSVC 7.1
+               '1400': 'msvcr80',    # MSVC 8
+               '1500': 'msvcr90',    # MSVC 9 (VS 2008)
+               '1600': 'msvcr100',   # MSVC 10 (aka 2010)
+               '1900': 'msvcr140',   # MSVC 14 (aka 2014)
+              }.get(msc_ver, None)
 ```
 
 ### Set Windows PATH
@@ -201,7 +206,7 @@ Otherwise, download the latest binaries for your platform:
 > pip install mfix-17.1-<PYTHON_VERSION>-<PLATFORM>.whl
 ```
 
-You are now ready to set up and run MFIX simulation! 
+You are now ready to set up and run MFIX simulation!
 
 
 # Running MFIX simulations
