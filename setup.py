@@ -5,13 +5,18 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-import errno
-import logging
+
 import platform
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
+
+import distutils.cygwinccompiler
+import errno
+import logging
+import numpy
 
 import codecs
 from os import makedirs, path, walk
@@ -53,6 +58,10 @@ def get_data_files():
         fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
         data_files += fortran_dlls.namelist()
         fortran_dlls.extractall()
+
+        if sys.version_info[0] == 3:
+            # Python 3 on Windows needs patched
+            patch_distutils()
 
     return data_files
 
@@ -173,6 +182,58 @@ def mfix_prereq(command_subclass):
 @mfix_prereq
 class BuildExtPrereqCommand(build_ext):
     pass
+
+
+def patch_distutils():
+
+    def get_msvcr():
+        """Include the appropriate MSVC runtime library if Python was built
+        with MSVC 7.0 or later.
+        """
+        msc_pos = sys.version.find('MSC v.')
+        if msc_pos != -1:
+            msc_ver = sys.version[msc_pos+6:msc_pos+10]
+            if msc_ver == '1300':
+                # MSVC 7.0
+                return ['msvcr70']
+            elif msc_ver == '1310':
+                # MSVC 7.1
+                return ['msvcr71']
+            elif msc_ver == '1400':
+                # VS2005 / MSVC 8.0
+                return ['msvcr80']
+            elif msc_ver == '1500':
+                # VS2008 / MSVC 9.0
+                return ['msvcr90']
+            elif msc_ver == '1600':
+                # VS2010 / MSVC 10.0
+                return ['msvcr100']
+            elif msc_ver == '1900':
+                # VS2014 / MSVC 14.0
+                return ['msvcsr140']
+            else:
+                raise ValueError("Unknown MS Compiler version %s " % msc_ver)
+
+    def msvc_runtime_library():
+        "Return name of MSVC runtime library if Python was built with MSVC >= 7"
+        msc_pos = sys.version.find('MSC v.')
+        if msc_pos != -1:
+            msc_ver = sys.version[msc_pos+6:msc_pos+10]
+            lib = {'1300': 'msvcr70',    # MSVC 7.0
+                   '1310': 'msvcr71',    # MSVC 7.1
+                   '1400': 'msvcr80',    # MSVC 8
+                   '1500': 'msvcr90',    # MSVC 9 (VS 2008)
+                   '1600': 'msvcr100',   # MSVC 10 (aka 2010)
+                   '1900': 'msvcr140',   # MVCS 14 (aka 2014)
+            }.get(msc_ver, None)
+        else:
+            lib = None
+        return lib
+
+
+
+    distutils.cygwinccompiler.get_msvcr = get_msvcr
+    numpy.distutils.misc_util.msvc_runtime_library = msvc_runtime_library
 
 setup(
     name='mfix',
