@@ -242,7 +242,7 @@ class RegionsWidget(QtWidgets.QWidget):
             data = self.tablewidget_regions.value
             for row in rows:
                 name = list(data.keys())[row]
-                if self.check_region_in_use(name):
+                if self.parent.get_region_users(name):
                     self.parent.message(text="Region %s is in use" % name)
                     return
                 deleted_region = data.pop(name)
@@ -321,19 +321,19 @@ class RegionsWidget(QtWidgets.QWidget):
         self.lineedit_regions_name.updateValue(None, name)
 
         # Disable widgets for regions that are in use
-        in_use = self.check_region_in_use(name)
-        if in_use:
+        users = self.parent.get_region_users(name)
+        if users:
             self.enable_disable_widgets(name)
         else:
             self.enable_disable_widgets(name, enable_all=True)
-        self.toolbutton_region_delete.setEnabled(not in_use)
-        self.checkbox_region_stl.setEnabled(not in_use)
-        self.label_used_by.setText(', '.join(in_use))
+        self.toolbutton_region_delete.setEnabled(not users)
+        self.groupbox_stl.setEnabled(not users)
+        users_str = ', '.join(users)
+        data['used by'] = users_str
 
         # type
         r_type = data.get('type', 'box')
-        self.label_region_type.setText(r_type)
-        self.checkbox_region_stl.setChecked(r_type == 'STL')
+        self.groupbox_stl.setChecked(r_type == 'STL')
 
         # from
         for widget, value in zip(self.extent_lineedits[::2], data['from']):
@@ -357,17 +357,20 @@ class RegionsWidget(QtWidgets.QWidget):
     def setup_regions(self):
         # Set up all widgets in pane to current state,
         # including updates we deferred during extract_region
+
+        data = self.tablewidget_regions.value
+        for (k,v) in data.items():
+            users = self.parent.get_region_users(k)
+            users_str = ', '.join(users)
+            data[k]['used by'] = users_str
         self.update_region_parameters()
-        self.tablewidget_regions.fit_to_contents()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
 
 
     def stl_type_changed(self):
-        checked = self.checkbox_region_stl.isChecked()
-
-        type_ = None
-        if checked:
-            type_ = 'STL'
-        self.region_value_changed(self.checkbox_region_stl, {'type': type_}, [])
+        val = 'STL' if self.groupbox_stl.isChecked() else None
+        self.region_value_changed(self.groupbox_stl, {'type': val}, [])
 
 
     def region_value_changed(self, widget, value, args, name=None, update_param=True):
@@ -402,22 +405,22 @@ class RegionsWidget(QtWidgets.QWidget):
             # update data dict
             row_data[item[0]][index] = val
 
-            in_use = self.check_region_in_use(name)
+            users = self.parent.get_region_users(name)
             # Infer shape from extents
-            if not in_use:
+            if not users:
                 old_shape = row_data.get('type', 'box')
-                stl = self.checkbox_region_stl.isChecked()
+                stl = self.groupbox_stl.isChecked()
                 if stl:
                     shape = 'STL'
                 else:
                     shape = row_data['type'] = self.get_region_type([row_data['from'], row_data['to']])
-                self.label_region_type.setText(shape)
+                self.lineedit_region_type.setText(shape)
                 if old_shape != shape:
                     self.vtkwidget.change_region_type(name, row_data)
 
             # check for and update point and plane extents
             shape = data[name]['type']
-            if in_use and any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
+            if users and any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
                 self.update_parameter_map(val, name, 'to_'+str(item[1]))
                 row_data['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
@@ -534,10 +537,6 @@ class RegionsWidget(QtWidgets.QWidget):
 
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
-
-
-    def check_region_in_use(self, name):
-        return self.parent.check_region_in_use(name)
 
 
     def regions_to_str(self):

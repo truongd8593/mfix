@@ -737,7 +737,8 @@ class MfixGui(QtWidgets.QMainWindow,
                        self.output_update_region):
             update(name, data)
 
-    def check_region_in_use(self, name):
+    def get_region_users(self, name):
+        """Return a list of object types referring to region.  Always return a list, even if empty"""
         return [t for t, check in (('ICs', self.ics_check_region_in_use),
                                    ('BCs', self.bcs_check_region_in_use),
                                    ('PSs', self.pss_check_region_in_use),
