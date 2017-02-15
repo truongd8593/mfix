@@ -18,51 +18,37 @@ MFIX website useful before downloading the code.
 
 For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
-- If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix). 
-  This is the recommended starting point to learn and use MFiX for most users. 
+
+To run MFIX simulations, you need to have the MFIX gui (referred to as mfixgui) and the MFIX flow solver (referred to as mfixsolver) installed. The MFIX flow solver can be the default solver (no UDF), or the customed solver (with UDF, for example for chemically reacting flows that required coded reaction rates).It is recommended to start installing MFIX from the provided binary packages on a given platform (Linux, MAC, or Windows OS). The binary packages include mfixgui and the default mfixsolver. A list of known operating systems where MFIX has been sucessfully installed is given below.
+
+## Known operating systems where MFIX can be installed/run:
+
+- Linux: Ubuntu (insert versions), OpenSuse (insert versions)
+- macOS: insert OS versions
+- Windows: Windows 7, Windows 10 (need to verify that)
+
+Once users have gained experience with generic simulations (no UDFs), advanced simulations (with UDFs) can be run after building a custom solver, that take into account the UDFs. Building a custom solver require additional packages and is more involved than installing a binary package. Knowledge of entering commnands at the prompt is required for all platforms (Linux, MAC and Windows OS).
+
+It is also possible to build and install MFIX from source, but this will typically be suitable for advanced users and developpers.
+
+Finally, running the mfix solver without the GUI is still possible (Linux environment only). The solver must be built from source, and the simulation is set by editing a text file. This correspond to the way MFIX was run in previous versions (versions 2016-1 and earlier).
+
+To recap:
+- If you want to install MFIX from binary packages, see [Installing MFIX](#installing-mfix). 
+  This is the recommended starting point to learn and use MFIX for most users. 
   The default solver will be installed which will allow basic simulations (no UDFs).
 - If you already have MFIX installed and want to build a custom solver (with UDFs), see [build a custom interactive mfixsolver](#building-custom-mfixsolver).
-- If you want to build and install MFIX from source , see [Building MFIX](#building-mfix). 
-- If you want to run the command line version of MFIX from previous versions,
+- If you want to build the MFIX binary from source , see [Building MFIX](#building-mfix). 
+- If you want to run the command line version of MFIX without the GUI (Linux only, similar to previous versions), see 
 
-## Ways to run the MFIX
 
-### From the GUI with default interactive solver
-
-This will use the mfixsolver Python library installed with the package. Only the
-location of pymfix needs to be defined in the GUI. You can pause, unpause, stop,
-or get info from the solver.
-
-### From the GUI, with user interactive solver
-
-Here you use a source distribution of MFIX
-to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
-in the project directory. When running `mfixgui`, in
-the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
-have just built. You can pause, unpause, stop, or get info from the solver.
-
-### From the GUI, with user non-interactive mfixsolver executable
-
- The solver is built from [Building MFIX Solver](#building-mfixsolver).
- You cannot pause, unpause, stop, or get info from the solver.
-
-### From the command line with a custom mfixsolver executable (without the GUI)
-
-This is the same as in previous MFIX releases. The solver is built
-from [Building MFIX Solver](#building-mfixsolver). This option does not require
-Anaconda Python.
 
 # Prerequisites
 
-MFIX requires a Python environment to run. The recommended Python environment is the Anaconda Python distribution.
-
-MFIX can be installed from prebuilt binaries and run without a compiler
-installed, but installing a compiler is needed for building custom mfixsolvers
-(such as UDFs). Building MFIX requires GCC, autoconf, automake, and GNU Make.
-(Building with other compilers other than GCC is not currently supported.)
+Using the GUI requires a Python environment, whether installing the package from binaries, or building from source. The recommended Python environment is the Anaconda Python distribution.
 
 Download [Miniconda](https://conda.io/miniconda.html) for your platform
-(Windows, macOS, or Linux). (Miniconda is a minimal distribution of Anaconda.)
+(Linux, macOS, or Windows). (Miniconda is a minimal distribution of Anaconda.)
 The 64-bit version is required; Python 3 version is recommended. Install
 Anaconda, and at the end of the install make sure to add the install location to
 your PATH.
@@ -74,69 +60,92 @@ At the time of this writing, the default anaconda package for vtk needs to be
 installed separately. Also, MFIX only works with numpy 1.11.3 so a specific
 version needs to be installed.
 
+
 ## Linux
 
-### Prerequisites
 
 Installation instructions for dependencies are distribution-specific. On Ubuntu
 Linux, they can be installed with:
-
-```shell
-> sudo apt install gcc autoconf automake make
-```
 
 ```shell
 > conda install -c menpo vtk=7.0.0
 > conda install numpy==1.11.3 pyqt qtpy pandoc
 ```
 
-Proceed to [Building MFIX](#building-mfix).
+To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
+
+To build MFIX from source or build the custom solver, install the following dependencies with:
+
+```shell
+> sudo apt install gcc autoconf automake make
+```
+
+and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mfixsolver](#building-custom-mfixsolver).
+
 
 ## macOS
 
-### Prerequisites
 
 Homebrew is the easiest way to install MFIX build dependencies. Go
 to [the Homebrew website](http://brew.sh) and follow the installation
 instructions.
 
-Once homebrew is installed, install MFIX build dependencies with the command:
-```shell
-> brew install gcc autoconf automake make gnu-sed
-```
+Once homebrew is installed, install MFIX  dependencies with the commands:
 
-Install dependencies with:
 ```shell
 > conda install -c menpo vtk=7.0.0
 > conda install numpy==1.11.3 pyqt qtpy pandoc
 > pip install pypandoc
 ```
 
-Proceed to [Building MFIX](#building-mfix).
+To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
-## Windows
-### Prerequisites
 
-MSYS2 (a Unix-like environment for Windows based on Cygwin) is the easiest way
-to install MFIX build dependencies. The MSYS2 environment can be installed from
-Anaconda:
+To build MFIX from source or build the custom solver, install the following dependencies with: 
 
 ```shell
-C:\> conda install numpy==1.11.3 pyqt qtpy pandoc
-C:\> pip install pypandoc
-C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
+> brew install gcc autoconf automake make gnu-sed
 ```
+
+and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mfixsolver](#building-custom-mfixsolver).
+
+
+To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
+To build MFIX from source, proceed to [Building MFIX](#building-mfix).
+
+
+## Windows
+
+Open  the Anaconda terminal, and enter the following commands:
+
 
 ```shell
 C:\> conda install -c menpo vtk=7.0.0
 C:\> conda install numpy==1.11.3 pyqt qtpy pandoc
 ```
 
+
+To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
+
+
+To build MFIX from source or build the custom solver: 
+
+### Install MSYS2 environment (a Unix-like environment for Windows based on Cygwin):
+
+
+```shell
+C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
+```
+
+
 ### Patch distutils for Python 3
 
 If you are using Python 3, you need to make edits to the following files.
 
-In `ANACONDA\_HOME/envs/py3/Lib/distutils/cygwinccompiler.py:85`  add the line
+<!-- TODO: Explain what ANACONDA_HOME is (maybe give an example) -->
+
+
+In `ANACONDA_HOME/envs/py3/Lib/distutils/cygwinccompiler.py:85`  add the line
 
 ```python
    elif msc_ver == '1900':
@@ -169,12 +178,94 @@ user@hostname /c
 $
 ```
 
-Proceed to [Building MFIX](#building-mfix).
+
+
+and proceed to [Building MFIX](#building-mfix)or [build a custom interactive mfixsolver](#building-custom-mfixsolver).
+
+
+
+# Installing MFIX
+
+If you built MFIX as described in [Building MFIX](#building-mfix), use those binaries.
+
+Otherwise, download the latest binaries for your platform:
+
+- [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3)
+- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
+- [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
+
+<!-- TODO: replace with links to website for actual release -->
+<!-- TODO: Navigate to location where the downloaded binary is located -->
+
+```shell
+> pip install mfix-17.1-<PYTHON_VERSION>-<PLATFORM>.whl
+```
+
+You are now ready to set up and run MFIX simulation! 
+
+
+# Running MFIX simulations
+
+## From the GUI with default interactive solver (preferred for beginers)
+
+This will use the mfixsolver Python library installed with the package. Only the
+location of pymfix needs to be defined in the GUI. You can pause, unpause, stop,
+or get info from the solver.
+
+The GUI is launched from the prompt with:
+```shell
+> mfixgui
+```
+
+## From the GUI, with user interactive solver
+
+Here you use a source distribution of MFIX
+to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
+in the project directory. When running `mfixgui`, in
+the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
+have just built. You can pause, unpause, stop, or get info from the solver.
+
+The GUI is launched from the prompt with:
+```shell
+> mfixgui
+```
+
+## From the GUI, with user non-interactive mfixsolver executable (should we keep this?)
+
+ The solver is built from [Building MFIX Solver](#building-mfixsolver).
+ You cannot pause, unpause, stop, or get info from the solver.
+
+The GUI is launched from the prompt with:
+```shell
+> mfixgui
+```
+
+## From the command line with a custom mfixsolver executable (without the GUI)
+
+This is the same as in previous MFIX releases. The solver is built
+from [Building MFIX Solver](#building-mfixsolver). This option does not require
+Anaconda Python.
+
+
+
+
+
+## Uninstalling MFIX
+
+If you ever want to uninstall MFIX:
+```shell
+> pip uninstall mfix
+```
+
+
+
+
+
 
 # Building MFIX
 
-This section describes how to build the mfix Python package.
-For running command-line MFIX without the GUI, see the [next section](#building-and-running-mfix-command-line-solver).
+This section describes how to build the mfix Python package. At the end of the build process, you will have a distribution wheel to the ones available for download.
+
 
 Building from source requires the MFIX source tarball:
 
@@ -191,28 +282,9 @@ Build MFIX with:
 
 You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
 
-# Installing MFIX
 
-If you built MFIX as described in [Building MFIX](#building-mfix), use those binaries.
 
-Otherwise, download the latest binaries for your platform:
 
-- [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3)
-- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
-- [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
-
-<!-- TODO: replace with links to website for actual release -->
-
-```shell
-> pip install mfix-17.1-<PYTHON_VERSION>-<PLATFORM>.whl
-```
-
-## Uninstalling MFIX
-
-If you ever want to uninstall MFIX:
-```shell
-> pip uninstall mfix
-```
 
 # Building custom mfixsolver
 
@@ -241,6 +313,8 @@ When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select t
 
 #	Building mfixsolver
 
+This option is currently limited to Linux environment.
+
 If you are using the MFIX GUI, this section is not needed. However, you may want
 to use the command-line version of MFIX (same as in previous versions) if you do
 not have a Python distribution installed, or if you are using any of the
@@ -249,6 +323,7 @@ following features:
 -	SMP/OpenMP
 -	DMP/MPI
 -	Compilers other than GCC
+
 
 ##     Prerequisites
 To build MFIX, the following must be installed on your system. Contact your system administrator for assistance if necessary.
