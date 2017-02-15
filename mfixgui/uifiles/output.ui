@@ -143,13 +143,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="pushbutton_basic">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
         <property name="text">
          <string>Basic</string>
         </property>

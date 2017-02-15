@@ -108,11 +108,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="pushbutton_solids_materials">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Materials</string>
         </property>

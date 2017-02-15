@@ -73,11 +73,6 @@ QPushButton:checked {
       </property>
       <item row="0" column="1">
        <widget class="QPushButton" name="pushbutton_discretization">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Discretization</string>
         </property>
@@ -88,11 +83,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="3">
        <widget class="QPushButton" name="pushbutton_preconditioner">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Preconditioner</string>
         </property>
@@ -103,13 +93,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="pushbutton_residuals">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
         <property name="text">
          <string>Residuals</string>
         </property>
@@ -120,11 +103,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="pushbutton_linear_solver">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Linear Solver</string>
         </property>

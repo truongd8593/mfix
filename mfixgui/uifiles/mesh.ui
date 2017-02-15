@@ -19,11 +19,6 @@
    </property>
    <item row="1" column="0" colspan="5">
     <widget class="QFrame" name="frame">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
      <property name="styleSheet">
       <string notr="true">QPushButton:hover {
     color:#64B5F6;;
@@ -57,11 +52,6 @@ QPushButton:checked {
       </property>
       <item row="0" column="0">
        <widget class="QPushButton" name="pushbutton_mesh_uniform">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Background</string>
         </property>
@@ -78,11 +68,6 @@ QPushButton:checked {
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="pushbutton_mesh_mesher">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
         <property name="text">
          <string>Mesher</string>
         </property>
