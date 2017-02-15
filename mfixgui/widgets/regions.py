@@ -647,6 +647,46 @@ class RegionsWidget(QtWidgets.QWidget):
                     self.new_region(name, extents, rtype, defer_update=True)
 
 
+
+    def fixup_regions_table(self, tw, stretch_column=3):
+        ui = self # !!
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.model().columnCount()
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        # trim excess vertical space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        nrows = tw.model().rowCount()
+        if nrows==0:
+            row_height = 0
+            height = header_height+scrollbar_height
+        else:
+            row_height = tw.rowHeight(0)
+            height =  (header_height+scrollbar_height
+                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar
+
+        if tw == ui.tablewidget_regions:
+            ui.top_frame.setMaximumHeight(height+24)
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
+            ui.top_frame.updateGeometry()
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+        else:
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(height)
+        tw.updateGeometry() #? needed?
+
+
+
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """
         region_dict = self.tablewidget_regions.value
