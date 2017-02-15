@@ -18,8 +18,11 @@ MFIX website useful before downloading the code.
 
 For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
-- If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix). This is the recommended way to start learning and using MFiX for most users. 
-- If you want to build and install MFIX from source , see [Building MFIX](#building-mfix)
+- If you want to install MFIX with binary packages, see [Installing MFIX](#installing-mfix). 
+  This is the recommended starting point to learn and use MFiX for most users. 
+  The default solver will be installed which will allow basic simulations (no UDFs).
+- If you already have MFIX installed and want to build a custom solver (with UDFs), see [build a custom interactive mfixsolver](#building-custom-mfixsolver).
+- If you want to build and install MFIX from source , see [Building MFIX](#building-mfix). 
 - If you want to run the command line version of MFIX from previous versions,
 
 ## Ways to run the MFIX
