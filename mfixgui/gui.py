@@ -613,15 +613,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def confirm_close(self):
         """before closing, ask user whether to end job and save project"""
-        ### FIXME this is racy, job can end while popup is open
+
         if self.job_manager.job:
-            confirm = self.message(text="Stop running job?",
-                                   buttons=['yes', 'no'],
-                                   default='no')
-            if confirm == 'yes':
-                log.info("Stopping mfix at application exit")
-                if self.job_manager.job: #XXX still racy but shorter window
-                    self.job_manager.job.stop_mfix()
+            confirm = self.message(text="Currently running job. Are you sure you want to quit?",
+                                   buttons=['ok', 'cancel'],
+                                   default='cancel')
+            if confirm == 'cancel':
+                return False
 
         if self.unsaved_flag:
             confirm = self.message(text="Save project before quitting?",
