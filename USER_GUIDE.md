@@ -297,12 +297,12 @@ Custom queue scripts are supported. The format for this script is described in t
 The Reset dialog allows for optional deleting of output files from the run
 directory. These files include:
 
-| File Type | Wild-card match |
-|-----------|-----------------|
-| Restart | \*.RES |
-| SPx | \*.SP? |
-| VTK | \*.vtp, \*.vtu, \*.pid |
-| Other | \*.OUT, \*.pid, \*.error, \*.e[0-9]\*, \*.pe[0-9]\*, \*.po[0-9]\* |
+| File Type | Wild-card match                                                   |
+|-----------|-------------------------------------------------------------------|
+| Restart   | \*.RES                                                            |
+| SPx       | \*.SP?                                                            |
+| VTK       | \*.vtp, \*.vtu, \*.pid                                            |
+| Other     | \*.OUT, \*.pid, \*.error, \*.e[0-9]\*, \*.pe[0-9]\*, \*.po[0-9]\* |
 
 \*.RES and \*.SPx files have to be removed from the run directory before a
 simulation can be played from the beginning. It is recommended to remove VTK

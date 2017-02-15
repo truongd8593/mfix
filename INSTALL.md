@@ -316,7 +316,7 @@ mfixsolver.so
 When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you have just built.
 
 
-#	Building mfixsolver
+# Building mfixsolver
 
 This option is currently limited to Linux environment.
 
@@ -329,8 +329,14 @@ following features:
 -	DMP/MPI
 -	Compilers other than GCC
 
+## Prerequisites
 
-##     Prerequisites
+MFIX is built using GNU Autoconf, which is a general tool for producing
+configure scripts for building and installing software on different computer
+systems. First, run the shell script configure_mfix to create a Makefile, then
+run GNU Make to build the MFIX executable. A step-by-step tutorial is presented
+at the end of this section.
+
 To build MFIX, the following must be installed on your system. Contact your system administrator for assistance if necessary.
 
 -	Fortran compiler. Commonly available compilers include:
@@ -341,8 +347,7 @@ GNU Autoconf version 2.69 or greater is required when building from source code
 obtained from the MFIX git repository. This does not apply to the source code
 tarball on the MFIX website.
 
-
-##     Extracting the MFIX directory
+## Extracting the MFIX directory
 
 MFIX is distributed as a compressed source tar ball named mfix-17.1.tar.gz. To
 decompress and extract the tar file:
@@ -356,37 +361,7 @@ Extracting the tar ball creates a directory named mfix-17.1 containing the
 MFIX and POSTMFIX source codes, tests and tutorials, as well as some additional
 documentation and utilities.
 
-MFIX is built using GNU Autoconf, which is a general tool for producing
-configure scripts for building and installing software on different computer
-systems. First, run the shell script configure_mfix to create a Makefile, then
-run GNU Make to build the MFIX executable. A step-by-step tutorial is presented
-at the end of this section.
-
-##	Configuring with configure_mfix
-
-This section focuses on the configure_mfix script and the availability of
-several flags. configure_mfix is a wrapper for the usual GNU Autoconf configure
-script.
-
-### Alias creation (optional)
-
-For convenience, an alias can be created to avoid specifying the path to the
-MFIX configure script. Assuming the MFIX source was extracted in the home
-directory, and you are using the C shell, an alias can be created by executing:
-
-```shell
-> echo "alias configure_mfix ~/mfix-17.1/configure_mfix" >> ~/.cshrc
-```
-This appends the quoted text to the .cshrc file located in the home directory. The alias will take effect the on the next login or after sourcing the .cshrc file. To source the .cshrc file in the current terminal, enter at the prompt:
-```shell
-> source ~/.cshrc
-```
-
-Afterwards, MFIX can be configured from any directory by running the alias,
-`configure_mfix`. Users familiar with the creation of aliases may choose other
-various ways to define an alias (e.g., directly editing the `.cshrc` or
-`.cshrc_aliases` files). Users that use a different shell should create an alias
-with the respective shell resource file (e.g. bash shell users `~/.bashrc`).
+## Configuring with configure_mfix
 
 ### Passing arguments to the build script
 
@@ -407,6 +382,56 @@ The most common arguments are given in the following table.
 | `FCFLAGS='FLAGS'` | Specify compiler flags                         |
 | --dmp             | Enable distributed memory support (MPI)        |
 | --smp             | Enable shared memory parallel support (OpenMP) |
+
+##	Building mfix with GNU make
+
+If the configure script successfully created a Makefile (see above), then the
+next step is to build MFIX by running GNU make command.
+
+```shell
+> make
+```
+
+The -j option may be used build in parallel which may decrease compile time.
+```shell
+> make -j
+```
+
+Note that on some systems parallel builds may fail due to file dependencies
+(e.g., file1 depends of file2 which has not been compiled yet). Typically,
+running the make command again will overcome these errors. If compiling and
+linking are successful, an executable named mfixsolver along with a few intermediate
+build files will be in the current directory.
+
+## Building custom solver for DMP (MPI)
+
+DMP support is only tested on Linux.
+
+DMP support `--dmp` can be combined with interactive support `--python`, but has
+only been tested for GCC.
+
+### Prerequisites
+
+```shell
+> apt-get install libopenmpi-dev openmpi-bin
+```
+
+### Building solver with MPI support
+
+
+```shell
+> configure_mfix --dmp
+> make
+```
+
+## Building custom solver with non-GCC compilers
+
+MFIX can be built with other compilers, but interactive features `--python` are not supported at this time.
+
+```shell
+> configure_mfix --dmp
+> make
+```
 
 Specifying the Fortran compiler (optional but recommended)
 
@@ -435,7 +460,8 @@ Common compilers are given in the following table.
 
 Older versions commonly use the mpif90 command.
 
-### Specifying compiler options (optional)
+
+## Specifying custom compiler flags
 
 Compiler flags are specified by passing the FCFLAGS argument to
 `configure_mfix`. If the FCFLAGS argument is not specified, the compiler
@@ -473,28 +499,7 @@ Common compiler flags for Intel Fortran are given in the following table.
 | -debug             | Generates complete debugging information                                                                                                     |
 
 
-##	Building mfix with GNU make
-
-If the configure script successfully created a Makefile (see above), then the
-next step is to build MFIX by running GNU make command.
-
-```shell
-> make
-```
-
-The -j option may be used build in parallel which may decrease compile time.
-```shell
-> make -j
-```
-
-Note that on some systems parallel builds may fail due to file dependencies
-(e.g., file1 depends of file2 which has not been compiled yet). Typically,
-running the make command again will overcome these errors. If compiling and
-linking are successful, an executable named mfix along with a few intermediate
-build files will be in the current directory.
-
-
-##	Building MFIX: A step-by-step tutorial
+## Building MFIX: A step-by-step tutorial
 
 The following example shows how to build and run the fluidbed1 tutorial. This
 example assumes you have the GNU Fortran compiler (gfortran) installed.
