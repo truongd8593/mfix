@@ -2281,8 +2281,8 @@ class MfixGui(QtWidgets.QMainWindow,
         # remove deleted projects
         clean_proj = []
         for proj in rec_projects:
-            if os.path.exsits(proj):
-                clean_proj.append(clean_proj)
+            if os.path.exists(proj):
+                clean_proj.append(proj)
 
         proj = self.get_project_file()
         if proj in clean_proj:
