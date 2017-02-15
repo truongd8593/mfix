@@ -2278,7 +2278,16 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             rec_projects = rec_projects.split('|')
 
-        new_rec_projects = list(set([self.get_project_file()] + rec_projects))[:MAX_RECENT_PROJECTS]
+        # remove deleted projects
+        clean_proj = []
+        for proj in rec_projects:
+            if os.path.exsits(proj):
+                clean_proj.append(clean_proj)
+
+        proj = self.get_project_file()
+        if proj in clean_proj:
+            clean_proj.remove(proj)
+        new_rec_projects = ([proj] + clean_proj)[:MAX_RECENT_PROJECTS]
         self.settings.setValue('recent_projects', '|'.join(new_rec_projects))
 
     def open_project(self, project_path, runname=None, interactive=True):
@@ -2664,7 +2673,7 @@ class MfixGui(QtWidgets.QMainWindow,
         chem = bool(self.project.reactions)
         # try to get image from vtk
         temp = os.path.join(self.get_project_dir(), 'temp.png')
-        self.vtkwidget.screenshot(True, temp, size=[600, 600])
+        self.vtkwidget.screenshot(True, temp, size=[400, 400])
 
         # create the thumbnail
         create_thumbnail(path, s, geo, chem, temp)
