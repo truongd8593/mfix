@@ -173,7 +173,7 @@ cgs_to_SI = {
   'ew_young':       0.1,  # barye -> Pa            : Young's modulus for the wall . Required when using the
   'ew_young_actual':0.1,  # barye -> Pa            : Actual Young's modulus for the walls . Used for computing
   'fac_dim_max_cut_cell':1,# factor                : Factor used to allocate cut cell arrays (expressed as a
-  'factor_rlm':     0.01, # cm -> m                : Effectively increase the radius of a particle (multiple of
+  'factor_rlm':     1,    # factor                 : Effectively increase the radius of a particle (multiple of
   'filter_size_ratio':1,  # ratio                  : Ratio of filter size to computational cell size.
   'first_dx':       0.01, # cm -> m                : Value of first DX in a segment (x-direction). A negative
   'first_dy':       0.01, # cm -> m                : Value of first DY in a segment (y-direction). A negative
@@ -258,7 +258,7 @@ cgs_to_SI = {
   'n_z':            1.0, # unit vector             : Z-component of normal vector defining the plane (used when
   'neighbor_search_rad_ratio':1,# ratio            : Ratio of the distance (imaginary sphere radius) to particle
   'norm_g':         1,    # factor                 : Factor to normalize the gas continuity equation residual.
-  'norm_s':         1,    # volume fraction        : Factor to normalize the solids continuity equation residual.
+  'norm_s':         1,    # factor                 : Factor to normalize the solids continuity equation residual.
   'out_dt':         1,    # s                      : Interval at which standard output (.OUT) file is updated.
   'out_msh_value':  1, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
   'out_stl_value':  1, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. A value
@@ -485,6 +485,10 @@ def main():
             # All 'dt's are time.
             if key.endswith('_dt'):
                 SI_unit = 's'
+            if 'factor' in desc_lower or 'factor' in key:
+                SI_unit = 'factor'
+            elif 'ratio' in desc_lower or 'ratio' in key:
+                SI_unit = 'ratio'
             else:
                 # Anything which is a fraction is dimensionless
                 for s in ('volume fraction', 'void fraction', 'mass fraction', 'solids fraction'):
@@ -556,9 +560,6 @@ def main():
             # Velocities are m/s
             elif 'velocity' in desc_lower:
                 SI_unit = 'm/s'
-            # "Factors" are dimensionless
-            elif 'factor' in desc_lower:
-                SI_unit = 'factor'
             # Coefficient of restitition is dimensionless
             elif 'coefficient of restitution' in desc_lower:
                 SI_unit = 'coefficient'
@@ -568,12 +569,9 @@ def main():
             # Radii are meters
             elif 'radius' in desc_lower:
                 SI_unit = 'm'
-            # Distances are too, but avoid 'ratio of distance'
-            elif 'distance' in desc_lower and 'ratio ' not in desc_lower:
+            # Distances are too
+            elif 'distance' in desc_lower:
                 SI_unit = 'm'
-            # Ratios are dimensionless
-            elif 'ratio ' in desc_lower:
-                SI_unit = 'ratio'
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
