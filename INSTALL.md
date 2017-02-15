@@ -134,7 +134,7 @@ To build MFIX from source or build the custom solver:
 
 
 ```shell
-C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc
+C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc m2w64-gcc-gfortran
 ```
 
 
