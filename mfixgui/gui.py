@@ -2729,6 +2729,8 @@ def main():
         help="Use default geometry, don't restore previous state.")
     ARG('-d', '--developer', action='store_true',
         help="Enable developer mode.")
+    ARG('-c', '--clear', action='store_true',
+        help="Clear all saved settings.")
     ARG('-t', '--test', action='store_true',
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
@@ -2736,6 +2738,11 @@ def main():
     ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
+
+    if args.clear:
+        print("Clearing all MFIX settings from ", SETTINGS.fileName())
+        SETTINGS.clear()
+        return
 
     # setup logging
     logging.basicConfig(stream=sys.stdout,
