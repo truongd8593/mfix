@@ -420,7 +420,6 @@ class RegionsWidget(QtWidgets.QWidget):
                     shape = 'STL'
                 else:
                     shape = row_data['type'] = self.get_region_type([row_data['from'], row_data['to']])
-                self.lineedit_region_type.setText(shape)
                 if old_shape != shape:
                     self.vtkwidget.change_region_type(name, row_data)
 
@@ -503,7 +502,6 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.update_parameter_map(value[key], name, key)
 
         self.tablewidget_regions.set_value(data)
-        #self.lineedit_region_type.setText(shape)
 
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
