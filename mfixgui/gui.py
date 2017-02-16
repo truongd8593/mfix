@@ -78,7 +78,7 @@ if PRECOMPILE_UI:
         from uifiles.solids import Ui_solids
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
-        from uifiles.initiasl_conditions import Ui_initial_conditions
+        from uifiles.initial_conditions import Ui_initial_conditions
         from uifiles.boundary_conditions import Ui_boundary_conditions
         from uifiles.point_sources import Ui_point_sources
         from uifiles.internal_surfaces import Ui_internal_surfaces
