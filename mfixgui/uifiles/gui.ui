@@ -225,7 +225,7 @@ QPushButton:disabled {
           </font>
          </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string>Ready</string>
          </property>
         </widget>
        </item>
