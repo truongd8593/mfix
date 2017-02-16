@@ -369,7 +369,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
-        self.init_status_animation()
+        #self.init_status_animation()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -770,12 +770,13 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.toolbutton_collapse_navigation.setIcon(self.icon_collapse_right)
 
     def status_message(self, message=''):
-        '''set the status text and update the animation'''
-        self.status_animation.change_text(message)
+        '''set the status text'''
+        if message == self.ui.label_status.text():
+            return
+        self.ui.label_status.setText(message)
         if message != 'Ready': # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
-        else:
-            self.status_animation.set_progress(0)
+
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -1325,10 +1326,10 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_output()
 
     # --- animation methods ---
-    def init_status_animation(self):
-        '''create the status animation widget'''
-        self.status_animation = StatusIndicator()
-        self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
+    #def init_status_animation(self):
+    #    '''create the status animation widget'''
+    #    self.status_animation = StatusIndicator()
+    #    self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
 
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
