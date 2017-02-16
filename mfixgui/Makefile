@@ -45,7 +45,7 @@ test-load-all-3: clean
 	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xargs -0 -n 1 ./run3.sh -linfo -t
 
 thumbnails: clean
-	find .. -name mfix.dat -print0 | xargs -0 -n 1 ./run.sh -linfo -t -ct
+	find ../tutorials ../defaults ../benchmarks -name mfix.dat -print0 | xargs -0 -n 1 ./run.sh -linfo -t -ct
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp

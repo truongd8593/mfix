@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
-
-from .version import __version__
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import argparse
 import copy
@@ -17,71 +16,59 @@ import signal
 import sys
 import time
 import traceback
-
 from collections import OrderedDict
 
-# Initialize logger early
-log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
-
-from mfixgui.tools.general import SCRIPT_DIRECTORY
-sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-
 # import qt
-from qtpy import QtCore, QtWidgets, QtGui, PYQT5
-from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, Signal
-UserRole = QtCore.Qt.UserRole
+from qtpy import PYQT5, QtCore, QtGui, QtWidgets
+from qtpy.QtCore import QSettings, Qt, Signal
 
-# TODO: add pyside? There is an issue to add this to qtpy:
-# https://github.com/spyder-ide/qtpy/issues/16
-
-PRECOMPILE_UI = False
-
-if not PRECOMPILE_UI:
-    from qtpy import uic
-
-# local imports
-from mfixgui.project_manager import ProjectManager
-from mfixgui.job import JobManager
-from mfixgui.monitor import Monitor
-
-from mfixgui.widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
-                          Table, BaseWidget)
-from mfixgui.widgets.regions import RegionsWidget
-
-from mfixgui.widgets.species_popup import SpeciesPopup
-from mfixgui.widgets.regions_popup import RegionsPopup
-from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.widgets.parameter_dialog import ParameterDialog
-from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
-from mfixgui.widgets.animations import StatusIndicator
-from mfixgui.widgets.new_popup import NewProjectDialog
-
-from mfixgui.model_setup import ModelSetup
-from mfixgui.fluid_handler import FluidHandler
-from mfixgui.solids_handler import SolidsHandler
-from mfixgui.ics import ICS
 from mfixgui.bcs import BCS
-from mfixgui.pss import PSS
-from mfixgui.iss import ISS
-from mfixgui.mesh import Mesh
-from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
+from mfixgui.constants import *
+from mfixgui.fluid_handler import FluidHandler
+from mfixgui.graphic_tabs import GraphicTabs
+from mfixgui.ics import ICS
+from mfixgui.interpreter import Interpreter
+from mfixgui.iss import ISS
+from mfixgui.job import JobManager
+from mfixgui.main_menu import MainMenu
+from mfixgui.mesh import Mesh
+from mfixgui.model_setup import ModelSetup
+from mfixgui.monitor import Monitor
 from mfixgui.numerics import Numerics
 from mfixgui.output import Output
-from mfixgui.graphic_tabs import GraphicTabs
-
-from mfixgui.interpreter import Interpreter
-
-from mfixgui.tools.general import (get_icon, widget_iter, get_pixmap,
-                           is_text_string, is_unicode, get_image_path,
-                           format_key_with_args, to_unicode_from_fs,
-                           get_username, convert_string_to_python,
-                           to_fs_from_unicode,)
-from mfixgui.tools.thumbnail import create_thumbnail
-from mfixgui.tools.namelistparser import getKeywordDoc
+from mfixgui.project_manager import ProjectManager
+from mfixgui.pss import PSS
+from mfixgui.solids_handler import SolidsHandler
+from mfixgui.tools.general import (SCRIPT_DIRECTORY, convert_string_to_python,
+                                   format_key_with_args, get_icon,
+                                   get_image_path, get_pixmap, get_username,
+                                   is_text_string, is_unicode,
+                                   to_fs_from_unicode, to_unicode_from_fs,
+                                   widget_iter)
 from mfixgui.tools.keyword_args import keyword_args
+from mfixgui.tools.namelistparser import getKeywordDoc
+from mfixgui.tools.thumbnail import create_thumbnail
+from mfixgui.widgets.animations import StatusIndicator
+from mfixgui.widgets.base import (BaseWidget, CheckBox, ComboBox,
+                                  DoubleSpinBox, LineEdit, SpinBox, Table)
+from mfixgui.widgets.new_popup import NewProjectDialog
+from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
+from mfixgui.widgets.parameter_dialog import ParameterDialog
+from mfixgui.widgets.regions import RegionsWidget
+from mfixgui.widgets.regions_popup import RegionsPopup
+from mfixgui.widgets.run_popup import RunPopup
+from mfixgui.widgets.species_popup import SpeciesPopup
 
-from mfixgui.constants import *
+from .version import __version__
+
+# Initialize logger early
+log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
+UserRole = QtCore.Qt.UserRole
+
+PRECOMPILE_UI = False
+if not PRECOMPILE_UI:
+    from qtpy import uic
 
 if PRECOMPILE_UI:
     try:
@@ -91,7 +78,7 @@ if PRECOMPILE_UI:
         from uifiles.solids import Ui_solids
         from uifiles.geometry import Ui_geometry
         from uifiles.gui import Ui_MainWindow
-        from uifiles.initial_conditions import Ui_initial_conditions
+        from uifiles.initiasl_conditions import Ui_initial_conditions
         from uifiles.boundary_conditions import Ui_boundary_conditions
         from uifiles.point_sources import Ui_point_sources
         from uifiles.internal_surfaces import Ui_internal_surfaces
@@ -110,8 +97,8 @@ if PRECOMPILE_UI:
 SETTINGS = QSettings('MFIX', 'MFIX')
 ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
 
-# --- Main Gui ---
 
+# --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow,
               ModelSetup,
               Mesh,
@@ -152,7 +139,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Show the user a warning & log it - use instead of log.warn
         if not popup:
             self.print_internal("Warning: %s" % msg)
-            # print_internal will call log.warn if message starts with "Warning"
+            #print_internal will call log.warn if message starts with "Warning"
         else:
             self.message(text=msg)
             # Will also print-internal and log
@@ -2672,6 +2659,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         geo = self.project.get_value('cartesian_grid', False)
         chem = bool(self.project.reactions)
+        des = self.project.get_value('description')
         # try to get image from vtk
         temp = os.path.join(self.get_project_dir(), 'temp.png')
         self.vtkwidget.screenshot(True, temp, size=[400, 400])
@@ -2684,7 +2672,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save the model types too!
         path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
         with open(path, 'w') as f:
-            f.write(','.join(str(v) for v in [s, geo, chem]))
+            f.write(','.join(str(v) for v in [s, geo, chem, des]))
 
     # Following functions are overrideable for test runner
     def confirm_rename(self, project_file, runname_mfx):
