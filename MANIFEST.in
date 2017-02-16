@@ -1,4 +1,4 @@
-include README CHANGES Bug_Fixes DISCLAIMER NOTICE mfix_user_guide.pdf
+include README CHANGES Bug_Fixes DISCLAIMER NOTICE mfix_user_guide.pdf configure_mfix
 recursive-include benchmarks *
 recursive-include build-aux *
 recursive-include defaults *

@@ -77,7 +77,7 @@ To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 To build MFIX from source or build the custom solver, install the following dependencies with:
 
 ```shell
-> sudo apt install gcc autoconf automake make
+> sudo apt install gcc gfortran autoconf automake make
 ```
 
 and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mfixsolver](#building-custom-mfixsolver).
