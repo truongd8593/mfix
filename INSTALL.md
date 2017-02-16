@@ -175,7 +175,7 @@ For running command-line MFIX without the GUI, see the [next section](#building-
 
 Building from source requires the MFIX source tarball:
 
-- [mfix-17.1.tar.gz](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build%3Asrc)
+- [mfix-17.1.tar.gz](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build%3Asrc)
 <!-- TODO: replace with link to website for actual release -->
 
 Build MFIX with:
@@ -194,9 +194,9 @@ If you built MFIX as described in [Building MFIX](#building-mfix), use those bin
 
 Otherwise, download the latest binaries for your platform:
 
-- [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_linux_py3)
-- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
-- [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/gui/download?job=build_windows_py3)
+- [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_linux_py3)
+- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_windows_py3)
+- [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_windows_py3)
 
 <!-- TODO: replace with links to website for actual release -->
 
