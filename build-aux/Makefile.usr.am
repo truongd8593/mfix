@@ -175,8 +175,13 @@ pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 mfixsolver-f2pywrappers.o: mfixsolver-f2pywrappers.f
 	$(F77COMPILE) -c -o $@ $<
 
-mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfix_LDADD)
+if MPI
+mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfixsolver_LDADD)
 	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
+else
+mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfixsolver_LDADD)
+	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
+endif
 
 F2PY_FILES = \
 	mfixsolver-f2pywrappers.f \

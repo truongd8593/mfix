@@ -1,5 +1,13 @@
-import os
+"""the main (file menu) bar."""
 import json
+import os
+
+from qtpy import QtCore, QtGui, QtWidgets
+
+from mfixgui.tools.general import (get_icon, get_mfix_home, get_pixmap,
+                                   get_separator)
+from mfixgui.version import __version__
+from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
 try:
@@ -11,21 +19,19 @@ except ImportError:
     import urlparse
     import urllib
 
-from qtpy import QtCore, QtWidgets, QtGui
-
-from mfixgui.tools.general import get_icon, get_mfix_home, get_separator, get_pixmap
-from mfixgui.version import __version__
-from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
-
 
 def path2url(path):
+    """Convert path to url."""
     return urlparse.urljoin(
       'file:', urllib.pathname2url(path))
 
+
 class MainMenu(object):
+    """Main menu mixin for the gui."""
+
     main_menu_animation_speed = 150
     def init_main_menu(self):
-        """build the main menu"""
+        """Build the main menu."""
         self.main_menu = QtWidgets.QWidget(self)
         self.main_menu.setObjectName('main_menu')
         self.main_menu.setStyleSheet('QWidget#main_menu{background-color: #E0E0E0;}')
@@ -87,9 +93,27 @@ class MainMenu(object):
         bw.setStyleSheet('QWidget{background-color: white;}')
         st.addWidget(bw)
 
+        # --- look for template files ---
+        mfx_dir = get_mfix_home()
+        def set_paths(dirname, ui_name):
+            path_var = []
+            top_path = os.path.join(mfx_dir, dirname, '')
+            for root, dirs, files in os.walk(top_path):
+                if any(f.endswith('mfix.dat') for f in files):
+                    path_var.append(root.replace(top_path,''))
+            if path_var:
+                path_var.sort(key=lambda y: y.lower())
+            return path_var
+
+        self.default_paths = set_paths('defaults', 'Defaults')
+        self.tutorial_paths = set_paths('tutorials', 'Tutorials')
+        self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
+
+        # size policies
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
         label_policy_m = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         spacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum,)
+
         # --- build open ---
         ow = self.ui.main_menu_open_widget = QtWidgets.QWidget()
         ow.setObjectName('open')
@@ -109,32 +133,43 @@ class MainMenu(object):
         browse.clicked.connect(self.handle_open)
         ow_layout.addWidget(browse, 1, 0)
 
-        lw = self.ui.main_menu_loc_lw = QtWidgets.QListWidget()
-        lw.setMaximumWidth(200)
-        lw.selectionModel().selectionChanged.connect(self.handle_main_menu_browse_loc_changes)
-        mfx_dir = get_mfix_home()
+        spacer_exp = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
+        ow_layout.addItem(spacer_exp, 1, 1)
 
-        def set_paths(dirname, ui_name):
-            path_var = []
-            top_path = os.path.join(mfx_dir, dirname, '')
-            for root, dirs, files in os.walk(top_path):
-                if any(f.endswith('mfix.dat') for f in files):
-                    path_var.append(root.replace(top_path,''))
-            if path_var:
-                path_var.sort(key=lambda y: y.lower())
-            return path_var
+        # clear_recent = QtWidgets.QToolButton()
+        # clear_recent.setText('Clear Recent')
+        # clear_recent.clicked.connect(self.handle_clear_recent)
+        # ow_layout.addWidget(clear_recent, 1, 2)
 
-        self.default_paths = set_paths('defaults', 'Defaults')
-        self.tutorial_paths = set_paths('tutorials', 'Tutorials')
-        self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
+        lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
+        lw_f.setFrameStyle(lw_f.NoFrame)
+        #lw_f.setViewMode(QtWidgets.QListWidget.IconMode)
+        lw_f.setIconSize(QtCore.QSize(128,128))
+        lw_f.setUniformItemSizes(True)
+        lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
+        lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
+        ow_layout.addWidget(lw_f, 2, 0, 1, 3)
 
-        loc = ['Recent', '', 'Clear Recent']
-        lw.addItems(loc)
-        ow_layout.addWidget(lw, 2, 0)
+        tb = QtWidgets.QToolButton()
+        tb.setIcon(get_icon('close.png'))
+        tb.setToolTip('Clear list of recent projects')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(self.handle_clear_recent)
+        ow_layout.addWidget(tb, 1, 2)
 
-        lw = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
-        lw.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw, 2, 1)
+        tb = QtWidgets.QToolButton()
+        tb.setIcon(get_icon('list.png'))
+        tb.setToolTip('View projects as list')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(lambda: lw_f.setViewMode(QtWidgets.QListWidget.ListMode))
+        ow_layout.addWidget(tb, 1, 3)
+
+        tb = QtWidgets.QToolButton()
+        tb.setIcon(get_icon('tile.png'))
+        tb.setToolTip('View projects as grid')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(lambda: lw_f.setViewMode(QtWidgets.QListWidget.IconMode))
+        ow_layout.addWidget(tb, 1, 4)
 
         #--- build new ---
         nw = self.ui.main_menu_open_widget = QtWidgets.QWidget()
@@ -172,27 +207,62 @@ class MainMenu(object):
         lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
         nw_layout.addWidget(lw, 2, 0, 1, -1)
 
-        mfx_dir = get_mfix_home()
+        tb = QtWidgets.QToolButton()
+        tb.setIcon(get_icon('list.png'))
+        tb.setToolTip('View projects as list')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(lambda: lw.setViewMode(QtWidgets.QListWidget.ListMode))
+        fw_layout.addWidget(tb)
+
+        tb = QtWidgets.QToolButton()
+        tb.setIcon(get_icon('tile.png'))
+        tb.setToolTip('View projects as grid')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(lambda: lw.setViewMode(QtWidgets.QListWidget.IconMode))
+        fw_layout.addWidget(tb)
+
+        # read info about the template files
+        temp_info = {}
+        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
+        if os.path.exists(temp_info_file):
+            with open(temp_info_file) as f:
+                temp_info = json.load(f)
+
+        # loop through template files, building listwidgetitems
         for dirname, paths in (('defaults', self.default_paths), ('tutorials', self.tutorial_paths), ('benchmarks',self.benchmark_paths)):
             for path in paths:
                 name = os.path.basename(path)
                 full_path = os.path.join(mfx_dir, dirname, path)
                 thumb_path = os.path.join(full_path, '.thumbnail')
-                info_path = os.path.join(full_path, '.mfixguiinfo')
-                pix = QtGui.QPixmap()
-                img = QtGui.QImage(thumb_path, 'PNG')
-                pix.convertFromImage(img)
-                item = QtWidgets.QListWidgetItem(QtGui.QIcon(pix), name)
+
+                if os.path.exists(thumb_path):
+                    pix = QtGui.QPixmap()
+                    img = QtGui.QImage(thumb_path, 'PNG')
+                    pix.convertFromImage(img)
+                    icon = QtGui.QIcon(pix)
+                else:
+                    icon = get_icon('missing_thumbnail.png')
+
+                # extract info from the template info file
+                info = temp_info.get(name, {})
+                description = info.get('description', None)
+                solver = info.get('solver', 'single')
+                geo = info.get('geometry', 'false')
+                chem = info.get('chemistry', 'false')
+
+                # build a list of booleans for filtering templates
+                # [single, tfm, pic, dem, hybrid, geometry, chemistry]
+                enable_list = [solver == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
+                enable_list.extend([i.lower() == 'true' for i in [geo, chem]])
+
+                # if there is a desciption, add it to the name
+                if description is not None:
+                    name = '\n'.join([name, description])
+
+                item = QtWidgets.QListWidgetItem(icon, name)
                 item.full_path = full_path
-                item.enable_list = [False]*7
-                info = None
-                if os.path.exists(info_path):
-                    with open(info_path) as f:
-                        info = f.readlines()[0].split(',')
-                if info is not None and len(info) == 3:
-                    s = [info[0] == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
-                    s.extend([i.lower() == 'true' for i in info[-2:]])
-                    item.enable_list = s
+                item.enable_list = enable_list
+
                 lw.addItem(item)
 
         # --- build info ---
@@ -394,11 +464,10 @@ class MainMenu(object):
         il.setWordWrap(True)
         aw_layout.addWidget(il, 3, 0, 1, -1)
 
-
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
     def handle_main_menu_open_project(self, item):
-
+        """Open the project of the selected item"""
         item = self.ui.main_menu_file_lw.currentItem()
         if not item:
             return
@@ -411,8 +480,7 @@ class MainMenu(object):
                 return
             self.clear_unsaved_flag()
 
-        project_path = str(item.text())
-
+        project_path = item.full_path
         if os.path.exists(project_path):
             self.open_project(project_path)
         else:
@@ -429,28 +497,9 @@ class MainMenu(object):
 
         self.open_new_from_template(os.path.join(item.full_path, 'mfix.dat'))
 
-    def handle_main_menu_browse_loc_changes(self, selected, deselected):
-        if selected:
-            self.set_file_listwidget(self.ui.main_menu_loc_lw.item(selected.indexes()[0].row()).text().lower())
-
-    def set_file_listwidget(self, text):
-
+    def handle_clear_recent(self):
+        self.settings.setValue('recent_projects', '|'.join([]))
         self.ui.main_menu_file_lw.clear()
-
-        if text == 'tutorials':
-            self.ui.main_menu_file_lw.addItems(self.tutorial_paths)
-        elif text == 'benchmarks':
-            self.ui.main_menu_file_lw.addItems(self.benchmark_paths)
-        elif text == 'defaults':
-            self.ui.main_menu_file_lw.addItems(self.default_paths)
-        elif text == 'recent':
-            projects = self.settings.value('recent_projects')
-            if projects:
-                existing_projects = [ project for project in projects.split('|') if os.path.exists(project)]
-                self.ui.main_menu_file_lw.addItems(existing_projects)
-        elif text == 'clear recent':
-            self.settings.setValue('recent_projects', '|'.join([]))
-
 
     def handle_main_menu_selection_changed(self, selected, deselected):
         if selected and selected.indexes():
@@ -480,13 +529,15 @@ class MainMenu(object):
                     index = matches[0]
                 sw.setCurrentIndex(index)
 
-
     def handle_main_menu(self):
         """Show the main menu"""
 
         project_file = self.get_project_file()
         if project_file is None:
-            self.ui.main_menu_list.setCurrentRow(2)
+            if self.settings.value('recent_projects', ''):
+                self.ui.main_menu_list.setCurrentRow(2)
+            else:
+                self.ui.main_menu_list.setCurrentRow(1)
             self.disable_main_menu_items(['project info', 'save', 'save as', 'export project', 'export workflow', 'import workflow'])
         else:
             self.ui.main_menu_modified_time.setText(
@@ -507,7 +558,8 @@ class MainMenu(object):
             self.disable_main_menu_items([], ['save'])
             self.ui.main_menu_list.setCurrentRow(0)
 
-        self.ui.main_menu_loc_lw.setCurrentRow(0)
+        # populate recent projects
+        self.populate_recent_projects()
 
         tw, th = self.ui.toolbutton_file.width(), self.ui.toolbutton_file.height()
         self.ui.main_menu_return.setMinimumWidth(tw)
@@ -522,7 +574,49 @@ class MainMenu(object):
         ani.finished.connect(self.main_menu_animation_finished)
         ani.start()
 
-    def create_main_menu_animation(self, target, x_start, y_start, x_end,y_end):
+    def populate_recent_projects(self):
+        projs = self.settings.value('recent_projects', '').split('|')
+
+        if not projs:
+            return
+
+        lw = self.ui.main_menu_file_lw
+        lw.clear()
+        for proj in projs:
+            if not os.path.exists(proj):
+                continue
+            name = os.path.basename(proj)
+            dir_ = os.path.dirname(proj)
+            thumb_path = os.path.join(dir_, '.thumbnail')
+
+            if os.path.exists(thumb_path):
+                pix = QtGui.QPixmap()
+                img = QtGui.QImage(thumb_path, 'PNG')
+                pix.convertFromImage(img)
+                icon = QtGui.QIcon(pix)
+            else:
+                icon = get_icon('missing_thumbnail.png')
+
+            info_path = os.path.join(dir_, '.mfixguiinfo')
+            info = 'None'
+            if os.path.exists(info_path):
+                with open(info_path) as f:
+                    info = f.readlines()[0].split(',')
+                if len(info) > 3:
+                    info = ','.join(info[3:])
+                else:
+                    info = 'None'
+
+            name = name.split('.')[0]
+            text = '\n'.join([name, info, proj])
+            item = QtWidgets.QListWidgetItem(icon, text)
+            item.full_path = proj
+            lw.addItem(item)
+
+        sb = lw.verticalScrollBar()
+        sb.setValue(0)
+
+    def create_main_menu_animation(self, target, x_start, y_start, x_end, y_end):
         animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
         animation.setDuration(self.main_menu_animation_speed)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))

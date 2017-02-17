@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
-
-from .version import __version__
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import argparse
 import copy
@@ -17,71 +16,59 @@ import signal
 import sys
 import time
 import traceback
-
 from collections import OrderedDict
 
-# Initialize logger early
-log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
-
-from mfixgui.tools.general import SCRIPT_DIRECTORY
-sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-
 # import qt
-from qtpy import QtCore, QtWidgets, QtGui, PYQT5
-from qtpy.QtCore import Qt, QFileSystemWatcher, QSettings, Signal
-UserRole = QtCore.Qt.UserRole
+from qtpy import PYQT5, QtCore, QtGui, QtWidgets
+from qtpy.QtCore import QSettings, Qt, Signal
 
-# TODO: add pyside? There is an issue to add this to qtpy:
-# https://github.com/spyder-ide/qtpy/issues/16
-
-PRECOMPILE_UI = False
-
-if not PRECOMPILE_UI:
-    from qtpy import uic
-
-# local imports
-from mfixgui.project_manager import ProjectManager
-from mfixgui.job import JobManager
-from mfixgui.monitor import Monitor
-
-from mfixgui.widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox,
-                          Table, BaseWidget)
-from mfixgui.widgets.regions import RegionsWidget
-
-from mfixgui.widgets.species_popup import SpeciesPopup
-from mfixgui.widgets.regions_popup import RegionsPopup
-from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.widgets.parameter_dialog import ParameterDialog
-from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
-from mfixgui.widgets.animations import StatusIndicator
-from mfixgui.widgets.new_popup import NewProjectDialog
-
-from mfixgui.model_setup import ModelSetup
-from mfixgui.fluid_handler import FluidHandler
-from mfixgui.solids_handler import SolidsHandler
-from mfixgui.ics import ICS
 from mfixgui.bcs import BCS
-from mfixgui.pss import PSS
-from mfixgui.iss import ISS
-from mfixgui.mesh import Mesh
-from mfixgui.main_menu import MainMenu
 from mfixgui.chemistry import Chemistry
+from mfixgui.constants import *
+from mfixgui.fluid_handler import FluidHandler
+from mfixgui.graphic_tabs import GraphicTabs
+from mfixgui.ics import ICS
+from mfixgui.interpreter import Interpreter
+from mfixgui.iss import ISS
+from mfixgui.job import JobManager
+from mfixgui.main_menu import MainMenu
+from mfixgui.mesh import Mesh
+from mfixgui.model_setup import ModelSetup
+from mfixgui.monitor import Monitor
 from mfixgui.numerics import Numerics
 from mfixgui.output import Output
-from mfixgui.graphic_tabs import GraphicTabs
-
-from mfixgui.interpreter import Interpreter
-
-from mfixgui.tools.general import (get_icon, widget_iter, get_pixmap,
-                           is_text_string, is_unicode, get_image_path,
-                           format_key_with_args, to_unicode_from_fs,
-                           get_username, convert_string_to_python,
-                           to_fs_from_unicode,)
-from mfixgui.tools.thumbnail import create_thumbnail
-from mfixgui.tools.namelistparser import getKeywordDoc
+from mfixgui.project_manager import ProjectManager
+from mfixgui.pss import PSS
+from mfixgui.solids_handler import SolidsHandler
+from mfixgui.tools.general import (SCRIPT_DIRECTORY, convert_string_to_python,
+                                   format_key_with_args, get_icon,
+                                   get_image_path, get_pixmap, get_username,
+                                   is_text_string, is_unicode,
+                                   to_fs_from_unicode, to_unicode_from_fs,
+                                   widget_iter)
 from mfixgui.tools.keyword_args import keyword_args
+from mfixgui.tools.namelistparser import getKeywordDoc
+from mfixgui.tools.thumbnail import create_thumbnail
+from mfixgui.widgets.animations import StatusIndicator
+from mfixgui.widgets.base import (BaseWidget, CheckBox, ComboBox,
+                                  DoubleSpinBox, LineEdit, SpinBox, Table)
+from mfixgui.widgets.new_popup import NewProjectDialog
+from mfixgui.widgets.output_selection_popup import OutputSelectionPopup
+from mfixgui.widgets.parameter_dialog import ParameterDialog
+from mfixgui.widgets.regions import RegionsWidget
+from mfixgui.widgets.regions_popup import RegionsPopup
+from mfixgui.widgets.run_popup import RunPopup
+from mfixgui.widgets.species_popup import SpeciesPopup
 
-from mfixgui.constants import *
+from .version import __version__
+
+# Initialize logger early
+log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
+UserRole = QtCore.Qt.UserRole
+
+PRECOMPILE_UI = False
+if not PRECOMPILE_UI:
+    from qtpy import uic
 
 if PRECOMPILE_UI:
     try:
@@ -110,8 +97,8 @@ if PRECOMPILE_UI:
 SETTINGS = QSettings('MFIX', 'MFIX')
 ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
 
-# --- Main Gui ---
 
+# --- Main Gui ---
 class MfixGui(QtWidgets.QMainWindow,
               ModelSetup,
               Mesh,
@@ -152,7 +139,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # Show the user a warning & log it - use instead of log.warn
         if not popup:
             self.print_internal("Warning: %s" % msg)
-            # print_internal will call log.warn if message starts with "Warning"
+            #print_internal will call log.warn if message starts with "Warning"
         else:
             self.message(text=msg)
             # Will also print-internal and log
@@ -369,7 +356,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
-        self.init_status_animation()
+        #self.init_status_animation()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -488,10 +475,11 @@ class MfixGui(QtWidgets.QMainWindow,
         self.signal_update_runbuttons.connect(self.slot_update_runbuttons)
 
         # --- Register widgets ---
-        self.set_splash_text('Registering widgets')
+        self.set_splash_text('Enabling controls')
         self.register_keyword_widgets()
 
         # --- Create main menu ---
+        self.set_splash_text('Setting up menu')
         self.init_main_menu()
 
         # --- vtk setup ---
@@ -613,15 +601,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def confirm_close(self):
         """before closing, ask user whether to end job and save project"""
-        ### FIXME this is racy, job can end while popup is open
+
         if self.job_manager.job:
-            confirm = self.message(text="Stop running job?",
-                                   buttons=['yes', 'no'],
-                                   default='no')
-            if confirm == 'yes':
-                log.info("Stopping mfix at application exit")
-                if self.job_manager.job: #XXX still racy but shorter window
-                    self.job_manager.job.stop_mfix()
+            confirm = self.message(text="Currently running job. Are you sure you want to quit?",
+                                   buttons=['ok', 'cancel'],
+                                   default='cancel')
+            if confirm == 'cancel':
+                return False
 
         if self.unsaved_flag:
             confirm = self.message(text="Save project before quitting?",
@@ -738,7 +724,8 @@ class MfixGui(QtWidgets.QMainWindow,
                        self.output_update_region):
             update(name, data)
 
-    def check_region_in_use(self, name):
+    def get_region_users(self, name):
+        """Return a list of object types referring to region.  Always return a list, even if empty"""
         return [t for t, check in (('ICs', self.ics_check_region_in_use),
                                    ('BCs', self.bcs_check_region_in_use),
                                    ('PSs', self.pss_check_region_in_use),
@@ -770,12 +757,13 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.toolbutton_collapse_navigation.setIcon(self.icon_collapse_right)
 
     def status_message(self, message=''):
-        '''set the status text and update the animation'''
-        self.status_animation.change_text(message)
+        '''set the status text'''
+        if message == self.ui.label_status.text():
+            return
+        self.ui.label_status.setText(message)
         if message != 'Ready': # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
-        else:
-            self.status_animation.set_progress(0)
+
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -1325,10 +1313,10 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_output()
 
     # --- animation methods ---
-    def init_status_animation(self):
-        '''create the status animation widget'''
-        self.status_animation = StatusIndicator()
-        self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
+    #def init_status_animation(self):
+    #    '''create the status animation widget'''
+    #    self.status_animation = StatusIndicator()
+    #    self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
 
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
@@ -2278,7 +2266,16 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             rec_projects = rec_projects.split('|')
 
-        new_rec_projects = list(set([self.get_project_file()] + rec_projects))[:MAX_RECENT_PROJECTS]
+        # remove deleted projects
+        clean_proj = []
+        for proj in rec_projects:
+            if os.path.exists(proj):
+                clean_proj.append(proj)
+
+        proj = self.get_project_file()
+        if proj in clean_proj:
+            clean_proj.remove(proj)
+        new_rec_projects = ([proj] + clean_proj)[:MAX_RECENT_PROJECTS]
         self.settings.setValue('recent_projects', '|'.join(new_rec_projects))
 
     def open_project(self, project_path, runname=None, interactive=True):
@@ -2652,7 +2649,7 @@ class MfixGui(QtWidgets.QMainWindow,
         widget.setToolTip(msg)
         widget.help_text = msg # TODO do something more useful with help_text
 
-    def create_project_thumbnail(self):
+    def create_project_thumbnail(self, save_info=False):
         '''create a thumbnail for the project'''
 
         path = os.path.join(self.get_project_dir(), '.thumbnail')
@@ -2662,9 +2659,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         geo = self.project.get_value('cartesian_grid', False)
         chem = bool(self.project.reactions)
+        des = self.project.get_value('description')
         # try to get image from vtk
         temp = os.path.join(self.get_project_dir(), 'temp.png')
-        self.vtkwidget.screenshot(True, temp, size=[600, 600])
+        self.vtkwidget.screenshot(True, temp, size=[400, 400])
 
         # create the thumbnail
         create_thumbnail(path, s, geo, chem, temp)
@@ -2672,9 +2670,10 @@ class MfixGui(QtWidgets.QMainWindow,
             os.remove(temp)
 
         # save the model types too!
-        path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
-        with open(path, 'w') as f:
-            f.write(','.join(str(v) for v in [s, geo, chem]))
+        if save_info:
+            path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
+            with open(path, 'w') as f:
+                f.write(','.join(str(v) for v in [s, geo, chem, des]))
 
     # Following functions are overrideable for test runner
     def confirm_rename(self, project_file, runname_mfx):
@@ -2731,6 +2730,8 @@ def main():
         help="Use default geometry, don't restore previous state.")
     ARG('-d', '--developer', action='store_true',
         help="Enable developer mode.")
+    ARG('-c', '--clear', action='store_true',
+        help="Clear all saved settings.")
     ARG('-t', '--test', action='store_true',
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
@@ -2738,6 +2739,11 @@ def main():
     ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
+
+    if args.clear:
+        print("Clearing all MFIX settings from ", SETTINGS.fileName())
+        SETTINGS.clear()
+        return
 
     # setup logging
     logging.basicConfig(stream=sys.stdout,
@@ -2877,9 +2883,9 @@ def main():
 
     else:  # Run internal test suite
         gui.navigate_all()
-        # create thumbnails
+        # create thumbnails in "batch" mode
         if args.thumbnails:
-            gui.create_project_thumbnail()
+            gui.create_project_thumbnail(save_info=True)
         print("That's all folks")
 
 if __name__  == '__main__':

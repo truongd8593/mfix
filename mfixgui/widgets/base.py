@@ -1130,9 +1130,9 @@ class DictTableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 if len(self._columns) > section:
-                    return self._columns[section]
+                    return self._columns[section].title()
                 else:
-                    return section
+                    return section.title()
 
             elif orientation == Qt.Vertical:
                 if self._rows and len(self._rows) > section:
@@ -1248,9 +1248,9 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 if self._columns and len(self._columns) > section:
-                    return self._columns[section]
+                    return self._columns[section].title()
                 else:
-                    return section
+                    return section.title()
 
             elif orientation == Qt.Vertical:
                 if self._rows and len(self._rows) > section:

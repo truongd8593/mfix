@@ -21,7 +21,6 @@
     <widget class="QGroupBox" name="groupBox">
      <property name="font">
       <font>
-       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -52,7 +51,6 @@
        <widget class="CheckBox" name="checkbox_keyword_no_k">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -66,7 +64,6 @@
        <widget class="QLabel" name="label_26">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -83,7 +80,6 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -100,7 +96,6 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -117,7 +112,6 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -131,7 +125,6 @@
        <widget class="QLabel" name="label_27">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -145,7 +138,6 @@
        <widget class="LineEdit" name="lineedit_keyword_x_max">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -156,7 +148,6 @@
        <widget class="LineEdit" name="lineedit_keyword_y_max">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -167,7 +158,6 @@
        <widget class="LineEdit" name="lineedit_keyword_z_max">
         <property name="font">
          <font>
-          <pointsize>8</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -204,11 +194,6 @@
          </item>
          <item>
           <widget class="QPushButton" name="pushbutton_mesh_autosize">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-            </font>
-           </property>
            <property name="text">
             <string>Autosize</string>
            </property>
@@ -247,7 +232,6 @@
      <widget class="QGroupBox" name="groupBox_2">
       <property name="font">
        <font>
-        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -527,7 +511,6 @@ background-color: transparent;
      <widget class="QGroupBox" name="groupBoxGeometryParameters">
       <property name="font">
        <font>
-        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -558,7 +541,6 @@ background-color: transparent;
         <widget class="QStackedWidget" name="stackedWidgetGeometryDetails">
          <property name="font">
           <font>
-           <pointsize>8</pointsize>
            <weight>50</weight>
            <bold>false</bold>
           </font>
