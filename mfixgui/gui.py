@@ -49,7 +49,6 @@ from mfixgui.tools.general import (SCRIPT_DIRECTORY, convert_string_to_python,
 from mfixgui.tools.keyword_args import keyword_args
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.thumbnail import create_thumbnail
-from mfixgui.widgets.animations import StatusIndicator
 from mfixgui.widgets.base import (BaseWidget, CheckBox, ComboBox,
                                   DoubleSpinBox, LineEdit, SpinBox, Table)
 from mfixgui.widgets.new_popup import NewProjectDialog
@@ -264,7 +263,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     except Exception as e:
                         # report which ui file it was, otherwise stack trace
                         # is too generic to be helpful.
-                        print("Error loading", path)
+                        print("Error loading", path, '\nException:\n', e)
                         raise
 
                 # assign 'self.ui.general', etc
@@ -274,6 +273,17 @@ class MfixGui(QtWidgets.QMainWindow,
                 # set text on splash
                 self.set_splash_text('Creating %s widgets'%name)
         # end of ui loading
+
+        # add and hide a progress bar in the status bar
+        # this is a hack show text on top of a QProgressBar
+        # add bar first, then label
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setTextVisible(False)
+        self.ui.horizontallayout_mode_bar.addWidget(self.progress_bar, 0, 5)
+        self.progress_bar.hide()
+        self.ui.label_status = QtWidgets.QLabel('Ready')
+        self.ui.label_status.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.ui.horizontallayout_mode_bar.addWidget(self.ui.label_status, 0, 5)
 
         # build keyword documentation from namelist docstrings
         self.keyword_doc = getKeywordDoc()
@@ -356,7 +366,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
-        #self.init_status_animation()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -677,13 +686,11 @@ class MfixGui(QtWidgets.QMainWindow,
             traceback.print_exception(*sys.exc_info())
 
     def _on_resized(self, ev):
-        ui = self.ui
         w = ev.size().width()
         if w < self.max_label_len:
             self.short_labels()
         else:
             self.long_labels()
-        g = ui.treewidget_navigation.geometry()
 
     def short_labels(self):
         tree = self.ui.treewidget_navigation
@@ -758,12 +765,16 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def status_message(self, message=''):
         '''set the status text'''
+        # pad text
+        message+='  '
         if message == self.ui.label_status.text():
             return
         self.ui.label_status.setText(message)
-        if message != 'Ready': # Don't clutter the console with unimportant msgs
+        if message != 'Ready' or 'elapsed time' not in message.lower(): # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
 
+        if 'running' not in message.lower():
+            self.progress_bar.hide()
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -829,7 +840,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     p = t/ts
                 except:
                     p = 0
-                self.status_animation.set_progress(p)
+                self.progress_bar.setValue(int(p*100))
+                self.progress_bar.show()
 
             # update status message
             tl = status.get('walltime_elapsed', None)
@@ -840,7 +852,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     h, m = divmod(m, 60)
                 except:
                     h, m, s = 0, 0, 0
-                self.status_animation.change_text('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
+                self.status_message('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -1313,11 +1325,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_output()
 
     # --- animation methods ---
-    #def init_status_animation(self):
-    #    '''create the status animation widget'''
-    #    self.status_animation = StatusIndicator()
-    #    self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
-
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
                                btn_layout=None):
@@ -1507,7 +1514,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ### "Error 2000: Unable to process line 185"
         # TODO: capture more of the error text and produce a fuller message
         # in the popup
-        lineno = bad_line = err = None
+        lineno = bad_line = None
         re_err_1000 = re.compile("Error 1000: A keyword pair on line (\d+)")
         re_err_2000 = re.compile("Error 2000: Unable to process line (\d+)")
         for (i, line) in enumerate(lines):
@@ -1600,7 +1607,6 @@ class MfixGui(QtWidgets.QMainWindow,
         """replace misleading references to 'mfix.dat' with correct
         filename"""
         project_file = self.get_project_file()
-        basename = "(unknown)" if not project_file else os.path.basename(project_file)
         text = text.replace('mfix.dat', project_file)
         return text
 
@@ -1750,7 +1756,6 @@ class MfixGui(QtWidgets.QMainWindow,
              and not self.job_manager.is_job_pending()):
 
             project_dir = self.get_project_dir()
-            project_file = self.get_project_file()
             run_name = self.get_runname()
             # save reinit.X version
             try:
@@ -1981,8 +1986,6 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(new_file) and not self.confirm_clobber(new_file):
             return
 
-        old_dir = self.get_project_dir()
-
         # Force run name to file name.  Is this a good idea?
         basename = os.path.basename(new_file)
         run_name = os.path.splitext(basename)[0]
@@ -2097,7 +2100,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         except Exception as e:
             # maybe to debug, but not to user dialog
-            #log.debug(e.message)
+            log.debug(e.message)
             self.message(
                 title='Warning',
                 icon='warning',
@@ -2628,12 +2631,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         args = widget.args if hasattr(widget, 'args') else None
-        if args is None:
-            nargs = 0
-        elif isinstance(args, int):
-            nargs = 1
-        else:
-            nargs = len(args)
+        # TODO: nargs is not used...
+        # if args is None:
+        #     nargs = 0
+        # elif isinstance(args, int):
+        #     nargs = 1
+        # else:
+        #     nargs = len(args)
 
         if isinstance(args, int):
             key = '%s(%s)' % (key, args)
@@ -2649,7 +2653,7 @@ class MfixGui(QtWidgets.QMainWindow,
         widget.setToolTip(msg)
         widget.help_text = msg # TODO do something more useful with help_text
 
-    def create_project_thumbnail(self, save_info=False):
+    def create_project_thumbnail(self):
         '''create a thumbnail for the project'''
 
         path = os.path.join(self.get_project_dir(), '.thumbnail')
@@ -2670,10 +2674,9 @@ class MfixGui(QtWidgets.QMainWindow,
             os.remove(temp)
 
         # save the model types too!
-        if save_info:
-            path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
-            with open(path, 'w') as f:
-                f.write(','.join(str(v) for v in [s, geo, chem, des]))
+        path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
+        with open(path, 'w') as f:
+            f.write(','.join(str(v) for v in [s, geo, chem, des]))
 
     # Following functions are overrideable for test runner
     def confirm_rename(self, project_file, runname_mfx):
@@ -2884,9 +2887,9 @@ def main():
 
     else:  # Run internal test suite
         gui.navigate_all()
-        # create thumbnails in "batch" mode
+        # create thumbnails
         if args.thumbnails:
-            gui.create_project_thumbnail(save_info=True)
+            gui.create_project_thumbnail()
         print("That's all folks")
 
 if __name__  == '__main__':
