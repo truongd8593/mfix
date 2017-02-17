@@ -319,7 +319,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'mfixgui=mfixgui.gui:main',
+            'mfix=mfixgui.gui:main',
             'pymfix=mfixgui.pymfix:main',
         ],
     },

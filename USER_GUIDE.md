@@ -185,10 +185,10 @@ not scale with thread count.
 
 # Quick Start Running MFIX with the GUI
 
-The MFIX install should put an `mfixgui` binary in your PATH. To start the MFIX GUI, run:
+The MFIX install should put an `mfix` binary in your PATH. To start the MFIX GUI, run:
 
 ```shell
-> mfixgui
+> mfix
 ```
 
 > Note: If this is the first time opening the GUI, the File menu will
@@ -830,7 +830,7 @@ simulation and elapsed time.
 
 The command line version of MFIX works the same as in previous MFIX releases.
 The main difference is that it is now called `mfixsolver` to distinguish the
-command from the `mfixgui`
+command from the MFIX GUI command, `mfix`.
 
 You may still want to run the GUI if you do not have Python on your platform, or
 if you want to use features not yet supported by the GUI.

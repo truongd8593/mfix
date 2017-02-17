@@ -216,20 +216,20 @@ or get info from the solver.
 
 The GUI is launched from the prompt with:
 ```shell
-> mfixgui
+> mfix
 ```
 
 ## From the GUI, with user interactive solver
 
 Here you use a source distribution of MFIX
 to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
-in the project directory. When running `mfixgui`, in
+in the project directory. When running `mfix`, in
 the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
 have just built. You can pause, unpause, stop, or get info from the solver.
 
 The GUI is launched from the prompt with:
 ```shell
-> mfixgui
+> mfix
 ```
 
 ## From the GUI, with user non-interactive mfixsolver executable (should we keep this?)
@@ -239,7 +239,7 @@ The GUI is launched from the prompt with:
 
 The GUI is launched from the prompt with:
 ```shell
-> mfixgui
+> mfix
 ```
 
 ## From the command line with a custom mfixsolver executable (without the GUI)
@@ -350,7 +350,7 @@ MFIX is distributed as a compressed source tar ball named mfix-17.1.tar.gz. To
 decompress and extract the tar file:
 
 ```shell
-> tar xzf mfixgui-17.1.tar.gz
+> tar xzf mfix-17.1.tar.gz
 ```
 
 Here it is assumed that you are in the directory containing the tar ball.
