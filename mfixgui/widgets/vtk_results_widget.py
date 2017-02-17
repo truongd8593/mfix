@@ -234,7 +234,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.cell_arrays = {}
         self.node_arrays = {}
         self.point_arrays = {}
+        self.pvd_files = {}
         self.frame_index = -1
+        self.vtp_files = []
+        self.vtu_files = []
+        self.update_color_by = False
 
         self.play_timer = QtCore.QTimer()
         self.play_timer.timeout.connect(self.forward)
@@ -248,9 +252,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.file_watcher.addPath(self.project_dir)
         self.file_watcher.directoryChanged.connect(self.look_for_files)
 
-        # look for files
-        self.look_for_files()
-
         # dialogs
         self.color_dialog  = ColorMapPopUp(self)
         self.color_dialog.applyEvent.connect(self.change_color)
@@ -261,6 +262,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.init_toolbar()
         self.init_vtk()
         self.init_geometry()
+
+        # look for files
+        self.look_for_files()
 
         self.change_frame(0)
         self.reset_view()
@@ -378,9 +382,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         layout = self.visible_menu.layout
         layout.setContentsMargins(0, 5, 5, 5)
         self.visual_btns = {}
-        for i, geo in enumerate(['Cells', 'Nodes', 'Points', 'Geometry']):
-            geo_name = geo
-            geo = geo.lower().replace(' ', '_')
+        for i, geo_name in enumerate(['Cells', 'Nodes', 'Points', 'Geometry']):
+            geo = geo_name.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
             # tool button
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
@@ -395,11 +398,19 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
             combo = None
             if not geo == 'geometry':
+                # file pattern
+                if not geo == 'nodes':
+                    combo = QtWidgets.QComboBox(self.visible_menu)
+                    combo.activated.connect(lambda item, g=geo, c=combo: self.change_file_pattern(g, c))
+                    combo.setEnabled(False)
+                    layout.addWidget(combo, i, 1)
+                    btns['file_pattern'] = combo
+
                 # color by
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
                 combo.setEnabled(False)
-                layout.addWidget(combo, i, 1)
+                layout.addWidget(combo, i, 2)
                 btns['color_by'] = combo
 
                 # component
@@ -407,7 +418,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo2.activated.connect(lambda item, g=geo, c=combo, c2=combo2: self.change_color_by(g, c, c2))
                 combo2.addItems(['mag', 'x', 'y', 'z'])
                 combo2.setEnabled(False)
-                layout.addWidget(combo2, i, 2)
+                layout.addWidget(combo2, i, 3)
                 btns['component'] = combo2
 
 
@@ -424,7 +435,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_GEO_COLOR.name()))
             toolbutton.setAutoRaise(True)
             toolbutton.setEnabled(False)
-            layout.addWidget(toolbutton, i, 3)
+            layout.addWidget(toolbutton, i, 4)
             btns['color'] = toolbutton
 
             opacity = QtWidgets.QDoubleSpinBox(self.visible_menu)
@@ -436,7 +447,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             opacity.setSingleStep(0.1)
             opacity.valueChanged.connect(lambda o, g=geo: self.change_opacity(g, o))
             opacity.setEnabled(False)
-            layout.addWidget(opacity, i, 4)
+            layout.addWidget(opacity, i, 5)
             btns['opacity'] = opacity
 
             # label
@@ -583,7 +594,12 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def forward(self):
         self.change_frame(self.frame_index + 1)
 
-    def change_frame(self, index):
+    def change_frame(self, index, force=False):
+
+        if index == self.frame_index and not force:
+            return
+        else:
+            self.frame_index = index
 
         # assume that whatever one is bigger has the smaller time step
         n_vtp = len(self.vtp_files)
@@ -597,11 +613,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 index = 0
 
             self.frame_spinbox.setValue(index)
-
-            if index == self.frame_index:
-                return
-            else:
-                self.frame_index = index
 
             if n_vtp > n_vtu:
                 time = list(self.vtp_files.keys())[index]
@@ -621,13 +632,56 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.frame_spinbox.setValue(0)
 
     def look_for_files(self):
-        base_name = os.path.join(self.project_dir, self.project_name.upper())
-        vtu_pvd = base_name + '.pvd'
-        if os.path.exists(vtu_pvd):
-            self.vtu_files = parse_pvd_file(vtu_pvd)
+        pvd_files = glob.glob(os.path.join(self.project_dir, '*.pvd'))
+        for pvd in pvd_files:
+            base_name = os.path.basename(pvd).replace('.pvd', '')
+            files = parse_pvd_file(pvd)
+            if base_name in self.pvd_files and files:
+                self.pvd_files[base_name]['files'].update(files)
+            elif files:
+                t = 'vtp' if files[0].endswith('vtp') else'vtu'
+                self.pvd_files[base_name] = {'files':files, 'type':t}
+
+        # update the combo_boxes
+        vtp = []
+        vtu = []
+        for k, v in self.pvd_files.items():
+            if v.get('type') == 'vtp':
+                vtp.append(k)
+            else:
+                vtu.append(k)
+
+        for geo, btns in self.visual_btns.items():
+            fp = btns.get('file_pattern')
+            if fp is None: continue
+            items = vtp
+            if geo in ['cells']:
+                items = vtu
+
+            cur = fp.currentText()
+            fp.clear()
+            fp.addItems(items)
+            if len(cur)>0:
+                fp.setCurrentIndex(fp.findText(cur))
+            elif items:
+                new = items[0]
+                fp.setCurrentIndex(fp.findText(new))
+                if items is vtp:
+                    self.vtp_files = self.pvd_files[new]['files']
+                else:
+                    print('vtu')
+                    self.vtu_files = self.pvd_files[new]['files']
+
+
+    def change_file_pattern(self, geo, combo):
+        new = combo.currentText()
+        if geo == 'points':
+            self.vtp_files = self.pvd_files[new]['files']
         else:
-            self.vtu_files = build_time_dict(os.path.join(self.project_dir, '*.vtu'))
-        self.vtp_files = parse_pvd_file(base_name + '_DES.pvd')
+            self.vtu_files = self.pvd_files[new]['files']
+        self.update_color_by = True
+        self.change_frame(self.frame_index, True)
+
 
     # --- vtk functions ---
     def read_vtu(self, path):
@@ -654,13 +708,17 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.cell_arrays = update(self.cell_arrays, copy.deepcopy(new_array_info))
         self.node_arrays = update(self.node_arrays, copy.deepcopy(new_array_info))
 
-        if init:
+        if init or self.update_color_by:
             name = cell_data.GetArrayName(0)
             for t, m in [('cells', self.ugrid_cell_mapper), ('nodes', self.ugrid_node_mapper)]:
                 m.SelectColorArray(name)
                 combo = self.visual_btns[t]['color_by']
-                combo.addItems(self.cell_arrays.keys())
+                combo.clear()
+                items = self.cell_arrays.keys()
+                combo.addItems(items)
+                combo.setEnabled(bool(items))
                 combo.setCurrentIndex(combo.findText(name))
+            self.update_color_by = False
 
     def read_vtp(self, path):
         init = False
@@ -687,12 +745,16 @@ class GraphicsVtkWidget(BaseVtkWidget):
         if 'Diameter' in self.point_arrays:
             self.glyph.SetScaleModeToScaleByScalar()
             self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
-        if init:
+        if init or self.update_color_by:
             name = point_data.GetArrayName(0)
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, name)
             combo = self.visual_btns['points']['color_by']
-            combo.addItems(self.point_arrays.keys())
+            combo.clear()
+            items = self.point_arrays.keys()
+            combo.addItems(items)
+            combo.setEnabled(bool(items))
             combo.setCurrentIndex(combo.findText(name))
+            self.update_color_by = False
 
     def change_visibility(self, geo, visible):
         if geo in self.actors:
