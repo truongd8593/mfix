@@ -2743,6 +2743,7 @@ def main():
     if args.clear:
         print("Clearing all MFIX settings from ", SETTINGS.fileName())
         SETTINGS.clear()
+        SETTINGS.sync()
         return
 
     # setup logging
