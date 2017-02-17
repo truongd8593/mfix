@@ -34,7 +34,7 @@ HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
 # Get the long description from the README file
-with codecs.open(path.join(HERE, 'README'), encoding='utf-8') as f:
+with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 F90_TMP = tempfile.mkdtemp()
@@ -129,6 +129,9 @@ class BuildDocCommand(setuptools.Command):
 
         pandoc_args = ['-s', '--toc', '-N', '-m']
 
+        pypandoc.convert_file('README.md', 'html',
+                              outputfile='README.html',
+                              extra_args=pandoc_args)
         pypandoc.convert_file('INSTALL.md', 'html',
                               outputfile='INSTALL.html',
                               extra_args=pandoc_args)
