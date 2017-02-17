@@ -274,6 +274,17 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.set_splash_text('Creating %s widgets'%name)
         # end of ui loading
 
+        # add and hide a progress bar in the status bar
+        # this is a hack show text on top of a QProgressBar
+        # add bar first, then label
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setTextVisible(False)
+        self.ui.horizontallayout_mode_bar.addWidget(self.progress_bar, 0, 5)
+        self.progress_bar.hide()
+        self.ui.label_status = QtWidgets.QLabel('Ready')
+        self.ui.label_status.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.ui.horizontallayout_mode_bar.addWidget(self.ui.label_status, 0, 5)
+
         # build keyword documentation from namelist docstrings
         self.keyword_doc = getKeywordDoc()
 
@@ -754,12 +765,16 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def status_message(self, message=''):
         '''set the status text'''
+        # pad text
+        message+='  '
         if message == self.ui.label_status.text():
             return
         self.ui.label_status.setText(message)
-        if message != 'Ready': # Don't clutter the console with unimportant msgs
+        if message != 'Ready' or 'elapsed time' not in message.lower(): # Don't clutter the console with unimportant msgs
             self.print_internal(message, color='blue')
 
+        if 'running' not in message.lower():
+            self.progress_bar.hide()
 
     def slot_rundir_changed(self):
         # Note: since log files get written to project dirs, this callback
@@ -825,6 +840,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     p = t/ts
                 except:
                     p = 0
+                self.progress_bar.setValue(int(p*100))
+                self.progress_bar.show()
 
             # update status message
             tl = status.get('walltime_elapsed', None)
