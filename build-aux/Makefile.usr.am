@@ -177,10 +177,10 @@ mfixsolver-f2pywrappers.o: mfixsolver-f2pywrappers.f
 
 if MPI
 mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfixsolver_LDADD)
-	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
+	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS) $(OPENMP_FCFLAGS)
 else
 mfixsolver.so: mfixsolver-f2pywrappers.o mfixsolver-f2pywrappers2.o mfixsolvermodule.o fortranobject.o $(mfixsolver_LDADD)
-	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS)
+	$(CC) -o $@ -shared $^ -lgfortran $(PYTHON_LIBS) $(OPENMP_FCFLAGS)
 endif
 
 F2PY_FILES = \
