@@ -221,12 +221,20 @@ class MainMenu(object):
         tb.pressed.connect(lambda: lw.setViewMode(QtWidgets.QListWidget.IconMode))
         fw_layout.addWidget(tb)
 
+        # read info about the template files
+        temp_info = {}
+        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
+        if os.path.exists(temp_info_file):
+            with open(temp_info_file) as f:
+                temp_info = json.load(f)
+
+        # loop through template files, building listwidgetitems
         for dirname, paths in (('defaults', self.default_paths), ('tutorials', self.tutorial_paths), ('benchmarks',self.benchmark_paths)):
             for path in paths:
                 name = os.path.basename(path)
                 full_path = os.path.join(mfx_dir, dirname, path)
                 thumb_path = os.path.join(full_path, '.thumbnail')
-                info_path = os.path.join(full_path, '.mfixguiinfo')
+
                 if os.path.exists(thumb_path):
                     pix = QtGui.QPixmap()
                     img = QtGui.QImage(thumb_path, 'PNG')
@@ -235,20 +243,21 @@ class MainMenu(object):
                 else:
                     icon = get_icon('missing_thumbnail.png')
 
-                info = None
-                enable_list = [False]*7
-                description = 'None'
-                if os.path.exists(info_path):
-                    with open(info_path) as f:
-                        info = f.readlines()[0].split(',')
-                if info is not None and len(info) >= 3:
-                    s = [info[0] == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
-                    s.extend([i.lower() == 'true' for i in info[1:2]])
-                    enable_list = s
+                # extract info from the template info file
+                info = temp_info.get(name, {})
+                description = info.get('description', None)
+                solver = info.get('solver', 'single')
+                geo = info.get('geometry', 'false')
+                chem = info.get('chemistry', 'false')
 
-                    if len(info) > 3:
-                        description = ','.join(info[3:])
-                        name = '\n'.join([name, description])
+                # build a list of booleans for filtering templates
+                # [single, tfm, pic, dem, hybrid, geometry, chemistry]
+                enable_list = [solver == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
+                enable_list.extend([i.lower() == 'true' for i in [geo, chem]])
+
+                # if there is a desciption, add it to the name
+                if description is not None:
+                    name = '\n'.join([name, description])
 
                 item = QtWidgets.QListWidgetItem(icon, name)
                 item.full_path = full_path

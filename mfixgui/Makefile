@@ -46,6 +46,7 @@ test-load-all-3: clean
 
 thumbnails: clean
 	find ../tutorials ../defaults ../benchmarks -name mfix.dat -print0 | xargs -0 -n 1 ./run.sh -linfo -t -ct
+	python tools/collect_tutorial_info.py
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp

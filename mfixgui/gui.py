@@ -2649,7 +2649,7 @@ class MfixGui(QtWidgets.QMainWindow,
         widget.setToolTip(msg)
         widget.help_text = msg # TODO do something more useful with help_text
 
-    def create_project_thumbnail(self):
+    def create_project_thumbnail(self, save_info=False):
         '''create a thumbnail for the project'''
 
         path = os.path.join(self.get_project_dir(), '.thumbnail')
@@ -2670,9 +2670,10 @@ class MfixGui(QtWidgets.QMainWindow,
             os.remove(temp)
 
         # save the model types too!
-        path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
-        with open(path, 'w') as f:
-            f.write(','.join(str(v) for v in [s, geo, chem, des]))
+        if save_info:
+            path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
+            with open(path, 'w') as f:
+                f.write(','.join(str(v) for v in [s, geo, chem, des]))
 
     # Following functions are overrideable for test runner
     def confirm_rename(self, project_file, runname_mfx):
@@ -2882,9 +2883,9 @@ def main():
 
     else:  # Run internal test suite
         gui.navigate_all()
-        # create thumbnails
+        # create thumbnails in "batch" mode
         if args.thumbnails:
-            gui.create_project_thumbnail()
+            gui.create_project_thumbnail(save_info=True)
         print("That's all folks")
 
 if __name__  == '__main__':
