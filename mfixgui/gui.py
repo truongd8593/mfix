@@ -49,7 +49,6 @@ from mfixgui.tools.general import (SCRIPT_DIRECTORY, convert_string_to_python,
 from mfixgui.tools.keyword_args import keyword_args
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.thumbnail import create_thumbnail
-from mfixgui.widgets.animations import StatusIndicator
 from mfixgui.widgets.base import (BaseWidget, CheckBox, ComboBox,
                                   DoubleSpinBox, LineEdit, SpinBox, Table)
 from mfixgui.widgets.new_popup import NewProjectDialog
@@ -356,7 +355,6 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
-        #self.init_status_animation()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -829,7 +827,6 @@ class MfixGui(QtWidgets.QMainWindow,
                     p = t/ts
                 except:
                     p = 0
-                self.status_animation.set_progress(p)
 
             # update status message
             tl = status.get('walltime_elapsed', None)
@@ -840,7 +837,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     h, m = divmod(m, 60)
                 except:
                     h, m, s = 0, 0, 0
-                self.status_animation.change_text('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
+                self.status_message('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -1313,11 +1310,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setup_output()
 
     # --- animation methods ---
-    #def init_status_animation(self):
-    #    '''create the status animation widget'''
-    #    self.status_animation = StatusIndicator()
-    #    self.ui.horizontallayout_mode_bar.addWidget(self.status_animation)
-
     def animate_stacked_widget(self, stackedwidget, from_, to,
                                direction='vertical', line=None, to_btn=None,
                                btn_layout=None):
@@ -2649,7 +2641,7 @@ class MfixGui(QtWidgets.QMainWindow,
         widget.setToolTip(msg)
         widget.help_text = msg # TODO do something more useful with help_text
 
-    def create_project_thumbnail(self, save_info=False):
+    def create_project_thumbnail(self):
         '''create a thumbnail for the project'''
 
         path = os.path.join(self.get_project_dir(), '.thumbnail')
@@ -2670,10 +2662,9 @@ class MfixGui(QtWidgets.QMainWindow,
             os.remove(temp)
 
         # save the model types too!
-        if save_info:
-            path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
-            with open(path, 'w') as f:
-                f.write(','.join(str(v) for v in [s, geo, chem, des]))
+        path = os.path.join(self.get_project_dir(), '.mfixguiinfo')
+        with open(path, 'w') as f:
+            f.write(','.join(str(v) for v in [s, geo, chem, des]))
 
     # Following functions are overrideable for test runner
     def confirm_rename(self, project_file, runname_mfx):
@@ -2883,9 +2874,9 @@ def main():
 
     else:  # Run internal test suite
         gui.navigate_all()
-        # create thumbnails in "batch" mode
+        # create thumbnails
         if args.thumbnails:
-            gui.create_project_thumbnail(save_info=True)
+            gui.create_project_thumbnail()
         print("That's all folks")
 
 if __name__  == '__main__':
