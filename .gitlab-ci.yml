@@ -15,8 +15,8 @@ build:src:
   script:
     - python setup.py sdist
   stage: build:src
-  except:
-    - gui
+  only:
+    - develop
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -31,8 +31,8 @@ build:linux:
   script:
     - python setup.py build_mfix
   stage: build:libmfix
-  except:
-    - gui
+  only:
+    - develop
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -46,8 +46,8 @@ build:mac:
   script:
     - python3.5 setup.py build_mfix
   stage: build:libmfix
-  except:
-    - gui
+  only:
+    - develop
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -61,8 +61,8 @@ build:windows:
   script:
     - python setup.py build_mfix
   stage: build:libmfix
-  except:
-    - gui
+  only:
+    - develop
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -79,8 +79,8 @@ build_linux_py2:
   script:
     - python2.7 setup.py bdist_wheel
   stage: build:py2
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:linux
   artifacts:
@@ -95,8 +95,8 @@ build_mac_py2:
   script:
     - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
   stage: build:py2
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:mac
   artifacts:
@@ -111,8 +111,8 @@ build_windows_py2:
   script:
     - python2.7 setup.py bdist_wheel
   stage: build:py2
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:windows
   artifacts:
@@ -130,8 +130,8 @@ build_linux_py3:
   script:
     - python3.5 setup.py bdist_wheel
   stage: build:py3
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:linux
   artifacts:
@@ -146,8 +146,8 @@ build_mac_py3:
   script:
     - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
   stage: build:py3
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:mac
   artifacts:
@@ -162,8 +162,8 @@ build_windows_py3:
   script:
     - python setup.py bdist_wheel
   stage: build:py3
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build:windows
   artifacts:
@@ -181,8 +181,8 @@ install:linux:py:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*27*.whl --prefix=${PYPATH}
   stage: deploy
-  except:
-    - gui
+  only:
+    - develop
   dependencies:
     - build_linux_py2
   tags:
