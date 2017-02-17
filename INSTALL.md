@@ -277,11 +277,15 @@ This requires downloading a source distribution of MFIX ([Building MFIX](#buildi
 
 Assume the source distribution tarball is extracted to `MFIX_HOME`.
 
+On Linux and Mac, there will be a default system python command
+`/usr/bin/python`. Make sure you are NOT using this Python by explicitly specifying
+which python distribution you are installing it with using PYTHON_BIN.
+
 ```shell
 > cd my_example_case
 > ls *.f
 usr0.f   write_usr0.f
-> $MFIX_HOME/configure_mfix --python
+> $MFIX_HOME/configure_mfix --python PYTHON_BIN=$HOME/miniconda3/python3.5 CC=gcc
 > make mfixsolver.so
 > ls *.so
 mfixsolver.so

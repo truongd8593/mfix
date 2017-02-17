@@ -224,4 +224,7 @@ AC_MSG_NOTICE([FC=$FC])
 AC_MSG_NOTICE([FCFLAGS=$FCFLAGS])
 AC_MSG_NOTICE([F77=$F77])
 AC_MSG_NOTICE([FFLAGS=$FFLAGS])
+if test "$python" = "true"; then
+AC_MSG_NOTICE([PYTHON_BIN=$PYTHON_BIN])
+fi
 AC_MSG_NOTICE([==============================================================])
