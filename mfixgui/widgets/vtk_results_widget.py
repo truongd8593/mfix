@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
-from collections import OrderedDict, Mapping
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import copy
 import glob
 import os
-import copy
-from bisect import  bisect_left
+from bisect import bisect_left
+from collections import Mapping, OrderedDict
 from xml.etree import ElementTree
+
+from qtpy import QtCore, QtGui, QtWidgets, uic
+
+from mfixgui.tools.general import get_icon, to_unicode_from_fs
+from mfixgui.widgets.base import CustomPopUp
+from mfixgui.widgets.base_vtk import BaseVtkWidget
 
 # graphics libraries
 try:
@@ -39,10 +47,6 @@ except:
     build_vtk_lookup_tables, get_color_map_pngs = None, None
     LOOKUP_TABLES = {}
 
-from qtpy import QtCore, QtWidgets, QtGui, uic
-from mfixgui.widgets.base_vtk import BaseVtkWidget
-from mfixgui.widgets.base import CustomPopUp
-from mfixgui.tools.general import get_icon, to_unicode_from_fs
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
@@ -232,8 +236,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.mfixgui = find_gui(self)
 
         self.cell_arrays = {}
+        self.vtu_pattern = None
         self.node_arrays = {}
         self.point_arrays = {}
+        self.vtp_pattern = None
         self.pvd_files = {}
         self.frame_index = -1
         self.vtp_files = []
@@ -548,13 +554,14 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def show_visible_menu(self):
         # update comboboxes based on avaliable arrays
-        for type_, array in [('cells', self.cell_arrays),
-                             ('nodes', self.node_arrays),
+        for type_, array in [('cells', self.cell_arrays.get(self.vtu_pattern)),
+                             ('nodes', self.node_arrays.get(self.vtu_pattern)),
                              ('points', self.point_arrays)]:
             btns = self.visual_btns[type_]
             combo = btns['color_by']
             text = combo.currentText()
             combo.clear()
+
             if array:
                 combo.addItems(array.keys())
                 index = combo.findText(text)
@@ -669,19 +676,22 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 if items is vtp:
                     self.vtp_files = self.pvd_files[new]['files']
                 else:
-                    print('vtu')
                     self.vtu_files = self.pvd_files[new]['files']
 
 
     def change_file_pattern(self, geo, combo):
         new = combo.currentText()
         if geo == 'points':
+            self.vtp_pattern = new
             self.vtp_files = self.pvd_files[new]['files']
         else:
+            self.vtu_pattern = new
             self.vtu_files = self.pvd_files[new]['files']
         self.update_color_by = True
         self.change_frame(self.frame_index, True)
-
+        self.change_color_by(geo, self.visual_btns.get(geo, {}).get('color_by'))
+        if geo == 'cells':
+            self.change_color_by('nodes', self.visual_btns.get('nodes', {}).get('color_by'))
 
     # --- vtk functions ---
     def read_vtu(self, path):
@@ -691,6 +701,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             init = True
 
         path = os.path.join(self.project_dir, path)
+
         self.ugrid_reader.SetFileName(path)
         self.ugrid_reader.Update()
 
@@ -705,8 +716,13 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange(),}
 
-        self.cell_arrays = update(self.cell_arrays, copy.deepcopy(new_array_info))
-        self.node_arrays = update(self.node_arrays, copy.deepcopy(new_array_info))
+        cell_info = self.cell_arrays.get(self.vtu_pattern, {})
+        node_info = self.node_arrays.get(self.vtu_pattern, {})
+        cell_info = update(cell_info, copy.deepcopy(new_array_info))
+        node_info = update(node_info, copy.deepcopy(new_array_info))
+
+        self.cell_arrays[self.vtu_pattern] = cell_info
+        self.node_arrays[self.vtu_pattern] = node_info
 
         if init or self.update_color_by:
             name = cell_data.GetArrayName(0)
@@ -714,7 +730,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 m.SelectColorArray(name)
                 combo = self.visual_btns[t]['color_by']
                 combo.clear()
-                items = self.cell_arrays.keys()
+                items = cell_info.keys()
                 combo.addItems(items)
                 combo.setEnabled(bool(items))
                 combo.setCurrentIndex(combo.findText(name))
@@ -776,10 +792,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 #            self.glyph.SetRange(array.get('from', 0), array.get('to', 1))
         elif geo == 'cells':
             self.ugrid_cell_mapper.SelectColorArray(array_name)
-            array = self.cell_arrays[array_name]
+            array = self.cell_arrays.get(self.vtu_pattern, {}).get(array_name)
         elif geo == 'nodes':
             self.ugrid_node_mapper.SelectColorArray(array_name)
-            array = self.node_arrays[array_name]
+            array = self.node_arrays.get(self.vtu_pattern, {}).get(array_name)
         else:
             return
 
@@ -839,9 +855,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         if geo == 'points':
             array = self.point_arrays[array_name]
         elif geo == 'cells':
-            array = self.cell_arrays[array_name]
+            array = self.cell_arrays.get(self.vtu_pattern, {}).get(array_name)
         elif geo == 'nodes':
-            array = self.node_arrays[array_name]
+            array = self.node_arrays.get(self.vtu_pattern, {}).get(array_name)
         else:
             return
 
