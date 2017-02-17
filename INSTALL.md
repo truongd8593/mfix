@@ -264,27 +264,6 @@ If you ever want to uninstall MFIX:
 
 
 
-# Building MFIX
-
-This section describes how to build the mfix Python package. At the end of the build process, you will have a distribution wheel to the ones available for download.
-
-
-Building from source requires the MFIX source tarball:
-
-- [mfix-17.1.tar.gz](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build%3Asrc)
-<!-- TODO: replace with link to website for actual release -->
-
-Build MFIX with:
-
-```shell
-> tar xzf mfix-17.1.tar.gz
-> cd mfix-17.1
-> python setup.py bdist_wheel
-```
-
-You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
-
-
 
 
 
@@ -555,3 +534,27 @@ Finally, the simulation is started by entering:
 ```shell
 > ./mfixsolver
 ```
+
+# Appendix - Building MFIX
+
+This appendix describes how to build MFIX packages for distribution. Most users will not need to do this.
+
+## Building MFIX
+
+This section describes how to build the mfix Python package. At the end of the build process, you will have a distribution wheel to the ones available for download.
+
+
+Building from source requires the MFIX source tarball:
+
+- [mfix-17.1.tar.gz](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build%3Asrc)
+<!-- TODO: replace with link to website for actual release -->
+
+Build MFIX with:
+
+```shell
+> tar xzf mfix-17.1.tar.gz
+> cd mfix-17.1
+> python setup.py bdist_wheel
+```
+
+You can now install with the `dist/mfix*.whl` file as described in [Installing MFIX](#installing-mfix).
