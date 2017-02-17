@@ -263,7 +263,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     except Exception as e:
                         # report which ui file it was, otherwise stack trace
                         # is too generic to be helpful.
-                        print("Error loading", path)
+                        print("Error loading", path, '\nException:\n', e)
                         raise
 
                 # assign 'self.ui.general', etc
@@ -675,13 +675,11 @@ class MfixGui(QtWidgets.QMainWindow,
             traceback.print_exception(*sys.exc_info())
 
     def _on_resized(self, ev):
-        ui = self.ui
         w = ev.size().width()
         if w < self.max_label_len:
             self.short_labels()
         else:
             self.long_labels()
-        g = ui.treewidget_navigation.geometry()
 
     def short_labels(self):
         tree = self.ui.treewidget_navigation
@@ -1499,7 +1497,7 @@ class MfixGui(QtWidgets.QMainWindow,
         ### "Error 2000: Unable to process line 185"
         # TODO: capture more of the error text and produce a fuller message
         # in the popup
-        lineno = bad_line = err = None
+        lineno = bad_line = None
         re_err_1000 = re.compile("Error 1000: A keyword pair on line (\d+)")
         re_err_2000 = re.compile("Error 2000: Unable to process line (\d+)")
         for (i, line) in enumerate(lines):
@@ -1592,7 +1590,6 @@ class MfixGui(QtWidgets.QMainWindow,
         """replace misleading references to 'mfix.dat' with correct
         filename"""
         project_file = self.get_project_file()
-        basename = "(unknown)" if not project_file else os.path.basename(project_file)
         text = text.replace('mfix.dat', project_file)
         return text
 
@@ -1742,7 +1739,6 @@ class MfixGui(QtWidgets.QMainWindow,
              and not self.job_manager.is_job_pending()):
 
             project_dir = self.get_project_dir()
-            project_file = self.get_project_file()
             run_name = self.get_runname()
             # save reinit.X version
             try:
@@ -1973,8 +1969,6 @@ class MfixGui(QtWidgets.QMainWindow,
         if os.path.exists(new_file) and not self.confirm_clobber(new_file):
             return
 
-        old_dir = self.get_project_dir()
-
         # Force run name to file name.  Is this a good idea?
         basename = os.path.basename(new_file)
         run_name = os.path.splitext(basename)[0]
@@ -2089,7 +2083,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         except Exception as e:
             # maybe to debug, but not to user dialog
-            #log.debug(e.message)
+            log.debug(e.message)
             self.message(
                 title='Warning',
                 icon='warning',
@@ -2620,12 +2614,13 @@ class MfixGui(QtWidgets.QMainWindow,
 
 
         args = widget.args if hasattr(widget, 'args') else None
-        if args is None:
-            nargs = 0
-        elif isinstance(args, int):
-            nargs = 1
-        else:
-            nargs = len(args)
+        # TODO: nargs is not used...
+        # if args is None:
+        #     nargs = 0
+        # elif isinstance(args, int):
+        #     nargs = 1
+        # else:
+        #     nargs = len(args)
 
         if isinstance(args, int):
             key = '%s(%s)' % (key, args)
