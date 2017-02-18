@@ -556,7 +556,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # update comboboxes based on avaliable arrays
         for type_, array in [('cells', self.cell_arrays.get(self.vtu_pattern)),
                              ('nodes', self.node_arrays.get(self.vtu_pattern)),
-                             ('points', self.point_arrays)]:
+                             ('points', array = self.point_arrays.get(self.vtp_pattern))]:
             btns = self.visual_btns[type_]
             combo = btns['color_by']
             text = combo.currentText()
@@ -756,9 +756,11 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange()}
 
-        self.point_arrays = update(self.point_arrays, copy.deepcopy(new_array_info))
+        point_info = self.point_arrays.get(self.vtp_pattern, {})
+        point_info = update( point_info, copy.deepcopy(new_array_info))
+        self.point_arrays[self.vtp_pattern] = point_info
 
-        if 'Diameter' in self.point_arrays:
+        if 'Diameter' in point_info:
             self.glyph.SetScaleModeToScaleByScalar()
             self.glyph.SetInputArrayToProcess(0, 0, 0, 0, 'Diameter')
         if init or self.update_color_by:
@@ -766,7 +768,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, name)
             combo = self.visual_btns['points']['color_by']
             combo.clear()
-            items = self.point_arrays.keys()
+            items = point_info.keys()
             combo.addItems(items)
             combo.setEnabled(bool(items))
             combo.setCurrentIndex(combo.findText(name))
@@ -788,7 +790,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         if geo == 'points':
             self.glyph.SetInputArrayToProcess(1, 0, 0, 0, array_name)
 #            self.particle_mapper.SelectColorArray(array_name)
-            array = self.point_arrays[array_name]
+            array = self.point_arrays.get(self.vtp_pattern, {}).get(array_name)
 #            self.glyph.SetRange(array.get('from', 0), array.get('to', 1))
         elif geo == 'cells':
             self.ugrid_cell_mapper.SelectColorArray(array_name)
@@ -853,7 +855,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         array_name = colorby.currentText()
         if len(array_name) == 0: return
         if geo == 'points':
-            array = self.point_arrays[array_name]
+            array = self.point_arrays.get(self.vtp_pattern, {}).get(array_name)
         elif geo == 'cells':
             array = self.cell_arrays.get(self.vtu_pattern, {}).get(array_name)
         elif geo == 'nodes':
