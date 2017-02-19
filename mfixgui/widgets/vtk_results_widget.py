@@ -110,6 +110,41 @@ def update(d, u):
             d[k] = u[k]
     return d
 
+class ArrowWidget(QtWidgets.QWidget):
+    '''a widget that draw an arrow'''
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+
+    def paintEvent(self, event):
+
+        w = self.width()
+        h = self.height()
+
+        # draw path
+        path = QtGui.QPainterPath()
+        path.moveTo(int(w/2.0), 0)
+        path.lineTo(int(w/2.0), int(h/2.0))
+        path.lineTo(w-2, int(h/2.0))
+
+        pen = QtGui.QPen(QtCore.Qt.darkGray)
+        pen.setWidth(2)
+
+        painter = QtGui.QPainter(self)
+        painter.setPen(pen)
+        painter.drawPath(path)
+
+        # draw arrow heading
+        path = QtGui.QPainterPath()
+        m = int(h/2.0)
+        path.moveTo(w, m)
+        path.lineTo(w-5, m-5)
+        path.lineTo(w-5, m+5)
+        path.lineTo(w, m)
+
+        painter.setBrush(QtCore.Qt.darkGray)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPath(path)
+
 class ColorMapPopUp(QtWidgets.QDialog):
     applyEvent = QtCore.Signal(object, object, object)
     def __init__(self, parent=None):
@@ -411,6 +446,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
                     combo.setEnabled(False)
                     layout.addWidget(combo, i, 1)
                     btns['file_pattern'] = combo
+                elif geo == 'nodes':
+                    lb = ArrowWidget(self.visible_menu)
+                    layout.addWidget(lb, i, 1)
 
                 # color by
                 combo = QtWidgets.QComboBox(self.visible_menu)
