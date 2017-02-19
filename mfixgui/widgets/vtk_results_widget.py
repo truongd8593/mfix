@@ -801,6 +801,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         else:
             return
 
+        if array is None:
+            return
+
         mapper = self.mappers.get(geo)
         mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
 
@@ -861,6 +864,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         elif geo == 'nodes':
             array = self.node_arrays.get(self.vtu_pattern, {}).get(array_name)
         else:
+            return
+
+        if array is None:
             return
 
         self.color_dialog.set_(array)
