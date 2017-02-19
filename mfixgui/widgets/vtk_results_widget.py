@@ -556,7 +556,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         # update comboboxes based on avaliable arrays
         for type_, array in [('cells', self.cell_arrays.get(self.vtu_pattern)),
                              ('nodes', self.node_arrays.get(self.vtu_pattern)),
-                             ('points', array = self.point_arrays.get(self.vtp_pattern))]:
+                             ('points', self.point_arrays.get(self.vtp_pattern))]:
             btns = self.visual_btns[type_]
             combo = btns['color_by']
             text = combo.currentText()
