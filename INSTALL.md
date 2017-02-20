@@ -95,7 +95,6 @@ Once homebrew is installed, install MFIX  dependencies with the commands:
 ```shell
 > conda install -c menpo vtk=7.0.0
 > conda install numpy==1.11.3 pyqt qtpy pandoc
-> pip install pypandoc
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
