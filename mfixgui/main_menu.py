@@ -4,7 +4,7 @@ import os
 
 from qtpy import QtCore, QtGui, QtWidgets
 
-from mfixgui.tools.general import (get_icon, get_mfix_home, get_pixmap,
+from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, get_mfix_home, get_pixmap,
                                    get_separator)
 from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
@@ -420,8 +420,10 @@ class MainMenu(object):
 
         # link only works after running: python setup.py build_doc
         help_info = QtWidgets.QLabel('''
-        See <a href="%s">User Guide</a> for documentation
-        ''' % path2url(os.path.join(get_mfix_home(), 'USER_GUIDE.html')))
+        See <a href="%s">User Guide</a> for documentation on using the GUI;
+        See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers
+        ''' % (path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
+               path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'INSTALL.html'))))
         help_info.setStyleSheet('background-color: white;')
         help_info.setWordWrap(True)
         hw_layout.addWidget(help_info, 2, 0, 1, -1)
