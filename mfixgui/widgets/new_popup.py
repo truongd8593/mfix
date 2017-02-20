@@ -25,6 +25,11 @@ class NewProjectDialog(QtWidgets.QDialog):
         ui.toolbutton_browse.clicked.connect(self.browse)
         ui.toolbutton_browse.setIcon(get_icon('folder.png'))
 
+        ui.combobox_location.editTextChanged.connect(self.check_location)
+
+    def check_location(self, new_text):
+        self.ui.buttonBox.button(self.ui.buttonBox.Ok).setEnabled(os.path.isdir(new_text))
+
     def get(self, run_name='new_project'):
 
         ui = self.ui
@@ -33,6 +38,8 @@ class NewProjectDialog(QtWidgets.QDialog):
         items = SETTINGS.value('project_locations', '')
         if items:
             ui.combobox_location.addItems(items.split(','))
+        else:
+            ui.combobox_location.addItems([os.getcwd(),])
 
         ok = self.exec_()
 
