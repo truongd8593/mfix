@@ -120,13 +120,13 @@ def build_doc():
 
         subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
 
-        with open(doc_dest) as doc:
+        with codecs.open(doc_dest, encoding="utf8") as doc:
             data = doc.read()
 
         # fix links to images
         data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
 
-        with open(doc_pkg, 'w') as doc:
+        with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
 
         rendered_docs.append(doc_dest)
