@@ -2803,9 +2803,9 @@ def main():
     gui = MfixGui(qapp, project_file=project_file, loadworkflow=args.noworkflow,
                   loadvtk=args.novtk, set_splash_text=set_splash_text)
 
-    # set previous geometry
     geo = SETTINGS.value('geometry')
     if geo is not None and not args.default_geo:
+        # set previous geometry
         gui.restoreGeometry(geo)
         left_right = SETTINGS.value('splitter_left_right')
         if left_right is not None:
@@ -2813,6 +2813,13 @@ def main():
         cmd_output = SETTINGS.value('splitter_graphics_cmd_output')
         if cmd_output is not None:
             gui.ui.splitter_graphics_cmd_output.setSizes([int(num) for num in cmd_output])
+    else:
+        # default geometry
+        geo = gui.frameGeometry()
+        screen = qapp.desktop().screenNumber(qapp.desktop().cursor().pos())
+        centerPoint = qapp.desktop().screenGeometry(screen).center()
+        geo.moveCenter(centerPoint)
+        gui.move(geo.topLeft())
 
     # set developer mode
     gui.enable_developer_mode(int(SETTINGS.value('developer_mode', 0)) or args.developer)
