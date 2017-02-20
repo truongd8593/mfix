@@ -32,6 +32,11 @@ class MainMenu(object):
     main_menu_animation_speed = 150
     def init_main_menu(self):
         """Build the main menu."""
+
+        self.default_paths = None
+        self.tutorial_paths = None
+        self.benchmark_paths = None
+
         self.main_menu = QtWidgets.QWidget(self)
         self.main_menu.setObjectName('main_menu')
         self.main_menu.setStyleSheet('QWidget#main_menu{background-color: #E0E0E0;}')
@@ -93,21 +98,7 @@ class MainMenu(object):
         bw.setStyleSheet('QWidget{background-color: white;}')
         st.addWidget(bw)
 
-        # --- look for template files ---
-        mfx_dir = get_mfix_home()
-        def set_paths(dirname, ui_name):
-            path_var = []
-            top_path = os.path.join(mfx_dir, dirname, '')
-            for root, dirs, files in os.walk(top_path):
-                if any(f.endswith('mfix.dat') for f in files):
-                    path_var.append(root.replace(top_path,''))
-            if path_var:
-                path_var.sort(key=lambda y: y.lower())
-            return path_var
 
-        self.default_paths = set_paths('defaults', 'Defaults')
-        self.tutorial_paths = set_paths('tutorials', 'Tutorials')
-        self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
 
         # size policies
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
@@ -148,7 +139,7 @@ class MainMenu(object):
         lw_f.setUniformItemSizes(True)
         lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 2, 0, 1, 3)
+        ow_layout.addWidget(lw_f, 2, 0, 1, 5)
 
         tb = QtWidgets.QToolButton()
         tb.setIcon(get_icon('close.png'))
@@ -157,19 +148,33 @@ class MainMenu(object):
         tb.pressed.connect(self.handle_clear_recent)
         ow_layout.addWidget(tb, 1, 2)
 
-        tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('list.png'))
-        tb.setToolTip('View projects as list')
-        tb.setAutoRaise(True)
-        tb.pressed.connect(lambda: lw_f.setViewMode(QtWidgets.QListWidget.ListMode))
-        ow_layout.addWidget(tb, 1, 3)
+        tb_list = QtWidgets.QToolButton()
+        tb_list.setIcon(get_icon('list.png'))
+        tb_list.setToolTip('View projects as list')
+        tb_list.setAutoRaise(True)
+        tb_list.setCheckable(True)
+        ow_layout.addWidget(tb_list, 1, 3)
 
-        tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('tile.png'))
-        tb.setToolTip('View projects as grid')
-        tb.setAutoRaise(True)
-        tb.pressed.connect(lambda: lw_f.setViewMode(QtWidgets.QListWidget.IconMode))
-        ow_layout.addWidget(tb, 1, 4)
+        tb_tile = QtWidgets.QToolButton()
+        tb_tile.setIcon(get_icon('tile.png'))
+        tb_tile.setToolTip('View projects as grid')
+        tb_tile.setAutoRaise(True)
+        tb_tile.setCheckable(True)
+        ow_layout.addWidget(tb_tile, 1, 4)
+
+        def callback_tile():
+            lw_f.setViewMode(QtWidgets.QListWidget.IconMode)
+            tb_list.setChecked(False)
+            if not tb_tile.isChecked():
+                tb_tile.setChecked(True)
+        tb_tile.clicked.connect(callback_tile)
+
+        def callback_list():
+            lw_f.setViewMode(QtWidgets.QListWidget.ListMode)
+            tb_tile.setChecked(False)
+            if not tb_list.isChecked():
+                tb_list.setChecked(True)
+        tb_list.clicked.connect(callback_list)
 
         #--- build new ---
         nw = self.ui.main_menu_open_widget = QtWidgets.QWidget()
@@ -201,69 +206,40 @@ class MainMenu(object):
         lw = self.ui.main_menu_new_list = QtWidgets.QListWidget()
         lw.setFrameStyle(lw.NoFrame)
         lw.setViewMode(QtWidgets.QListWidget.IconMode)
-        lw.setIconSize(QtCore.QSize(128,128))
+        lw.setIconSize(QtCore.QSize(128, 128))
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
         nw_layout.addWidget(lw, 2, 0, 1, -1)
 
-        tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('list.png'))
-        tb.setToolTip('View projects as list')
-        tb.setAutoRaise(True)
-        tb.pressed.connect(lambda: lw.setViewMode(QtWidgets.QListWidget.ListMode))
-        fw_layout.addWidget(tb)
+        tb_l = QtWidgets.QToolButton()
+        tb_l.setIcon(get_icon('list.png'))
+        tb_l.setToolTip('View projects as list')
+        tb_l.setAutoRaise(True)
+        tb_l.setCheckable(True)
+        fw_layout.addWidget(tb_l)
 
-        tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('tile.png'))
-        tb.setToolTip('View projects as grid')
-        tb.setAutoRaise(True)
-        tb.pressed.connect(lambda: lw.setViewMode(QtWidgets.QListWidget.IconMode))
-        fw_layout.addWidget(tb)
+        tb_t = QtWidgets.QToolButton()
+        tb_t.setIcon(get_icon('tile.png'))
+        tb_t.setToolTip('View projects as grid')
+        tb_t.setAutoRaise(True)
+        tb_t.setCheckable(True)
+        fw_layout.addWidget(tb_t)
 
-        # read info about the template files
-        temp_info = {}
-        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
-        if os.path.exists(temp_info_file):
-            with open(temp_info_file) as f:
-                temp_info = json.load(f)
+        def callback():
+            lw.setViewMode(QtWidgets.QListWidget.IconMode)
+            tb_l.setChecked(False)
+            if not tb_t.isChecked():
+                tb_t.setChecked(True)
+        tb_t.clicked.connect(callback)
 
-        # loop through template files, building listwidgetitems
-        for dirname, paths in (('defaults', self.default_paths), ('tutorials', self.tutorial_paths), ('benchmarks',self.benchmark_paths)):
-            for path in paths:
-                name = os.path.basename(path)
-                full_path = os.path.join(mfx_dir, dirname, path)
-                thumb_path = os.path.join(full_path, '.thumbnail')
+        def callback2():
+            lw.setViewMode(QtWidgets.QListWidget.ListMode)
+            tb_t.setChecked(False)
+            if not tb_l.isChecked():
+                tb_l.setChecked(True)
+        tb_l.clicked.connect(callback2)
 
-                if os.path.exists(thumb_path):
-                    pix = QtGui.QPixmap()
-                    img = QtGui.QImage(thumb_path, 'PNG')
-                    pix.convertFromImage(img)
-                    icon = QtGui.QIcon(pix)
-                else:
-                    icon = get_icon('missing_thumbnail.png')
-
-                # extract info from the template info file
-                info = temp_info.get(name, {})
-                description = info.get('description', None)
-                solver = info.get('solver', 'single')
-                geo = info.get('geometry', 'false')
-                chem = info.get('chemistry', 'false')
-
-                # build a list of booleans for filtering templates
-                # [single, tfm, pic, dem, hybrid, geometry, chemistry]
-                enable_list = [solver == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
-                enable_list.extend([i.lower() == 'true' for i in [geo, chem]])
-
-                # if there is a desciption, add it to the name
-                if description is not None:
-                    name = '\n'.join([name, description])
-
-                item = QtWidgets.QListWidgetItem(icon, name)
-                item.full_path = full_path
-                item.enable_list = enable_list
-
-                lw.addItem(item)
 
         # --- build info ---
         iw = self.ui.main_menu_info_widget = QtWidgets.QWidget()
@@ -529,6 +505,11 @@ class MainMenu(object):
                     index = matches[0]
                 sw.setCurrentIndex(index)
 
+                if text == 'new' and self.default_paths is None:
+                    self.collect_template_files()
+                elif text == 'open':
+                    self.populate_recent_projects()
+
     def handle_main_menu(self):
         """Show the main menu"""
 
@@ -557,9 +538,6 @@ class MainMenu(object):
                 json.loads(self.project.mfix_gui_comments.get('project_notes', '""')))
             self.disable_main_menu_items([], ['save'])
             self.ui.main_menu_list.setCurrentRow(0)
-
-        # populate recent projects
-        self.populate_recent_projects()
 
         tw, th = self.ui.toolbutton_file.width(), self.ui.toolbutton_file.height()
         self.ui.main_menu_return.setMinimumWidth(tw)
@@ -670,3 +648,66 @@ class MainMenu(object):
             item = self.ui.main_menu_new_list.item(r)
             show = any(e==True and i==True for e, i in zip(self.main_menu_new_enable_list, item.enable_list))
             item.setHidden(not show)
+
+    def collect_template_files(self):
+
+        # --- look for template files ---
+        mfx_dir = get_mfix_home()
+        def set_paths(dirname, ui_name):
+            path_var = []
+            top_path = os.path.join(mfx_dir, dirname, '')
+            for root, dirs, files in os.walk(top_path):
+                if any(f.endswith('mfix.dat') for f in files):
+                    path_var.append(root.replace(top_path,''))
+            if path_var:
+                path_var.sort(key=lambda y: y.lower())
+            return path_var
+
+        self.default_paths = set_paths('defaults', 'Defaults')
+        self.tutorial_paths = set_paths('tutorials', 'Tutorials')
+        self.benchmark_paths = set_paths('benchmarks', 'Benchmarks')
+
+        # read info about the template files
+        temp_info = {}
+        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
+        if os.path.exists(temp_info_file):
+            with open(temp_info_file) as f:
+                temp_info = json.load(f)
+
+        lw = self.ui.main_menu_new_list
+        # loop through template files, building listwidgetitems
+        for dirname, paths in (('defaults', self.default_paths), ('tutorials', self.tutorial_paths), ('benchmarks',self.benchmark_paths)):
+            for path in paths:
+                name = os.path.basename(path)
+                full_path = os.path.join(mfx_dir, dirname, path)
+                thumb_path = os.path.join(full_path, '.thumbnail')
+
+                if os.path.exists(thumb_path):
+                    pix = QtGui.QPixmap()
+                    img = QtGui.QImage(thumb_path, 'PNG')
+                    pix.convertFromImage(img)
+                    icon = QtGui.QIcon(pix)
+                else:
+                    icon = get_icon('missing_thumbnail.png')
+
+                # extract info from the template info file
+                info = temp_info.get(name, {})
+                description = info.get('description', None)
+                solver = info.get('solver', 'single')
+                geo = info.get('geometry', 'false')
+                chem = info.get('chemistry', 'false')
+
+                # build a list of booleans for filtering templates
+                # [single, tfm, pic, dem, hybrid, geometry, chemistry]
+                enable_list = [solver == t for t in ['single', 'tfm', 'pic', 'dem', 'hybrid']]
+                enable_list.extend([i.lower() == 'true' for i in [geo, chem]])
+
+                # if there is a desciption, add it to the name
+                if description is not None:
+                    name = '\n'.join([name, description])
+
+                item = QtWidgets.QListWidgetItem(icon, name)
+                item.full_path = full_path
+                item.enable_list = enable_list
+
+                lw.addItem(item)
