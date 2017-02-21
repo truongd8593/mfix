@@ -111,6 +111,7 @@ class MainMenu(object):
         ow.setStyleSheet('QWidget#open{background-color: white;}')
         st.addWidget(ow)
         ow_layout = QtWidgets.QGridLayout(ow)
+        ow_layout.setContentsMargins(9, 9, 0, 0)
 
         l = self.ui.main_menu_label = QtWidgets.QLabel('Open')
         l.setStyleSheet('font-size: 24pt;background-color: white;')
@@ -127,19 +128,13 @@ class MainMenu(object):
         spacer_exp = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
         ow_layout.addItem(spacer_exp, 1, 1)
 
-        # clear_recent = QtWidgets.QToolButton()
-        # clear_recent.setText('Clear Recent')
-        # clear_recent.clicked.connect(self.handle_clear_recent)
-        # ow_layout.addWidget(clear_recent, 1, 2)
-
         lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
         lw_f.setFrameStyle(lw_f.NoFrame)
-        #lw_f.setViewMode(QtWidgets.QListWidget.IconMode)
         lw_f.setIconSize(QtCore.QSize(128,128))
         lw_f.setUniformItemSizes(True)
         lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 2, 0, 1, 5)
+        ow_layout.addWidget(lw_f, 2, 0, 1, -1)
 
         tb = QtWidgets.QToolButton()
         tb.setIcon(get_icon('close.png'))
@@ -162,8 +157,16 @@ class MainMenu(object):
         tb_tile.setCheckable(True)
         ow_layout.addWidget(tb_tile, 1, 4)
 
+        # apply previous state
+        if self.settings.value('open_list_mode', 'icon') == 'icon':
+            lw_f.setViewMode(QtWidgets.QListWidget.IconMode)
+            tb_tile.setChecked(True)
+        else:
+            tb_list.setChecked(True)
+
         def callback_tile():
             lw_f.setViewMode(QtWidgets.QListWidget.IconMode)
+            self.settings.setValue('open_list_mode', 'icon')
             tb_list.setChecked(False)
             if not tb_tile.isChecked():
                 tb_tile.setChecked(True)
@@ -171,6 +174,7 @@ class MainMenu(object):
 
         def callback_list():
             lw_f.setViewMode(QtWidgets.QListWidget.ListMode)
+            self.settings.setValue('open_list_mode', 'list')
             tb_tile.setChecked(False)
             if not tb_list.isChecked():
                 tb_list.setChecked(True)
@@ -182,6 +186,7 @@ class MainMenu(object):
         nw.setStyleSheet('QWidget#new{background-color: white;}')
         st.addWidget(nw)
         nw_layout = QtWidgets.QGridLayout(nw)
+        nw_layout.setContentsMargins(9, 9, 0, 0)
 
         l = self.ui.main_menu_label = QtWidgets.QLabel('New')
         l.setStyleSheet('font-size: 24pt;background-color: white;')
@@ -191,6 +196,7 @@ class MainMenu(object):
         fw = QtWidgets.QWidget()
         nw_layout.addWidget(fw, 1, 0, 1, -1)
         fw_layout = QtWidgets.QHBoxLayout(fw)
+        fw_layout.setContentsMargins(0, 0, 0, 0)
 
         self.main_menu_new_enable_list = [True]*7
         for i, f in enumerate(['Single', 'TFM', 'PIC', 'DEM', 'Hybrid', 'Cartesian', 'Chemistry']):
@@ -205,7 +211,6 @@ class MainMenu(object):
 
         lw = self.ui.main_menu_new_list = QtWidgets.QListWidget()
         lw.setFrameStyle(lw.NoFrame)
-        lw.setViewMode(QtWidgets.QListWidget.IconMode)
         lw.setIconSize(QtCore.QSize(128, 128))
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
@@ -226,8 +231,16 @@ class MainMenu(object):
         tb_t.setCheckable(True)
         fw_layout.addWidget(tb_t)
 
+        # apply previous state
+        if self.settings.value('new_list_mode', 'icon') == 'icon':
+            lw.setViewMode(QtWidgets.QListWidget.IconMode)
+            tb_t.setChecked(True)
+        else:
+            tb_l.setChecked(True)
+
         def callback():
             lw.setViewMode(QtWidgets.QListWidget.IconMode)
+            self.settings.setValue('new_list_mode', 'icon')
             tb_l.setChecked(False)
             if not tb_t.isChecked():
                 tb_t.setChecked(True)
@@ -235,11 +248,11 @@ class MainMenu(object):
 
         def callback2():
             lw.setViewMode(QtWidgets.QListWidget.ListMode)
+            self.settings.setValue('new_list_mode', 'list')
             tb_t.setChecked(False)
             if not tb_l.isChecked():
                 tb_l.setChecked(True)
         tb_l.clicked.connect(callback2)
-
 
         # --- build info ---
         iw = self.ui.main_menu_info_widget = QtWidgets.QWidget()
