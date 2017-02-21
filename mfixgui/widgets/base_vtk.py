@@ -8,7 +8,7 @@ import logging
 import os
 import traceback
 
-from qtpy import PYQT5, QtCore, QtWidgets
+from qtpy import PYQT5, QtCore, QtWidgets, uic
 
 from mfixgui.tools.general import get_icon
 
@@ -110,6 +110,67 @@ SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 #        self.OnLeftButtonDown()
 #        return
 
+class ScreenshotDialog(QtWidgets.QDialog):
+    applyEvent = QtCore.Signal(object, object, object)
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent)
+
+        thisdir = os.path.abspath(os.path.dirname(__file__))
+        uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
+        ui = self.ui = uic.loadUi(os.path.join(uidir, 'screenshot_dialog.ui'), self)
+
+        self.setWindowTitle('Save Image')
+
+        ui.lineedit_width.dtype = int
+        ui.lineedit_height.dtype = int
+
+        ui.toolbutton_browse.clicked.connect(self.browse)
+        ui.combobox_template.currentIndexChanged.connect(self.change_size)
+
+    def change_size(self, index=None):
+
+        text = self.ui.combobox_template.currentText()
+
+        w, h = None, None
+        if '720p' in text:
+            w, h = 1080, 720
+        elif '1080p' in text:
+            w, h = 1920, 1080
+        elif '4K' in text:
+            w, h = 3840, 2160
+
+        if w is not None:
+            self.ui.lineedit_width.updateValue('none', w)
+            self.ui.lineedit_height.updateValue('none', h)
+
+    def get(self):
+        ui = self.ui
+
+        if not ui.lineedit_path.text():
+            ui.lineedit_path.setText(os.path.dirname(SETTINGS.value('project_file')))
+            self.change_size()
+
+        ok = self.exec_()
+
+        fname = os.path.join(ui.lineedit_path.text(),
+                             ui.lineedit_filename.text() + ui.combobox_ext.currentText())
+
+        size = (ui.lineedit_width.value, ui.lineedit_height.value)
+        return ok == QtWidgets.QDialog.Accepted, fname, size
+
+    def browse(self):
+        fname = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            "Save screenshot",
+            self.ui.lineedit_path.text(),
+            )
+        if PYQT5:
+            fname = fname[0]
+        if not fname:
+            return
+
+        self.ui.lineedit_path.setText(fname)
+
 
 class BaseVtkWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -118,6 +179,8 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.defer_render = False
         self.view_flip = [False]*3
         self.offscreen_vtkrenderer = None
+
+        self.screenshot_dialog = ScreenshotDialog(self)
 
         # --- layout ---
         self.grid_layout = QtWidgets.QGridLayout(self)
@@ -234,25 +297,14 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not self.defer_render or force_render:
             self.vtkRenderWindow.Render()
 
-    def screenshot(self, checked, fname=None, size=[1920, 1080], offscreen=False):
+    def screenshot(self, checked, fname=None, size=[1920, 1080], offscreen=True):
         """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 
         if fname is None:
-            fname = QtWidgets.QFileDialog.getSaveFileName(
-                self,
-                "Save screenshot",
-                os.path.dirname(SETTINGS.value('project_file')),
-                ';;'.join(["PNG (*.png)",
-                           "JPEG (*.jpg)",
-                           "PostScript (*.ps)",
-                           "All Files (*.*)",
-                          ]),
-                )
-            if PYQT5:
-                fname = fname[0]
-        if not fname:
-            return
+            ok, fname, size = self.screenshot_dialog.get()
+            if not ok:
+                return
 
         # off screen rendering
         if offscreen and self.offscreen_vtkrenderer is None:
