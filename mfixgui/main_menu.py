@@ -58,7 +58,11 @@ class MainMenu(object):
         lw = self.ui.main_menu_list = QtWidgets.QListWidget()
         lw.setMaximumWidth(200)
         lw.setFrameStyle(lw.NoFrame)
-        lw.setStyleSheet('QListView{background-color: #E0E0E0;}')
+        lw.setStyleSheet('''QListView{background-color: #E0E0E0;}
+                            QListView::item:selected{background: #64B5F6;
+                                color: white;}
+                            QListView::item:hover{background:#BBDEFB;}
+                         ''')
         lw.selectionModel().selectionChanged.connect(self.handle_main_menu_selection_changed)
 
         names = ['Project Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Quit']
@@ -75,7 +79,9 @@ class MainMenu(object):
                 li.setFlags(QtCore.Qt.NoItemFlags)
                 li.setSizeHint(QtCore.QSize(0, 10))
                 lw.addItem(li)
-                lw.setItemWidget(li, get_separator(vertical=False))
+                sep = get_separator(vertical=False)
+                sep.setEnabled(False)
+                lw.setItemWidget(li, sep)
             else:
                 li = QtWidgets.QListWidgetItem(get_icon(icon+'.png'), name)
                 lw.addItem(li)
