@@ -1,13 +1,19 @@
 """
 This is a base class for the vtk widgets.
 """
-from __future__ import print_function, absolute_import, unicode_literals, division
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import logging
 import os
 import traceback
-import logging
+
+from qtpy import PYQT5, QtCore, QtWidgets
+
+from mfixgui.tools.general import get_icon
+
 LOG = logging.getLogger(__name__)
 
-from qtpy import QtCore, QtWidgets, PYQT5
 
 # VTK imports
 VTK_AVAILABLE = True
@@ -54,7 +60,6 @@ except ImportError:
         e = traceback.format_exc()
         LOG.info("Can't import QVTKRenderWindowInteractor:\n{}".format(e))
 
-from mfixgui.tools.general import get_icon
 
 SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 
@@ -229,7 +234,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not self.defer_render or force_render:
             self.vtkRenderWindow.Render()
 
-    def screenshot(self, checked, fname=None, size=[1920, 1080]):
+    def screenshot(self, checked, fname=None, size=[1920, 1080], offscreen=False):
         """take a snapshot of the vtk window"""
         self.toolbutton_screenshot.setDown(False)
 
@@ -249,14 +254,16 @@ class BaseVtkWidget(QtWidgets.QWidget):
         if not fname:
             return
 
-        notvisible = not self.isVisible()
-        if notvisible:
+        # off screen rendering
+        if offscreen and self.offscreen_vtkrenderer is None:
             self.init_offscreen_render(size)
+        elif offscreen:
+            self.offscreen_vtkrenderwindow.SetSize(*size)
 
         # screenshot code:
         # TODO: get resolution from user
         window_image = vtk.vtkWindowToImageFilter()
-        if notvisible:
+        if offscreen:
             window_image.SetInput(self.offscreen_vtkrenderwindow)
         else:
             window_image.SetInput(self.vtkRenderWindow)
@@ -303,7 +310,8 @@ class BaseVtkWidget(QtWidgets.QWidget):
 
         self.offscreen_vtkrenderer.ResetCamera()
 
-        self.offscreen_vtkrenderer.Render()
+        # causes segfault
+        # self.offscreen_vtkrenderer.Render()
 
     def change_interaction(self, style_2d=False):
         if style_2d:
