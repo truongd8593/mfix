@@ -2666,7 +2666,7 @@ class MfixGui(QtWidgets.QMainWindow,
         des = self.project.get_value('description')
         # try to get image from vtk
         temp = os.path.join(self.get_project_dir(), 'temp.png')
-        self.vtkwidget.screenshot(True, temp, size=[400, 400])
+        self.vtkwidget.screenshot(True, temp, size=[400, 400], offscreen=True)
 
         # create the thumbnail
         create_thumbnail(path, s, geo, chem, temp)
