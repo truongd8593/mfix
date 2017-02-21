@@ -594,18 +594,19 @@ class MainMenu(object):
             else:
                 icon = get_icon('missing_thumbnail.png')
 
-            info_path = os.path.join(dir_, '.mfixguiinfo')
-            info = 'None'
-            if os.path.exists(info_path):
-                with open(info_path) as f:
-                    info = f.readlines()[0].split(',')
-                if len(info) > 3:
-                    info = ','.join(info[3:])
-                else:
-                    info = 'None'
+            # look for description
+            description = ''
+            with open(proj) as f:
+                for line in f:
+                    clean = line.lower().split('#')[0].split('!')[0].strip()
+                    if 'description' in clean:
+                        toks = [tok.strip() for tok in line.split('=')]
+                        des_ind = toks.index('description')
+                        description = toks[des_ind + 1].replace('"', '').replace("'", '')
+                        break
 
             name = name.split('.')[0]
-            text = '\n'.join([name, info, proj])
+            text = '\n'.join([name, description, proj])
             item = QtWidgets.QListWidgetItem(icon, text)
             item.full_path = proj
             lw.addItem(item)
