@@ -1,13 +1,29 @@
 """the main (file menu) bar."""
 import json
 import os
+import subprocess
+import sys
 
-from qtpy import QtCore, QtGui, QtWidgets
+import qtpy
+from qtpy import API, QT_VERSION, QtCore, QtGui, QtWidgets
 
 from mfixgui.tools.general import (get_icon, get_mfix_home, get_pixmap,
                                    get_separator)
 from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
+
+try:
+    import numpy as np
+    numpy_version = np.__version__
+except ImportError:
+    numpy_version = 'Import Failed'
+
+try:
+    from vtk import vtkVersion
+    vtkVersion = vtkVersion.GetVTKVersion()
+except ImportError:
+    vtkVersion = 'Import Failed'
+
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
 try:
@@ -25,6 +41,13 @@ def path2url(path):
     return urlparse.urljoin(
       'file:', urllib.pathname2url(path))
 
+def get_git_revision_short_hash():
+    """Try to get the current git hash"""
+    try:
+        git_hash = subprocess.check_output(['git', 'describe', '--always']).strip()
+    except:
+        git_hash = 'Unknown'
+    return git_hash
 
 class MainMenu(object):
     """Main menu mixin for the gui."""
@@ -103,8 +126,6 @@ class MainMenu(object):
         bw.setObjectName('default')
         bw.setStyleSheet('QWidget{background-color: white;}')
         st.addWidget(bw)
-
-
 
         # size policies
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
@@ -443,21 +464,36 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
-        vl = QtWidgets.QLabel('MFiX GUI version: {}'.format(__version__))
-        vl.setStyleSheet('background-color: white;')
-        aw_layout.addWidget(vl, 2, 0, 1, -1)
-
-        il = QtWidgets.QLabel('''
+        il = QtWidgets.QLabel(' '.join(l.strip() for l in
+        '''
         MFiX is an open-source multiphase flow solver and is free to download
         and use. MFiX provides a suite of models that treat the carrier phase
         (typically the gas phase) and disperse phase (typically the solids
         phase) differently. These models include the Two Fluid Model (TFM), the
         Particle in Cell (PIC) model, the Discrete Element Model (DEM), and the
         Eulerian-Lagrangian-Eulerian (Hybrid) model.
-        ''')
+        '''.strip().split('\n')))
         il.setStyleSheet('background-color: white;')
         il.setWordWrap(True)
-        aw_layout.addWidget(il, 3, 0, 1, -1)
+        aw_layout.addWidget(il, 2, 0, 1, -1)
+
+        aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
+
+
+        labels = [QtWidgets.QLabel('<b>MFiX GUI version:</b> {}'.format(__version__)),
+                  QtWidgets.QLabel('<b>Git description:</b> {}'.format(get_git_revision_short_hash())),
+                  QtWidgets.QLabel('<b>Python version:</b> {}'.format(sys.version)),
+                  QtWidgets.QLabel('<b>Qt Wrapper:</b> {}'.format(API)),
+                  QtWidgets.QLabel('<b>Qt Version:</b> {}'.format(QT_VERSION)),
+                  QtWidgets.QLabel('<b>qtpy Version:</b> {}'.format(qtpy.__version__)),
+                  QtWidgets.QLabel('<b>Numpy Version:</b> {}'.format(numpy_version)),
+                  QtWidgets.QLabel('<b>VTK Version:</b> {}'.format(vtkVersion)),
+                  ]
+
+        for i, label in enumerate(labels):
+            label.setStyleSheet('background-color: white;')
+            label.setWordWrap(True)
+            aw_layout.addWidget(label, 10+i, 0, 1, -1)
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
