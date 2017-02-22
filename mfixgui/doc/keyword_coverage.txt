@@ -97,7 +97,7 @@ BLENDING_FUNCTION              Y           N
 BREAKAGE_EFF                   N           N              ?
 BSTART_WITH_ONE_RES            N           N              ?
 BWRITE_NETCDF                  Y           N
-C                              Y           Y
+C                              N           Y              ??
 C2C_R1                         N [3]       N
 C2C_R2                         N [3]       N
 C2C_Y1                         N [3]       N
