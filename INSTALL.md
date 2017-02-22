@@ -68,7 +68,7 @@ Installation instructions for dependencies are distribution-specific. On Ubuntu
 Linux, they can be installed with:
 
 ```shell
-> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
+> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc
 > conda install -c menpo vtk=7.0.0
 ```
 
@@ -93,7 +93,7 @@ instructions.
 Once homebrew is installed, install MFIX  dependencies with the commands:
 
 ```shell
-> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
+> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc
 > conda install -c menpo vtk=7.0.0
 ```
 
