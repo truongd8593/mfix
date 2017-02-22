@@ -604,6 +604,7 @@ class RunPopup(QDialog):
         replace_dict.update({
             'PROJECT_NAME': self.parent.project.get_value('run_name', default=''),
             'COMMAND': ' '.join(cmd),
+            'MFIX_HOME': get_mfix_home(),
         })
 
         # replace twice to make sure that any references added the first time
