@@ -5,7 +5,12 @@ import subprocess
 import sys
 
 import qtpy
-from qtpy import API, QT_VERSION, QtCore, QtGui, QtWidgets
+from qtpy import API_NAME, QtCore, QtGui, QtWidgets
+
+try:
+    from qtpy import QT_VERSION
+except ImportError:
+    QT_VERSION = 'Unknown'
 
 from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, get_mfix_home, get_pixmap,
                                    get_separator)
@@ -46,7 +51,7 @@ def get_git_revision_short_hash():
     try:
         git_hash = subprocess.check_output(['git', 'describe', '--always']).strip()
     except:
-        git_hash = 'Unknown'
+        git_hash = None
     return git_hash
 
 class MainMenu(object):
@@ -481,11 +486,11 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
 
-
+        git_des = get_git_revision_short_hash()
         labels = [QtWidgets.QLabel('<b>MFiX GUI version:</b> {}'.format(__version__)),
-                  QtWidgets.QLabel('<b>Git description:</b> {}'.format(get_git_revision_short_hash())),
+                  QtWidgets.QLabel('<b>Git description:</b> {}'.format(git_des)) if git_des is not None else None,
                   QtWidgets.QLabel('<b>Python version:</b> {}'.format(sys.version)),
-                  QtWidgets.QLabel('<b>Qt Wrapper:</b> {}'.format(API)),
+                  QtWidgets.QLabel('<b>Qt Wrapper:</b> {}'.format(API_NAME)),
                   QtWidgets.QLabel('<b>Qt Version:</b> {}'.format(QT_VERSION)),
                   QtWidgets.QLabel('<b>qtpy Version:</b> {}'.format(qtpy.__version__)),
                   QtWidgets.QLabel('<b>Numpy Version:</b> {}'.format(numpy_version)),
@@ -493,6 +498,8 @@ class MainMenu(object):
                   ]
 
         for i, label in enumerate(labels):
+            if label is None:
+                continue
             label.setStyleSheet('background-color: white;')
             label.setWordWrap(True)
             aw_layout.addWidget(label, 10+i, 0, 1, -1)
