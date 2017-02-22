@@ -265,7 +265,7 @@ EOD`
   if test -z "$PYTHON_EXTRA_LDFLAGS"; then
      PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
                 conf = distutils.sysconfig.get_config_var; \
-                print (str(conf('LIBS')) + ' ' + str(conf('SYSLIBS')))"`
+                print (str(conf('LIBS') or '') + ' ' + str(conf('SYSLIBS')))"`
   fi
   AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
   AC_SUBST(PYTHON_EXTRA_LDFLAGS)
@@ -277,7 +277,7 @@ EOD`
   if test -z "$PYTHON_EXTRA_LIBS"; then
     PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
       conf = distutils.sysconfig.get_config_var; \
-      print (conf('LINKFORSHARED'))"`
+      print (str(conf('LINKFORSHARED') or ''))"`
   fi
   AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
   AC_SUBST(PYTHON_EXTRA_LIBS)
