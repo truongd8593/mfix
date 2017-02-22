@@ -287,7 +287,7 @@ which python distribution you are installing it with using PYTHON_BIN.
 > cd my_example_case
 > ls *.f
 usr0.f   write_usr0.f
-> $MFIX_HOME/configure_mfix --python PYTHON_BIN=$HOME/miniconda3/python3.5 CC=gcc
+> $MFIX_HOME/configure_mfix --python PYTHON_BIN=$HOME/miniconda3/python3.6 CC=gcc
 > make mfixsolver.so
 > ls *.so
 mfixsolver.so

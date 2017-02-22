@@ -44,7 +44,7 @@ build:linux:
 
 build:mac:
   script:
-    - python3.5 setup.py build_mfix
+    - python3.6 setup.py build_mfix
   stage: build:libmfix
   only:
     - develop
@@ -128,7 +128,7 @@ build_windows_py2:
 
 build_linux_py3:
   script:
-    - python3.5 setup.py bdist_wheel
+    - python3.6 setup.py bdist_wheel
   stage: build:py3
   only:
     - develop
@@ -144,7 +144,7 @@ build_linux_py3:
 
 build_mac_py3:
   script:
-    - FC=gfortran-6 CC=gcc-6 python3.5 setup.py bdist_wheel
+    - FC=gfortran-6 CC=gcc-6 python3.6 setup.py bdist_wheel
   stage: build:py3
   only:
     - develop
