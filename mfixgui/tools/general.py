@@ -513,8 +513,11 @@ def is_vnc():
     """determine if the gui is running in vnc"""
     if os.name == 'nt':
         return False
-    xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
-    return 'vnc' in str(xdpyinfo)
+    try:
+        xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
+        return 'vnc' in str(xdpyinfo)
+    except:
+        return False
 
 def get_separator(vertical=True):
     """create a QFrame that looks like a separator"""
