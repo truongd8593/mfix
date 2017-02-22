@@ -403,7 +403,11 @@ class WorkflowWidget(QtWidgets.QWidget):
         parent.project = self.project
         parent.settings = self.mfixgui.settings
         run_dialog = WorkflowRunPopup(None, parent)
-        run_dialog.exec_()
+        ok = run_dialog.exec_()
+
+        # Check for cancel
+        if not ok == QtWidgets.QDialog.Accepted:
+            return False
 
         self.queue = run_dialog.submit_queue
         if self.queue:
@@ -411,6 +415,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         else:
             self.submit_cmd = None
         self.run_cmd = run_dialog.get_run_command()
+        print(self.run_cmd)
+        return True
 
     def run_project(self, mfx_file):
         """
@@ -482,7 +488,8 @@ class WorkflowWidget(QtWidgets.QWidget):
             job_id = self.submit_to_queue(proj_dir)
         # local
         else:
-            msg = 'Running: %s' % ' '.join(self.run_cmd)
+            print(self.run_cmd)
+            msg = 'Running: %s' % ''.join(self.run_cmd)
             run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
         self.watch_dir_paths.append(proj_dir)
@@ -671,7 +678,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         projs = self.get_selected_projects()
 
         btn = self.mfixgui.message(
-            text='The selectect directories will be delete.\nContinue?',
+            text='The selected directories will be delete.\nContinue?',
             buttons=['yes', 'no'],
             default='no',)
 
@@ -682,7 +689,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         for proj in projs:
 
             # make sure the job is stopped
-            job = self.job_dict[proj]
+            job = self.job_dict.get(proj, None)
+            if job is None:
+                continue
             if not isinstance(job, FakeJob):
                 job.stop_mfix()
                 data[proj]['status'] = 'stopped'
