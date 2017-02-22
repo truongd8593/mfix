@@ -1,0 +1,357 @@
+Key                            GUI         Tutorial        Equivalent
+===                            ===         ========        ==========
+BC_C_SCALAR                    Y           N
+BC_C_T_G                       Y           Y
+BC_C_T_S                       Y           Y
+BC_C_THETA_M                   Y           Y
+BC_C_X_G                       Y           Y
+BC_C_X_S                       N [1]       Y
+BC_DT_0                        Y           Y
+BC_DT_H                        N           Y               ?
+BC_DT_L                        N           Y               ?
+BC_E_TURB_G                    Y           Y
+BC_EP_G                        Y [2]       Y
+BC_EP_S                        Y           Y
+BC_HW_G                        Y           Y
+BC_HW_S                        Y           Y
+BC_HW_SCALAR                   Y           N
+BC_HW_T_G                      Y           Y
+BC_HW_T_S                      Y           Y
+BC_HW_THETA_M                  Y           Y
+BC_HW_X_G                      Y           Y
+BC_HW_X_S                      Y           Y
+BC_I_E                         N           N               ?
+BC_I_W                         N           N               ?
+BC_ID_Q                        N [1]       Y
+BC_J_N                         N           N               ?
+BC_J_S                         N           N               ?
+BC_JET_G0                      N           Y               ?
+BC_JET_GH                      N           Y               ?
+BC_JET_GL                      N           Y               ?
+BC_JJ_PS                       Y           Y
+BC_K_B                         N           N
+BC_K_T                         Y           Y
+BC_K_TURB_G                    Y           Y
+BC_MASSFLOW_G                  Y           Y
+BC_MASSFLOW_S                  Y           Y
+BC_MI_AS_WALL_FOR_DES          N           N               ?
+BC_P_G                         Y           Y
+BC_PIC_MI_CONST_NPC            N           N               ?
+BC_PIC_MI_CONST_STATWT         N           N               ?
+BC_PO_APPLY_TO_DES             N           Y               ?
+BC_ROP_S                       N           Y               ?
+BC_SCALAR                      Y           N
+BC_SCALARW                     Y           N
+BC_T_G                         Y           Y
+BC_T_S                         Y           Y
+BC_THETA_M                     N           Y               ?
+BC_THETAW_M                    Y           Y
+BC_TW_G                        Y           Y
+BC_TW_S                        Y           Y
+BC_TYPE                        Y           Y
+BC_U_G                         Y           Y
+BC_U_S                         Y           Y
+BC_UW_G                        Y           Y
+BC_UW_S                        Y           Y
+BC_V_G                         Y           Y
+BC_V_S                         Y           Y
+BC_VELMAG_G                    N           N               ?
+BC_VELMAG_S                    N           N               ?
+BC_VOLFLOW_G                   Y           N
+BC_VOLFLOW_S                   Y           N
+BC_VW_G                        Y           Y
+BC_VW_S                        Y           Y
+BC_W_G                         Y           Y
+BC_W_S                         Y           Y
+BC_WW_G                        Y           Y
+BC_WW_S                        Y           Y
+BC_X_E                         Y           Y
+BC_X_G                         Y           Y
+BC_X_S                         Y           Y
+BC_X_W                         Y           Y
+BC_XW_G                        Y           N
+BC_XW_S                        Y           N
+BC_Y_N                         Y           Y
+BC_Y_S                         Y           Y
+BC_Z_B                         Y           Y
+BC_Z_T                         Y           Y
+BEND_R1                        N [2]       N
+BEND_R2                        N [2]       N
+BEND_THETA1                    N [2]       N
+BEND_THETA2                    N [2]       N
+BWRITE_NETCDF                  Y           N
+C2C_R1                         N [2]       N
+C2C_R2                         N [2]       N
+C2C_Y1                         N [2]       N
+C2C_Y2                         N [2]       N
+C_PS0                          Y           Y
+CALL_USR_SOURCE                N           N               ?
+CLIP_XMAX                      Y           N
+CLIP_XMIN                      Y           N
+CLIP_YMAX                      Y           Y
+CLIP_YMIN                      Y           N
+CLIP_ZMAX                      Y           N
+CLIP_ZMIN                      Y           N
+CLOSE_PACKED                   Y           Y
+D_P0                           Y           Y
+DES_EM                         Y           Y
+DES_EN_INPUT                   Y           Y
+DES_EN_WALL_INPUT              Y           Y
+DES_ET_INPUT                   Y           N
+DES_ET_WALL_INPUT              Y           N
+DIL_FACTOR_VSD                 N           N               ?
+DIL_INERT_X_VSD                N           N
+DISCRETIZE                     Y           Y
+DQUADRIC                       N [2]       Y
+DX                             Y           Y
+DY                             Y           Y
+DZ                             Y           Y
+E_YOUNG                        Y           Y
+E_YOUNG_ACTUAL                 N           Y              ?
+EP_S_MAX                       N           Y              ?
+FLUID_IN_CLIPPED_REGION        N           Y              ?
+HALF_ANGLE                     N           Y              ?
+IC_DES_FIT_TO_REGION           Y           N
+IC_E_TURB_G                    Y           Y
+IC_EP_G                        Y [2]       Y
+IC_EP_S                        Y           Y
+IC_GAMA_RG                     Y           N
+IC_GAMA_RS                     Y           N
+IC_I_E                         N           N              ?
+IC_I_W                         N           N              ?
+IC_J_N                         N           N              ?
+IC_J_S                         N           N              ?
+IC_K_B                         N           N              ?
+IC_K_T                         Y           Y
+IC_K_TURB_G                    Y           Y
+IC_L_SCALE                     Y           Y
+IC_P_G                         Y           Y
+IC_P_STAR                      Y           Y
+IC_PIC_CONST_NPC               N           Y               ?
+IC_PIC_CONST_STATWT            Y           N
+IC_ROP_S                       Y           Y
+IC_SCALAR                      Y           N
+IC_T_G                         Y           Y
+IC_T_RG                        Y           N
+IC_T_RS                        Y           N
+IC_T_S                         Y           Y
+IC_THETA_M                     Y           Y
+IC_TYPE                        N           N               ?
+IC_U_G                         Y           Y
+IC_U_S                         Y           Y
+IC_V_G                         Y           Y
+IC_V_S                         Y           Y
+IC_W_G                         Y           Y
+IC_W_S                         Y           Y
+IC_X_E                         Y           Y
+IC_X_G                         Y           Y
+IC_X_S                         Y           Y
+IC_X_W                         Y           Y
+IC_Y_N                         Y           Y
+IC_Y_S                         Y           Y
+IC_Z_B                         Y           Y
+IC_Z_T                         Y           Y
+INERT_SPECIES                  Y           Y
+IS_I_E                         N           N              ?
+IS_I_W                         N           N              ?
+IS_J_N                         N           N              ?
+IS_J_S                         N           N              ?
+IS_K_B                         N           N              ?
+IS_K_T                         N           N              ?
+IS_PC                          Y           N
+IS_TYPE                        Y           Y
+IS_VEL_S                       Y           N
+IS_X_E                         Y           Y
+IS_X_W                         Y           Y
+IS_Y_N                         Y           Y
+IS_Y_S                         Y           Y
+IS_Z_B                         Y           N
+IS_Z_T                         Y           N
+K_S0                           Y           Y
+LAMBDA_X                       N [2]       Y
+LAMBDA_Y                       N [2]       Y
+LAMBDA_Z                       N [2]       Y
+LEQ_IT                         Y           Y
+LEQ_METHOD                     Y           Y
+LEQ_PC                         Y           Y
+LEQ_SWEEP                      Y           Y
+LEQ_TOL                        Y           Y
+MOMENTUM_X_EQ                  Y           Y
+MOMENTUM_Y_EQ                  Y           Y
+MOMENTUM_Z_EQ                  Y           Y
+MU_S0                          Y           N
+MW_G                           Y           Y
+MW_S                           Y           Y
+N_X                            N [2]       Y
+N_Y                            N [2]       Y
+N_Z                            N [2]       Y
+NMAX_S                         Y           Y
+PHASE4SCALAR                   Y           N
+PIECE_XMAX                     Y           Y
+PIECE_XMIN                     Y           Y
+PIECE_YMAX                     Y           Y
+PIECE_YMIN                     Y           Y
+PIECE_ZMAX                     Y           N
+PIECE_ZMIN                     Y           N
+PS_I_E                         N           N              ?
+PS_I_W                         N           N              ?
+PS_J_N                         N           N              ?
+PS_J_S                         N           N              ?
+PS_K_B                         N           N              ?
+PS_K_T                         N           N              ?
+PS_MASSFLOW_G                  Y           Y
+PS_MASSFLOW_S                  Y           Y
+PS_T_G                         Y           Y
+PS_T_S                         Y           Y
+PS_U_G                         Y           Y
+PS_U_S                         Y           Y
+PS_V_G                         Y           Y
+PS_V_S                         Y           Y
+PS_W_G                         Y           Y
+PS_W_S                         Y           Y
+PS_X_E                         Y           Y
+PS_X_G                         Y           Y
+PS_X_S                         Y           Y
+PS_X_W                         Y           Y
+PS_Y_N                         Y           Y
+PS_Y_S                         Y           Y
+PS_Z_B                         Y           Y
+PS_Z_T                         Y           Y
+QUADRIC_FORM                   Y           Y
+R_P                            Y           Y
+RADIUS                         Y           Y
+REACTOR1_R1                    N [2]       N
+REACTOR1_R2                    N [2]       N
+REACTOR1_RR1                   N [2]       N
+REACTOR1_RR2                   N [2]       N
+REACTOR1_THETA1                N [2]       N
+REACTOR1_THETA2                N [2]       N
+REACTOR1_Y1                    N [2]       N
+REACTOR1_Y2                    N [2]       N
+REACTOR1_YR1                   N [2]       N
+REACTOR1_YR2                   N [2]       N
+RESID_STRING                   N [4]       Y               ?
+RO_S0                          Y           Y
+RO_XS0                         Y           Y
+SOLIDS_MODEL                   Y           Y
+SPECIES_ALIAS_G                Y           Y
+SPECIES_ALIAS_S                Y           Y
+SPECIES_EQ                     Y           Y
+SPECIES_G                      Y           Y
+SPECIES_S                      Y           Y
+SPX_DT                         Y           Y
+T_X                            Y           Y
+T_Y                            Y           Y
+T_Z                            Y           Y
+THETA_X                        N [2]       N
+THETA_Y                        N [2]       N
+THETA_Z                        N [2]       Y
+TORUS_R1                       N [2]       N
+TORUS_R2                       N [2]       N
+UCOIL_R1                       N [2]       N
+UCOIL_R2                       N [2]       N
+UCOIL_Y1                       N [2]       N
+UCOIL_Y2                       N [2]       N
+UR_FAC                         Y           Y
+USR_CPS                        Y           N
+USR_DIFS                       N           N               ?
+USR_DT                         N           Y               ?
+USR_EXT                        N           N               ?
+USR_FGS                        N           N               ?
+USR_FORMAT                     N           N               ?
+USR_FSS                        N           N               ?
+USR_GAMA                       N           N               ?
+USR_I_E                        N           N               ?
+USR_I_W                        N           N               ?
+USR_J_N                        N           N               ?
+USR_J_S                        N           N               ?
+USR_K_B                        N           N               ?
+USR_K_T                        N           N               ?
+USR_KS                         N           N               ?
+USR_MUS                        N           N               ?
+USR_ROS                        N           N               ?
+USR_TYPE                       N           Y               ?
+USR_VAR                        Y           Y               ?
+USR_X_E                        N           N               ?
+USR_X_W                        N           N               ?
+USR_Y_N                        N           N               ?
+USR_Y_S                        N           N               ?
+USR_Z_B                        N           N               ?
+USR_Z_T                        N           N               ?
+V_POISSON                      Y           Y
+V_POISSON_ACTUAL               N           Y               ?
+VTK_BC_ID                      Y           N
+VTK_DATA                       Y           Y
+VTK_DEBUG                      N           Y               ?
+VTK_DT                         Y           Y
+VTK_DWALL                      Y           N
+VTK_E_TURB_G                   Y           N
+VTK_EP_G                       Y           Y
+VTK_FACET_COUNT_DES            N           N               ?
+VTK_FILEBASE                   Y           Y
+VTK_IJK                        Y           N
+VTK_K_TURB_G                   Y           N
+VTK_LAMBDA_2                   Y           N
+VTK_NB_FACET_DES               N           N               ?
+VTK_NORMAL                     N           N               ?
+VTK_NXS                        Y           N
+VTK_NYS                        Y           Y
+VTK_NZS                        Y           N
+VTK_P_G                        Y           Y
+VTK_P_STAR                     Y           N
+VTK_PART_ANGULAR_VEL           Y           N
+VTK_PART_COHESION              N           N               ?
+VTK_PART_DIAMETER              Y           Y
+VTK_PART_ID                    Y           N
+VTK_PART_ORIENTATION           Y           N
+VTK_PART_RANK                  Y           N
+VTK_PART_TEMP                  Y           N
+VTK_PART_USR_VAR               Y           N
+VTK_PART_VEL                   Y           Y
+VTK_PART_X_S                   Y           N
+VTK_PARTITION                  Y           N
+VTK_ROP_S                      Y           N
+VTK_RRATE                      Y           N
+VTK_SCALAR                     Y           N
+VTK_SELECT_MODE                N           Y               ?
+VTK_SLICE_TOL                  N           N               ?
+VTK_T_G                        Y           N
+VTK_T_S                        Y           N
+VTK_THETA_M                    Y           N
+VTK_U_G                        Y           N
+VTK_U_S                        Y           N
+VTK_V_G                        Y           N
+VTK_V_S                        Y           N
+VTK_VEL_G                      Y           Y
+VTK_VEL_S                      Y           Y
+VTK_VORTICITY                  Y           N
+VTK_W_G                        Y           N
+VTK_W_S                        Y           N
+VTK_X_E                        Y           Y
+VTK_X_G                        Y           N
+VTK_X_S                        Y           N
+VTK_X_W                        Y           Y
+VTK_Y_N                        Y           Y
+VTK_Y_S                        Y           Y
+VTK_Z_B                        Y           Y
+VTK_Z_T                        Y           Y
+X_S0                           Y           Y
+
+Notes:
+
+1) The SRS states:
+When solving solids species equations:
+   Set keyword BC_HW_X_S(#,#,#) to 0.0
+   Set keyword BC_C_X_S(#,#,#) to 0.0
+
+However, the GUI does not provide any way for these keys to be set to any nonzero value, or UNDEFINED
+
+A few tutorials set this key, but only to 0, see
+ SpoutedBedCombustor and silane_pyrolysis
+
+2)  *_EP_G computed from *_EP_S
+
+3)  Support for quadrics is being added to GUI as of 2017-02-22
+
+4)  RESID_STRING not exposed in GUI but set in some tutorials.
+    Pymfix references this keyword but seems to loop over all values (?)

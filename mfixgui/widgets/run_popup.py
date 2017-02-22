@@ -371,18 +371,14 @@ class RunPopup(QDialog):
             return
         if PYQT5:
             new_exe = new_exe[0]
-        if not self.prepend_to_exe_list(new_exe):
-            self.parent.message(
-                icon='warning',
-                title='Warning',
-                text='The selected file is not an executable MFiX binary')
-            return
+        self.set_run_mfix_exe.emit()
+
+        self.save_selected_exe(new_exe)
         self.mfix_available = True
         self.mfix_exe = new_exe
-        self.prepend_to_exe_list(new_exe)
+        self.mfix_exe_list = self.get_exe_list()
         self.populate_combobox_mfix_exe()
-        log.debug('selected new exe %s' % new_exe)
-        self.set_run_mfix_exe.emit()
+        log.debug('selected new exe %s', new_exe)
 
     def handle_browse_template(self):
         """ Handle file open dialog for user specified exe """
@@ -608,6 +604,7 @@ class RunPopup(QDialog):
         replace_dict.update({
             'PROJECT_NAME': self.parent.project.get_value('run_name', default=''),
             'COMMAND': ' '.join(cmd),
+            'MFIX_HOME': get_mfix_home(),
         })
 
         # replace twice to make sure that any references added the first time

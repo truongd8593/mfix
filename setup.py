@@ -5,7 +5,6 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-
 import platform
 import shutil
 import subprocess
@@ -15,11 +14,10 @@ import zipfile
 
 import distutils.cygwinccompiler
 import errno
-import logging
-import numpy
 
 import codecs
 from os import makedirs, path, walk
+from glob import glob
 
 # must import setuptools before numpy.distutils
 import setuptools
@@ -51,8 +49,6 @@ def get_data_files():
             for f in files:
                 dir_files.append(path.join(root, f))
             data_files.append((path.join('share', NAME, root), dir_files))
-
-    data_files.append((path.join('share', NAME), ('USER_GUIDE.html', 'INSTALL.html')))
 
     if platform.system() == 'Windows':
         fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
@@ -107,6 +103,45 @@ def make_mfixsolver():
                          path.join(build_dir, 'build-aux/libmfix.a'),
                      ])
 
+
+def build_doc():
+    pandoc_args = ['-s', '--toc', '-N', '-m']
+    docs = ['README', 'INSTALL', 'USER_GUIDE']
+    rendered_docs = []
+    for docname in docs:
+
+        doc_src = docname + '.md'
+        doc_dest = '%s.html' % docname
+        doc_pkg = 'mfixgui/doc/%s.html' % docname
+
+        subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
+
+        with codecs.open(doc_dest, encoding="utf8") as doc:
+            data = doc.read()
+
+        # fix links to images
+        data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
+
+        with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
+            doc.write(data)
+
+        rendered_docs.append(doc_dest)
+
+    return rendered_docs
+
+def build_doc_media():
+    dest_dir = path.join('mfixgui', 'doc', 'media')
+    if not path.isdir(dest_dir):
+        makedirs(dest_dir)
+
+    media = []
+    for image in glob(path.join('doc', 'media', '*')):
+        filename = path.basename(image)
+        shutil.copy(image, dest_dir)
+        media.append(filename)
+
+    return media
+
 class BuildDocCommand(setuptools.Command):
     """ renders setup guide and user guide from Markdown to HTML """
 
@@ -120,20 +155,8 @@ class BuildDocCommand(setuptools.Command):
         pass
 
     def run(self):
+        build_doc()
 
-        import pypandoc
-
-        pandoc_args = ['-s', '--toc', '-N', '-m']
-
-        pypandoc.convert_file('README.md', 'html',
-                              outputfile='README.html',
-                              extra_args=pandoc_args)
-        pypandoc.convert_file('INSTALL.md', 'html',
-                              outputfile='INSTALL.html',
-                              extra_args=pandoc_args)
-        pypandoc.convert_file('USER_GUIDE.md', 'html',
-                              outputfile='USER_GUIDE.html',
-                              extra_args=pandoc_args)
 
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
@@ -169,26 +192,22 @@ def mfix_prereq(command_subclass):
 
     def modified_run(self):
         self.run_command('build_mfix')
-        try:
-            self.run_command('build_doc')
-        except ImportError:
-            logging.getLogger(__file__).warning("Unable to build documentation")
         orig_run(self)
 
     command_subclass.run = modified_run
     return command_subclass
 
 @mfix_prereq
-class BuildExtPrereqCommand(build_ext):
+class BuildExtCommand(build_ext):
     pass
 
 
 setup(
-    name='mfix',
+    name=NAME,
 
     cmdclass={
         'build_doc': BuildDocCommand,
-        'build_ext': BuildExtPrereqCommand,
+        'build_ext': BuildExtCommand,
         'build_mfix': BuildMfixCommand,
     },
 
@@ -241,6 +260,7 @@ setup(
         'mfixgui',
         'mfixgui.colormaps',
         'mfixgui.doc',
+        'mfixgui.doc.media',
         'mfixgui.icons',
         'mfixgui.tests',
         'mfixgui.tools',
@@ -255,7 +275,6 @@ setup(
     install_requires=[
         'flask',
         'numpy==1.11.3',
-        'packaging',
         'qtpy',
     ],
 
@@ -270,6 +289,8 @@ setup(
         'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
         'mfixgui.uifiles': ['*'],
         'mfixgui.widgets': ['burcat.pickle'],
+        'mfixgui.doc': build_doc(),
+        'mfixgui.doc.media': build_doc_media(),
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
