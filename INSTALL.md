@@ -63,18 +63,17 @@ version needs to be installed.
 
 ## Linux
 
-
-Installation instructions for dependencies are distribution-specific. On Ubuntu
-Linux, they can be installed with:
+To install MFIX runtime dependencies on Linux:
 
 ```shell
-> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc
-> conda install -c menpo vtk=7.0.0
+> conda install python==3.6 numpy==1.11.3 pyqt qtpy pandoc
+> conda install -c clinicalgraphics vtk
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
-To build MFIX from source or build the custom solver, install the following dependencies with:
+To build MFIX from source or build the custom solver, you will also need to install the build dependencies.
+Installation instructions for build dependencies are distribution-specific. On Ubuntu Linux, they can be installed with:
 
 ```shell
 > sudo apt install gcc gfortran autoconf automake make
@@ -85,22 +84,21 @@ and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mf
 
 ## macOS
 
-
-Homebrew is the easiest way to install MFIX build dependencies. Go
-to [the Homebrew website](http://brew.sh) and follow the installation
-instructions.
-
-Once homebrew is installed, install MFIX  dependencies with the commands:
+To install MFIX runtime dependencies on Mac:
 
 ```shell
-> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc
-> conda install -c menpo vtk=7.0.0
+> conda install python==3.6 numpy==1.11.3 pyqt qtpy pandoc
+> conda install -c clinicalgraphics vtk
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
+To build MFIX from source or build the custom solver, you will also need to
+install the build dependencies. Homebrew is the easiest way to install MFIX
+build dependencies. Go to [the Homebrew website](http://brew.sh) and follow the
+installation instructions.
 
-To build MFIX from source or build the custom solver, install the following dependencies with:
+Once homebrew is installed, install MFIX build dependencies with the command:
 
 ```shell
 > brew install gcc autoconf automake make gnu-sed
@@ -109,20 +107,15 @@ To build MFIX from source or build the custom solver, install the following depe
 and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mfixsolver](#building-custom-mfixsolver).
 
 
-To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
-To build MFIX from source, proceed to [Building MFIX](#building-mfix).
-
-
 ## Windows
 
-Open  the Anaconda terminal, and enter the following commands:
-
+To install MFIX runtime dependencies on Windows, open the command prompt CMD.exe
+and enter the following commands:
 
 ```shell
 C:\> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
 C:\> conda install -c menpo vtk=7.0.0
 ```
-
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
@@ -142,6 +135,16 @@ C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-
 If you are using Python 3, you need to make edits to the following file.
 
 <!-- TODO: Explain what ANACONDA_HOME is (maybe give an example) -->
+
+In `ANACONDA\_HOME/envs/py3/Lib/site-packages/distutils/cygwinccompiler.py` add the lines
+
+```python
+            elif msc_ver == '1900':
+                # VS2014 / MSVC 14.0
+                return ['msvcsr140']
+```
+
+to get_msvcr().
 
 In `ANACONDA\_HOME/envs/py3/Lib/site-packages/numpy/distutils/misc_util.py:402` add the line
 
