@@ -42,8 +42,8 @@ BC_JJ_M                        Y           N
 BC_JJ_PS                       Y           Y
 BC_J_N                         N           N              ?
 BC_J_S                         N           N              ?
-BC_K_B                         N           N
-BC_K_T                         Y           Y
+BC_K_B                         N           N              ?
+BC_K_T                         N           N              ?
 BC_K_TURB_G                    Y           Y
 BC_MASSFLOW_G                  Y           Y
 BC_MASSFLOW_S                  Y           Y
@@ -490,7 +490,7 @@ TOL_MERGE                      Y           N              ?
 TOL_MSH                        N           N              ?
 TOL_POLY                       N           N              ?
 TOL_RESID                      Y           Y
-TOL_RESID_K_EPSILON            N [5]       N              ?
+TOL_RESID_K_EPSILON            N [6]       N              ?
 TOL_RESID_SCALAR               Y           N
 TOL_RESID_T                    Y           Y
 TOL_RESID_TH                   Y           Y
@@ -517,7 +517,7 @@ UCOIL_R1                       N [3]       N
 UCOIL_R2                       N [3]       N
 UCOIL_Y1                       N [3]       N
 UCOIL_Y2                       N [3]       N
-UNITS                          Y           Y
+UNITS                          Y [5]       Y
 UR_FAC                         Y           Y
 UR_F_GS                        Y           N
 UR_KTH_SML                     Y           N
@@ -666,5 +666,7 @@ A few tutorials set this key, but only to 0, see
 4)  RESID_STRING not exposed in GUI but set in some tutorials.
     Pymfix references this keyword but seems to loop over all values (?)
 
-5)  GUI has one control labeled "Scalar/K-e" which sets tol_resid_scalar but
+5)  cgs units are converted to SI
+
+6)  GUI has one control labeled "Scalar/K-e" which sets tol_resid_scalar but
     not tol_resid_k_epsilon
