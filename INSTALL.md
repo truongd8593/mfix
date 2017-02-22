@@ -68,8 +68,8 @@ Installation instructions for dependencies are distribution-specific. On Ubuntu
 Linux, they can be installed with:
 
 ```shell
+> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
 > conda install -c menpo vtk=7.0.0
-> conda install numpy==1.11.3 pyqt qtpy pandoc
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
@@ -93,9 +93,8 @@ instructions.
 Once homebrew is installed, install MFIX  dependencies with the commands:
 
 ```shell
+> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
 > conda install -c menpo vtk=7.0.0
-> conda install numpy==1.11.3 pyqt qtpy pandoc
-> pip install pypandoc
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
@@ -120,8 +119,8 @@ Open  the Anaconda terminal, and enter the following commands:
 
 
 ```shell
+C:\> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
 C:\> conda install -c menpo vtk=7.0.0
-C:\> conda install numpy==1.11.3 pyqt qtpy pandoc
 ```
 
 
