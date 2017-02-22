@@ -2559,6 +2559,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.set_project_file(project_file)
 
         self.vtkwidget.reset_view()
+        self.vtkwidget.clear_offscreen_render()
         self.vtkwidget.render(defer_render=False)
         self.open_succeeded = True
         self.signal_update_runbuttons.emit('')

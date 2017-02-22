@@ -338,6 +338,9 @@ class BaseVtkWidget(QtWidgets.QWidget):
         writer.SetInputConnection(window_image.GetOutputPort())
         writer.Write()
 
+    def clear_offscreen_render(self):
+        self.offscreen_vtkrenderer = None
+
     def init_offscreen_render(self, size=[1920, 1080]):
         self.offscreen_vtkrenderer = vtk.vtkRenderer()
         self.offscreen_vtkrenderer.GradientBackgroundOn()
