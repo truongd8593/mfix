@@ -2,16 +2,16 @@ Key                            GUI         Tutorial       Equivalent
 ===                            ===         ========       ==========
 
 ADDED_MASS                     Y           N
-ADJUST_PROC_DOMAIN_SIZE        N           N              ?
+ADJUST_PROC_DOMAIN_SIZE        N           N              No, not needed
 AGGREGATION_EFF                N           N              ?
-ALPHA_MAX                      N           N              ?
+ALPHA_MAX                      N           N              No, rarely used cutcell tol, not needed
 ASPERITIES                     Y           N
-AUTOMATIC_RESTART              N           N              ?
-AUTO_RESTART                   N           N              ?
-BAR_CHAR                       N           N              ?
-BAR_RESOLUTION                 N           N              ?
-BAR_WIDTH                      N           N              ?
-BATCH_WALLCLOCK                N           Y              ??
+AUTOMATIC_RESTART              N           N              No, not needed
+AUTO_RESTART                   N           N              No, not needed
+BAR_CHAR                       N           N              No, not needed
+BAR_RESOLUTION                 N           N              No, not needed
+BAR_WIDTH                      N           N              No, not needed
+BATCH_WALLCLOCK                N           Y              No, should be added next to CHK_BATCH_END
 BC_C_SCALAR                    Y           N
 BC_C_THETA_M                   Y           Y
 BC_C_T_G                       Y           Y
@@ -33,17 +33,17 @@ BC_HW_T_S                      Y           Y
 BC_HW_X_G                      Y           Y
 BC_HW_X_S                      Y           Y
 BC_ID_Q                        N [1]       Y
-BC_I_E                         N           N              ?
-BC_I_W                         N           N              ?
+BC_I_E                         N           N              Yes (7)
+BC_I_W                         N           N              Yes (7)
 BC_JET_G0                      N           Y              ??
 BC_JET_GH                      N           Y              ??
 BC_JET_GL                      N           Y              ??
 BC_JJ_M                        Y           N
 BC_JJ_PS                       Y           Y
-BC_J_N                         N           N              ?
-BC_J_S                         N           N              ?
-BC_K_B                         N           N              ?
-BC_K_T                         N           N              ?
+BC_J_N                         N           N              Yes (7)
+BC_J_S                         N           N              Yes (7)
+BC_K_B                         N           N              Yes (7)
+BC_K_T                         N           N              Yes (7)
 BC_K_TURB_G                    Y           Y
 BC_MASSFLOW_G                  Y           Y
 BC_MASSFLOW_S                  Y           Y
@@ -56,7 +56,7 @@ BC_ROP_S                       N           Y              Y ROP_S = RO_S * EP_S
 BC_SCALAR                      Y           N
 BC_SCALARW                     Y           N
 BC_THETAW_M                    Y           Y
-BC_THETA_M                     N           Y              ??
+BC_THETA_M                     N           Y              No, should be added
 BC_TW_G                        Y           Y
 BC_TW_S                        Y           Y
 BC_TYPE                        Y           Y
@@ -66,8 +66,8 @@ BC_UW_G                        Y           Y
 BC_UW_S                        Y           Y
 BC_U_G                         Y           Y
 BC_U_S                         Y           Y
-BC_VELMAG_G                    N           N              ?
-BC_VELMAG_S                    N           N              ?
+BC_VELMAG_G                    N           N              No, should be added (option to specify velocity components or magnitude)
+BC_VELMAG_S                    N           N              No, should be added (same as above)
 BC_VOLFLOW_G                   Y           N
 BC_VOLFLOW_S                   Y           N
 BC_VW_G                        Y           Y
@@ -88,7 +88,7 @@ BC_Y_N                         Y           Y
 BC_Y_S                         Y           Y
 BC_Z_B                         Y           Y
 BC_Z_T                         Y           Y
-BDIST_IO                       N           N              ?
+BDIST_IO                       N           N              No, should be added (DMP run)
 BEND_R1                        N [3]       N
 BEND_R2                        N [3]       N
 BEND_THETA1                    N [3]       N
@@ -102,14 +102,14 @@ C2C_R1                         N [3]       N
 C2C_R2                         N [3]       N
 C2C_Y1                         N [3]       N
 C2C_Y2                         N [3]       N
-CAD_PROPAGATE_ORDER            N           N              ?
+CAD_PROPAGATE_ORDER            N           N              No, not needed
 CALL_DQMOM                     N           N              ?
 CALL_USR                       N           Y              ??
 CALL_USR_SOURCE                N           N              ?
 CARTESIAN_GRID                 Y           Y
 CFL_PIC                        Y           Y
-CG_SAFE_MODE                   N           N              ?
-CG_UR_FAC                      N           N              ?
+CG_SAFE_MODE                   N           N              No, not needed
+CG_UR_FAC                      N           N              No, not needed
 CHI_SCHEME                     Y           N
 CHK_BATCHQ_END                 Y           Y
 CLIP_XMAX                      Y           N
@@ -138,9 +138,9 @@ C_FAC                          Y           N
 C_NAME                         Y           Y
 C_PG0                          Y           Y
 C_PS0                          Y           Y
-DBGPRN_LAYOUT                  N           N              ?
+DBGPRN_LAYOUT                  N           N              No, not needed
 DEBUG_DES                      N           N              ?
-DEBUG_RESID                    N           N              ?
+DEBUG_RESID                    N           N              No, not needed
 DEF_COR                        Y           Y
 DELP_X                         Y           N
 DELP_Y                         Y           Y
@@ -171,7 +171,7 @@ DES_ONEWAY_COUPLED             Y           N
 DES_OUTPUT_TYPE                Y           N
 DES_REPORT_MASS_INTERP         N           Y              ??
 DES_USR_VAR_SIZE               Y           N
-DETECT_STALL                   N           Y              ??
+DETECT_STALL                   N           Y              No, should be added
 DIF_G0                         Y           Y
 DIF_S0                         N           N              ?
 DIL_FACTOR_VSD                 N           N              ?
@@ -213,7 +213,7 @@ FIRST_DX                       Y           Y
 FIRST_DY                       Y           Y
 FIRST_DZ                       Y           N
 FLPC                           Y           Y
-FLUID_IN_CLIPPED_REGION        N           Y              ??
+FLUID_IN_CLIPPED_REGION        N           Y              ?? (3)
 FLUX_G                         Y           Y
 FOCUS_PARTICLE                 N           N              ?
 FPFOI                          Y           Y
@@ -222,7 +222,7 @@ FRICTION_MODEL                 Y           Y
 FRIC_EXP_PIC                   Y           N
 FRIC_NON_SING_FAC              Y           N
 FULL_LOG                       N           Y              ??
-F_DASHBOARD                    N           Y              ??
+F_DASHBOARD                    N           Y              No, not needed
 GENER_PART_CONFIG              Y           Y
 GRAVITY                        Y           Y
 GRAVITY_X                      Y           Y
@@ -232,24 +232,24 @@ GROUP_Q                        N [3]       Y
 GROUP_RELATION                 N [3]       Y
 GROUP_RESID                    Y           Y
 GROUP_SIZE                     N [3]       Y
-HALF_ANGLE                     N           Y              ??
+HALF_ANGLE                     N           Y              ?? (3)
 HAMAKER_CONSTANT               Y           N
 ICHECK_BICGS                   N           N              ?
-IC_DES_FIT_TO_REGION           Y           N              ??
+IC_DES_FIT_TO_REGION           Y           N              No, should be added
 IC_EP_G                        Y [2]       Y
 IC_EP_S                        Y           Y
 IC_E_TURB_G                    Y           Y
 IC_GAMA_RG                     Y           N
 IC_GAMA_RS                     Y           N
-IC_I_E                         N           N              ?
-IC_I_W                         N           N              ?
-IC_J_N                         N           N              ?
-IC_J_S                         N           N              ?
-IC_K_B                         N           N              ?
-IC_K_T                         Y           Y
+IC_I_E                         N           N              Yes (7)
+IC_I_W                         N           N              Yes (7)
+IC_J_N                         N           N              Yes (7)
+IC_J_S                         N           N              Yes (7)
+IC_K_B                         N           N              Yes (7)
+IC_K_T                         Y           Y              Please check, status should be "Not exposed"
 IC_K_TURB_G                    Y           Y
 IC_L_SCALE                     Y           Y
-IC_PIC_CONST_NPC               N           Y              ??
+IC_PIC_CONST_NPC               N           Y              No, shouls be added
 IC_PIC_CONST_STATWT            Y           N
 IC_P_G                         Y           Y
 IC_P_STAR                      Y           Y
@@ -278,12 +278,12 @@ IC_Z_T                         Y           Y
 IMAX                           Y           Y
 INERT_SPECIES                  Y           Y
 ISHII                          Y           N
-IS_I_E                         N           N              ?
-IS_I_W                         N           N              ?
-IS_J_N                         N           N              ?
-IS_J_S                         N           N              ?
-IS_K_B                         N           N              ?
-IS_K_T                         N           N              ?
+IS_I_E                         N           N              Yes (7)
+IS_I_W                         N           N              Yes (7)
+IS_J_N                         N           N              Yes (7)
+IS_J_S                         N           N              Yes (7)
+IS_K_B                         N           N              Yes (7)
+IS_K_T                         N           N              Yes (7)
 IS_PC                          Y           N
 IS_SERIAL                      N           N              ?
 IS_TYPE                        Y           Y
@@ -380,7 +380,7 @@ OUT_MSH_VALUE                  N           Y              ??
 OUT_STL_VALUE                  Y           Y
 PARTICLES                      Y           Y
 PERSISTENT_MODE                N           N              ?
-PG_OPTION                      N           Y              ??
+PG_OPTION                      N           Y              No, rarely used cut cell option, not needed
 PHASE4SCALAR                   Y           N
 PHI                            Y           Y
 PHIP                           Y           Y
@@ -397,15 +397,15 @@ PIECE_YMIN                     Y           Y
 PIECE_ZMAX                     Y           N
 PIECE_ZMIN                     Y           N
 PRINT_DES_DATA                 Y           Y
-PRINT_PROGRESS_BAR             N           Y              ??
-PRINT_WARNINGS                 N           Y              ??
+PRINT_PROGRESS_BAR             N           Y              No, not needed
+PRINT_WARNINGS                 N           Y              No, not needed
 PSFAC_FRIC_PIC                 Y           N
-PS_I_E                         N           N              ?
-PS_I_W                         N           N              ?
-PS_J_N                         N           N              ?
-PS_J_S                         N           N              ?
-PS_K_B                         N           N              ?
-PS_K_T                         N           N              ?
+PS_I_E                         N           N              Yes (7)
+PS_I_W                         N           N              Yes (7)
+PS_J_N                         N           N              Yes (7)
+PS_J_S                         N           N              Yes (7)
+PS_K_B                         N           N              Yes (7)
+PS_K_T                         N           N              Yes (7)
 PS_MASSFLOW_G                  Y           Y
 PS_MASSFLOW_S                  Y           Y
 PS_T_G                         Y           Y
@@ -429,7 +429,7 @@ P_SCALE                        Y           N
 QUADRIC_FORM                   Y           Y
 QUADRIC_SCALE                  N [3]       N
 RADIUS                         Y           Y
-RAY_DIR                        N           N               ?
+RAY_DIR                        N           N               No, not needed
 RDF_TYPE                       Y           Y
 REACTOR1_R1                    N [3]       N
 REACTOR1_R2                    N [3]       N
@@ -441,7 +441,7 @@ REACTOR1_Y1                    N [3]       N
 REACTOR1_Y2                    N [3]       N
 REACTOR1_YR1                   N [3]       N
 REACTOR1_YR2                   N [3]       N
-RELATION_WITH_PREVIOUS         N           Y              ??
+RELATION_WITH_PREVIOUS         N           Y              ?? (3)
 REPORT_BEST_DOMAIN_SIZE        N           N              ?
 REPORT_MASS_BALANCE_DT         N           N              ?
 REPORT_NEG_DENSITY             N           N              ?
@@ -450,14 +450,14 @@ RESID_STRING                   N [4]       Y              ?
 RES_BACKUPS                    Y           N
 RES_BACKUP_DT                  Y           N
 RES_DT                         Y           Y
-RE_INDEXING                    N           N              ?
+RE_INDEXING                    N           N              No, should be added (only for cut cell cases)
 RO_G0                          Y           Y
 RO_S0                          Y           Y
 RO_XS0                         Y           Y
 RUN_NAME                       Y           Y
 RUN_TYPE                       Y           Y
 R_P                            Y           Y
-SCALE_MSH                      N           Y              ??
+SCALE_MSH                      N           Y              No, not needed
 SCALE_STL                      Y           Y
 SEGREGATION_SLOPE_COEFFICIENT  Y           Y
 SET_CORNER_CELLS               N           N              ?
@@ -472,22 +472,22 @@ SPECIES_NAME                   Y           Y
 SPECIES_S                      Y           Y
 SPX_DT                         Y           Y
 STIFF_CHEMISTRY                Y           Y
-STIFF_CHEM_MAX_STEPS           N           N              ?
+STIFF_CHEM_MAX_STEPS           N           N              No, should be added (next to stiff chemistry solver)
 STL_BC_ID                      Y           Y
 STL_SMALL_ANGLE                Y           N
 SUBGRID_TYPE                   Y           N
 SUBGRID_WALL                   Y           N
-TERM_BUFFER                    N           Y              ??
+TERM_BUFFER                    N           Y              No, should be added (next to CHECK_BATCH_END)
 THETA_X                        N [3]       N
 THETA_Y                        N [3]       N
 THETA_Z                        N [3]       Y
 TIME                           Y           Y
 TIME_DEPENDENT_FILENAME        Y           Y
-TOL_DELH                       N           Y              ??
+TOL_DELH                       N           Y              No, should be added
 TOL_DIVERGE                    Y           Y
 TOL_F                          N [3]       Y
-TOL_MERGE                      Y           N              ?
-TOL_MSH                        N           N              ?
+TOL_MERGE                      Y           N              No, should be added
+TOL_MSH                        N           N              No, not needed
 TOL_POLY                       N           N              ?
 TOL_RESID                      Y           Y
 TOL_RESID_K_EPSILON            N [6]       N              ?
@@ -504,11 +504,11 @@ TORUS_R1                       N [3]       N
 TORUS_R2                       N [3]       N
 TSTOP                          Y           Y
 TURBULENCE_MODEL               Y           Y
-TX_MSH                         N           Y              ??
+TX_MSH                         N           Y              No, not needed
 TX_STL                         Y           Y
-TY_MSH                         N           Y              ??
+TY_MSH                         N           Y              No, not needed
 TY_STL                         Y           Y
-TZ_MSH                         N           Y              ??
+TZ_MSH                         N           Y              No, not needed
 TZ_STL                         Y           Y
 T_X                            Y           Y
 T_Y                            Y           Y
@@ -562,7 +562,7 @@ VAN_DER_WAALS                  Y           N
 VDW_INNER_CUTOFF               Y           N
 VDW_OUTER_CUTOFF               Y           N
 VTK_BC_ID                      Y           N
-VTK_CUTCELL_ONLY               N           N              ?
+VTK_CUTCELL_ONLY               N           N              No, should be added
 VTK_DATA                       Y           Y
 VTK_DBG_FILE                   N           N              ?
 VTK_DEBUG                      N           Y              ??
@@ -582,11 +582,11 @@ VTK_NYS                        Y           Y
 VTK_NZS                        Y           N
 VTK_PARTITION                  Y           N
 VTK_PART_ANGULAR_VEL           Y           N
-VTK_PART_COHESION              N           N              ?
+VTK_PART_COHESION              N           N              No, should be added
 VTK_PART_DIAMETER              Y           Y
 VTK_PART_ID                    Y           N
 VTK_PART_ORIENTATION           Y           N
-VTK_PART_PHASE                 N           N              ?
+VTK_PART_PHASE                 N           N              No, should be added
 VTK_PART_RANK                  Y           N
 VTK_PART_TEMP                  Y           N
 VTK_PART_USR_VAR               Y           N
@@ -597,8 +597,8 @@ VTK_P_STAR                     Y           N
 VTK_ROP_S                      Y           N
 VTK_RRATE                      Y           N
 VTK_SCALAR                     Y           N
-VTK_SELECT_MODE                N           Y               ??
-VTK_SLICE_TOL                  N           N               ?
+VTK_SELECT_MODE                N           Y               No, should be added
+VTK_SLICE_TOL                  N           N               No, should be added
 VTK_THETA_M                    Y           N
 VTK_T_G                        Y           N
 VTK_T_S                        Y           N
@@ -631,7 +631,7 @@ V_SH                           N           N              ?
 WALL_HAMAKER_CONSTANT          Y           N
 WALL_VDW_INNER_CUTOFF          Y           N
 WALL_VDW_OUTER_CUTOFF          Y           N
-WRITE_DASHBOARD                N           Y              ??
+WRITE_DASHBOARD                N           Y              No, not needed
 WRITE_VTK_FILES                Y           Y
 XLENGTH                        Y           Y
 XMIN                           Y           Y
@@ -670,3 +670,6 @@ A few tutorials set this key, but only to 0, see
 
 6)  GUI has one control labeled "Scalar/K-e" which sets tol_resid_scalar but
     not tol_resid_k_epsilon
+
+7) All coordinates are converted to indices. Specifying either coordinates or
+   indices is not needed in the GUI.
