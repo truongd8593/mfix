@@ -113,8 +113,8 @@ To install MFIX runtime dependencies on Windows, open the command prompt CMD.exe
 and enter the following commands:
 
 ```shell
-C:\> conda install python==3.5 numpy==1.11.3 pyqt qtpy pandoc libpython
-C:\> conda install -c menpo vtk=7.0.0
+C:\> conda install python==3.4 numpy pyqt qtpy pandoc libpython
+C:\> conda install -c menpo vtk
 ```
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
@@ -127,43 +127,6 @@ To build MFIX from source or build the custom solver:
 
 ```shell
 C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2-tar m2w64-gcc m2w64-gcc-fortran
-```
-
-
-### Patch distutils for Python 3
-
-If you are using Python 3, you need to make edits to the following file.
-
-<!-- TODO: Explain what ANACONDA_HOME is (maybe give an example) -->
-
-In `ANACONDA\_HOME/envs/py3/Lib/site-packages/distutils/cygwinccompiler.py` add the lines
-
-```python
-            elif msc_ver == '1900':
-                # VS2014 / MSVC 14.0
-                return ['msvcsr140']
-```
-
-to get_msvcr().
-
-In `ANACONDA\_HOME/envs/py3/Lib/site-packages/numpy/distutils/misc_util.py:402` add the line
-
-<!-- This patch is in numpy master branch on Github. We can probably remove this patch once numpy 1.13 is released. -->
-
-```python
-'1900': 'msvcr140',  # MVCS 14 (aka 2014)
-```
-
-to:
-
-```python
-        lib = {'1300': 'msvcr70',    # MSVC 7.0
-               '1310': 'msvcr71',    # MSVC 7.1
-               '1400': 'msvcr80',    # MSVC 8
-               '1500': 'msvcr90',    # MSVC 9 (VS 2008)
-               '1600': 'msvcr100',   # MSVC 10 (aka 2010)
-               '1900': 'msvcr140',   # MSVC 14 (aka 2014)
-              }.get(msc_ver, None)
 ```
 
 ### Set Windows PATH

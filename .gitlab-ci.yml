@@ -160,7 +160,7 @@ build_mac_py3:
 
 build_windows_py3:
   script:
-    - python setup.py bdist_wheel
+    - python3.4 setup.py bdist_wheel
   stage: build:py3
   only:
     - develop
