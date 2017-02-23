@@ -5,6 +5,10 @@ import subprocess
 import sys
 
 import qtpy
+from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
+                                   get_pixmap, get_separator)
+from mfixgui.version import __version__
+from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 from qtpy import API_NAME, QtCore, QtGui, QtWidgets
 
 try:
@@ -12,10 +16,6 @@ try:
 except ImportError:
     QT_VERSION = 'Unknown'
 
-from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, get_mfix_home, get_pixmap,
-                                   get_separator)
-from mfixgui.version import __version__
-from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 try:
     import numpy as np
@@ -607,6 +607,9 @@ class MainMenu(object):
         self.ui.main_menu_return.setMinimumWidth(tw)
         self.ui.main_menu_return.setMinimumHeight(th)
 
+        # hide vtk
+        self.vtkwidget.vtkWindowWidget.hide()
+
         # animate
         w, h = self.width(), self.height()
         self.main_menu.setGeometry(-w/2, 0, w, h)
@@ -669,6 +672,10 @@ class MainMenu(object):
 
     def handle_main_menu_hide(self):
         """Show the main menu"""
+
+        # hide vtk
+        self.vtkwidget.vtkWindowWidget.show()
+
         # animate
         w= self.width()
         ani = self.main_menu_animation = self.create_main_menu_animation(self.main_menu, 0, 0, -w/4, 0)
