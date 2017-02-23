@@ -486,7 +486,10 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
 
-        git_des = get_git_revision_short_hash()
+        git_des = None
+        if int(self.settings.value('developer_mode', 0)):
+            git_des = get_git_revision_short_hash()
+
         labels = [QtWidgets.QLabel('<b>MFiX GUI version:</b> {}'.format(__version__)),
                   QtWidgets.QLabel('<b>Git description:</b> {}'.format(git_des)) if git_des is not None else None,
                   QtWidgets.QLabel('<b>Python version:</b> {}'.format(sys.version)),
