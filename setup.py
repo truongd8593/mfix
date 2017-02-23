@@ -106,20 +106,33 @@ def make_mfixsolver():
 
 def build_doc():
     pandoc_args = ['-s', '--toc', '-N', '-m']
-    docs = ['README', 'INSTALL', 'USER_GUIDE']
+    docs = [('', 'README'),
+            ('doc', 'SETUP_GUIDE'),
+            ('doc', 'USER_GUIDE')]
     rendered_docs = []
-    for docname in docs:
+    for src in docs:
 
-        doc_src = docname + '.md'
-        doc_dest = '%s.html' % docname
-        doc_pkg = 'mfixgui/doc/%s.html' % docname
+        doc_src = path.join(*src) + '.md'
+
+        # doc_dest is useful for previewing docs using build_doc directly
+        doc_dest = path.join(*src) + '.html'
+
+        # doc_pkg is the location for the docs distributed in the package
+        doc_pkg = path.join('mfixgui', path.join(*src) + '.html')
 
         subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
 
         with codecs.open(doc_dest, encoding="utf8") as doc:
             data = doc.read()
 
-        # fix links to images
+        # fix links in README to the GUIDES
+        data = data.replace('SETUP_GUIDE.md', 'SETUP_GUIDE.html')
+        data = data.replace('USER_GUIDE.md', 'USER_GUIDE.html')
+
+        with codecs.open(doc_dest, 'w', encoding='utf8') as doc:
+            doc.write(data)
+
+        # fix links to images in packaged docs
         data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
 
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:

@@ -19,7 +19,14 @@ MFIX website useful before downloading the code.
 For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
 
-To run MFIX simulations, you need to have the MFIX gui (referred to as mfixgui) and the MFIX flow solver (referred to as mfixsolver) installed. The MFIX flow solver can be the default solver (no UDF), or the customed solver (with UDF, for example for chemically reacting flows that required coded reaction rates).It is recommended to start installing MFIX from the provided binary packages on a given platform (Linux, MAC, or Windows OS). The binary packages include mfixgui and the default mfixsolver. A list of known operating systems where MFIX has been sucessfully installed is given below.
+To run MFIX simulations, you need to have the MFIX gui (referred to as mfixgui)
+and the MFIX flow solver (referred to as mfixsolver) installed. The MFIX flow
+solver can be the default solver (no UDF), or the customed solver (with UDF, for
+example for chemically reacting flows that required coded reaction rates).It is
+recommended to start installing MFIX from the provided binary packages on a
+given platform (Linux, MAC, or Windows OS). The binary packages include mfixgui
+and the default mfixsolver. A list of known operating systems where MFIX has
+been sucessfully installed is given below.
 
 ## Known operating systems where MFIX can be installed/run:
 
@@ -27,11 +34,20 @@ To run MFIX simulations, you need to have the MFIX gui (referred to as mfixgui) 
 - macOS: insert OS versions
 - Windows: Windows 7, Windows 10 (need to verify that)
 
-Once users have gained experience with generic simulations (no UDFs), advanced simulations (with UDFs) can be run after building a custom solver, that take into account the UDFs. Building a custom solver require additional packages and is more involved than installing a binary package. Knowledge of entering commnands at the prompt is required for all platforms (Linux, MAC and Windows OS).
+Once users have gained experience with generic simulations (no UDFs), advanced
+simulations (with UDFs) can be run after building a custom solver, that take
+into account the UDFs. Building a custom solver require additional packages and
+is more involved than installing a binary package. Knowledge of entering
+commnands at the prompt is required for all platforms (Linux, MAC and Windows
+OS).
 
-It is also possible to build and install MFIX from source, but this will typically be suitable for advanced users and developpers.
+It is also possible to build and install MFIX from source, but this will
+typically be suitable for advanced users and developers.
 
-Finally, running the mfix solver without the GUI is still possible (Linux environment only). The solver must be built from source, and the simulation is set by editing a text file. This correspond to the way MFIX was run in previous versions (versions 2016-1 and earlier).
+Finally, running the mfix solver without the GUI is still possible (Linux
+environment only). The solver must be built from source, and the simulation is
+set by editing a text file. This correspond to the way MFIX was run in previous
+versions (versions 2016-1 and earlier).
 
 To recap:
 - If you want to install MFIX from binary packages, see [Installing MFIX](#installing-mfix).
@@ -45,7 +61,9 @@ To recap:
 
 # Prerequisites
 
-Using the GUI requires a Python environment, whether installing the package from binaries, or building from source. The recommended Python environment is the Anaconda Python distribution.
+Using the GUI requires a Python environment, whether installing the package from
+binaries, or building from source. The recommended Python environment is the
+Anaconda Python distribution.
 
 Download [Miniconda](https://conda.io/miniconda.html) for your platform
 (Linux, macOS, or Windows). (Miniconda is a minimal distribution of Anaconda.)
@@ -72,8 +90,9 @@ To install MFIX runtime dependencies on Linux:
 
 To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
-To build MFIX from source or build the custom solver, you will also need to install the build dependencies.
-Installation instructions for build dependencies are distribution-specific. On Ubuntu Linux, they can be installed with:
+To build MFIX from source or build the custom solver, you will also need to
+install the build dependencies. Installation instructions for build dependencies
+are distribution-specific. On Ubuntu Linux, they can be installed with:
 
 ```shell
 > sudo apt install gcc gfortran autoconf automake make
@@ -214,23 +233,12 @@ from [Building MFIX Solver](#building-mfixsolver). This option does not require
 Anaconda Python.
 
 
-
-
-
 ## Uninstalling MFIX
 
 If you ever want to uninstall MFIX:
 ```shell
 > pip uninstall mfix
 ```
-
-
-
-
-
-
-
-
 
 # Building custom mfixsolver
 
