@@ -17,6 +17,7 @@ build:src:
   stage: build:src
   only:
     - develop
+    - master
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -33,6 +34,7 @@ build:linux:
   stage: build:libmfix
   only:
     - develop
+    - master
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -48,6 +50,7 @@ build:mac:
   stage: build:libmfix
   only:
     - develop
+    - master
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -63,6 +66,7 @@ build:windows:
   stage: build:libmfix
   only:
     - develop
+    - master
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -81,6 +85,7 @@ build_linux_py2:
   stage: build:py2
   only:
     - develop
+    - master
   dependencies:
     - build:linux
   artifacts:
@@ -97,6 +102,7 @@ build_mac_py2:
   stage: build:py2
   only:
     - develop
+    - master
   dependencies:
     - build:mac
   artifacts:
@@ -113,6 +119,7 @@ build_windows_py2:
   stage: build:py2
   only:
     - develop
+    - master
   dependencies:
     - build:windows
   artifacts:
@@ -132,6 +139,7 @@ build_linux_py3:
   stage: build:py3
   only:
     - develop
+    - master
   dependencies:
     - build:linux
   artifacts:
@@ -148,6 +156,7 @@ build_mac_py3:
   stage: build:py3
   only:
     - develop
+    - master
   dependencies:
     - build:mac
   artifacts:
@@ -164,6 +173,7 @@ build_windows_py3:
   stage: build:py3
   only:
     - develop
+    - master
   dependencies:
     - build:windows
   artifacts:
@@ -183,6 +193,7 @@ install:linux:py:
   stage: deploy
   only:
     - develop
+    - master
   dependencies:
     - build_linux_py2
   tags:
