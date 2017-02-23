@@ -138,7 +138,7 @@ def build_doc():
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
 
-        rendered_docs.append(doc_dest)
+        rendered_docs.append(path.basename(doc_pkg))
 
     return rendered_docs
 
