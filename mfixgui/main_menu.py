@@ -169,7 +169,7 @@ class MainMenu(object):
         ow_layout.addWidget(lw_f, 2, 0, 1, -1)
 
         tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('close.png'))
+        tb.setText('Clear Recent')
         tb.setToolTip('Clear list of recent projects')
         tb.setAutoRaise(True)
         tb.pressed.connect(self.handle_clear_recent)

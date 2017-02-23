@@ -9,11 +9,10 @@ from bisect import bisect_left
 from collections import Mapping, OrderedDict
 from xml.etree import ElementTree
 
-from qtpy import QtCore, QtGui, QtWidgets, uic
-
 from mfixgui.tools.general import get_icon, to_unicode_from_fs
 from mfixgui.widgets.base import CustomPopUp
 from mfixgui.widgets.base_vtk import BaseVtkWidget
+from qtpy import QtCore, QtGui, QtWidgets, uic
 
 # graphics libraries
 try:
@@ -289,9 +288,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.project_name = os.path.splitext(os.path.basename(self.project_file))[0]
         self.project_dir = os.path.dirname(self.project_file)
 
-        self.file_watcher = QtCore.QFileSystemWatcher()
-        self.file_watcher.addPath(self.project_dir)
-        self.file_watcher.directoryChanged.connect(self.look_for_files)
+        self.file_timer = QtCore.QTimer()
+        self.file_timer.timeout.connect(self.look_for_files)
+        self.file_timer.start(1000)
 
         # dialogs
         self.color_dialog  = ColorMapPopUp(self)
