@@ -2,16 +2,17 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+import sys, traceback
+
 from code import InteractiveConsole
 
-from .version import __version__
+from mfixgui.version import __version__
 
 from qtpy import QtGui
 from qtpy.QtCore import QEvent, Qt
 
 
 # WISHLIST:
-#   colorize stderr
 #   syntax highlighting
 #   auto-complete
 #   readline
@@ -41,7 +42,6 @@ class Interpreter(object):
         return False
 
     def init_interpreter(self):
-        import sys
         self.interp_setup_done = False
         self.interp_history = []
         self.interp_history_lineno = 0
@@ -64,17 +64,18 @@ class Interpreter(object):
                     cursor = te.textCursor()
                     cursor.movePosition(cursor.End)
                     char_format = QtGui.QTextCharFormat()
-                    char_format.setForeground(QtGui.QColor('red' if self.err else 'blackv'))
+                    char_format.setForeground(QtGui.QColor('red' if self.err else 'black'))
                     cursor.setCharFormat(char_format)
                     cursor.insertText(text+'\n')
-                    te.ensureCursorVisible()
+                    #te.ensureCursorVisible()
                     #scrollbar = te.verticalScrollBar()  # this scrolls too far
                     #scrollbar.setValue(scrollbar.maximum())
+
         self.stdout = Output()
         self.stderr = Output(err=True)
         self.interp = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
-        banner += 'MFIX-GUI version %s' % __version__ + '\n'
+        banner += 'MFiX-GUI version %s' % __version__ + '\n'
         te.insertPlainText(banner)
 
 
@@ -98,7 +99,6 @@ class Interpreter(object):
 
     def handle_interp_key(self):
         # Don't allow user to backspace over prompt
-        #   TODO: readline/history support?
         le = self.ui.lineedit_interpreter_input
         text = le.text()
         if len(text) < 4:
@@ -112,8 +112,16 @@ class Interpreter(object):
             return
         self.stdout.write(text+'\n')
         text = text[4:] # Remove prompt
-        result = self.interp.push(text)
+        le.setText('')
+        try:
+            saved_excepthook = sys.excepthook
+            sys.excepthook = traceback.print_exception
+            result = self.interp.push(text)
+        except Exception as e:
+            result = str(e)
+        finally:
+            sys.excepthook = saved_excepthook
         self.interp_history.append(text)
         self.interp_history_lineno = len(self.interp_history)
-        self.interp_prompt = self.PS2 if result else self.PS1
+        self.interp_prompt = self.PS2 if result else self.PS1 # True = more input required
         le.setText(self.interp_prompt)

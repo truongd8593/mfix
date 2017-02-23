@@ -34,7 +34,7 @@ SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pa
 
 # Helper functions
 def get_mfix_home():
-    """return the top level MFIX directory"""
+    """return the top level MFiX directory"""
     # TODO:  This is confusing, add comment why both get_mfix_home and
     # SCRIPT_DIRECTORY are needed, and how they differ
     top_level_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -513,8 +513,11 @@ def is_vnc():
     """determine if the gui is running in vnc"""
     if os.name == 'nt':
         return False
-    xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
-    return 'vnc' in str(xdpyinfo)
+    try:
+        xdpyinfo = subprocess.Popen('xdpyinfo', stdout=subprocess.PIPE).communicate()[0]
+        return 'vnc' in str(xdpyinfo)
+    except:
+        return False
 
 def get_separator(vertical=True):
     """create a QFrame that looks like a separator"""

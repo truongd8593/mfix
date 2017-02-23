@@ -46,7 +46,6 @@ class RegionsPopup(QtWidgets.QDialog):
         types_match = len(set(region_types)) < 2
 
         if self.boundary:
-            #  (would be nicer if this were in bcs.py)
             #  Pressure Inflow
             #     Not available for STL regions
             #     Not available for volume regions
@@ -245,12 +244,10 @@ class RegionsPopup(QtWidgets.QDialog):
 
 
     def popup(self, label_text):
-        # Widget is shared by ICs/BCs/PSs/ISs
+        # Widget is shared by ICs/BCs/PSs/ISs/VTK output
+        # NB, we distinguish the caller based on the label text
         ui = self.ui
-        tw = ui.table
-        text = "Select region(s) for %s" % label_text
-
-        self.ui.label_top.setText(text)
+        ui.label_top.setText(label_text)
 
         buttonbox = self.ui.buttonbox
         buttonbox.button(buttonbox.Ok).setEnabled(False)
@@ -258,6 +255,13 @@ class RegionsPopup(QtWidgets.QDialog):
         self.boundary = boundary = ('boundary condition' in label_text)
         self.surface = surface = ('internal surface' in label_text)
         self.vtk = vtk = ('VTK output' in label_text)
+
+        tw = ui.table
+        if vtk: # Issues/264 - don't combine vtk output regions,
+                # because filenames will collide
+            tw.setSelectionMode(QAbstractItemView.SingleSelection)
+        else:
+            tw.setSelectionMode(QAbstractItemView.MultiSelection)
 
         # setup the combobox appropriately
         cb = ui.combobox

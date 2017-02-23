@@ -101,7 +101,6 @@ class Numerics(object):
             for j in range(len(DISCRETIZATION_NAMES)):
                 self.add_tooltip(get_combobox_item(cb, j), key, value=j)
             cb.setToolTip(get_combobox_item(cb,0).toolTip())
-
             cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(val, i))
             tw.setCellWidget(row, COL_SCHEME, cb)
 
@@ -601,7 +600,7 @@ class Numerics(object):
         #    DEFAULT value of 1.0
         #    Error check: Value greater than or equal to 1.0
         #Specify drag under relation factor
-        #    Specification only available with MFIX-TFM and MFIX-Hybrid solvers
+        #    Specification only available with MFiX-TFM and MFIX-Hybrid solvers
         #    Sets keyword UR_F_GS
         #    DEFAULT value of 1.0
         #    Error check: Value bounded between 0 and 1

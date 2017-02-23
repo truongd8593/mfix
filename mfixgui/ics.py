@@ -78,8 +78,7 @@ class ICS(object):
         widget.args = ['IC']
         widget.dtype = float
         widget.value_updated.connect(self.handle_ic_p_star)
-
-
+        self.add_tooltip(widget, key)
 
 
     def handle_ic_p_star(self, widget, data, args):
@@ -134,8 +133,8 @@ class ICS(object):
         key = 'ic_ep_s'
         self.project.submit_change(widget, val, args)
 
-        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, s]))
-                for s in range(1, len(self.solids)+1))
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[IC0, S]))
+                for S in range(1, len(self.solids)+1))
         if s > 1.0:
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
@@ -162,20 +161,19 @@ class ICS(object):
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name) # allow region sharing
-                         and (shape == 'box') or (no_k and shape=='XY-plane'))
-
+                         and (shape == 'box'
+                              or (no_k and shape=='XY-plane')))
             row = (name, shape, available)
             rp.add_row(row)
         rp.reset_signals()
         rp.save.connect(self.ics_add_regions)
         rp.cancel.connect(self.ics_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('initial conditions')
+        rp.popup('Select region(s) for initial conditions')
 
 
     def ics_cancel_add(self):
@@ -186,7 +184,7 @@ class ICS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -302,11 +300,12 @@ class ICS(object):
             (indices, regions) = table.item(row,0).data(UserRole)
         self.ics_current_indices, self.ics_current_regions = indices, regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
         if not enabled:
             # Clear
-            for widget in widget_iter(ui.detail_pane):
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
@@ -329,8 +328,8 @@ class ICS(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -366,8 +365,7 @@ class ICS(object):
             # then we have no input tabs on the ICs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
-                           if not self.check_region_in_use(name)
-                           and r.get('type')=='box')
+                           if r.get('type')=='box')
             disabled = (nregions==0
                         or (self.fluid_solver_disabled
                             and self.project.get_value('nscalar',default=0)==0
@@ -518,21 +516,24 @@ class ICS(object):
             row = 0
             ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
 
         #Tabs group initial condition parameters for phases and additional equations.
         # Tabs are unavailable if no input is required from the user.
 
         #Fluid tab - Unavailable if the fluid phase was disabled.
+        setup_done = False
         b = ui.pushbutton_fluid
         b.setText(self.fluid_phase_name)
         b.setEnabled(not self.fluid_solver_disabled)
         if self.fluid_solver_disabled:
-            if self.ics_current_tab == 0: # Don't stay on disabled tab
-                self.ics_change_tab(*(SOLIDS_TAB, 1) if self.solids else (SCALAR_TAB,None))
+            if self.ics_current_tab == FLUID_TAB: # Don't stay on disabled tab
+                self.ics_change_tab(*self.ics_find_valid_tab())
+                setup_done = True
         font = b.font()
-        font.setBold(self.ics_current_tab == 0)
+        font.setBold(self.ics_current_tab == FLUID_TAB)
         b.setFont(font)
 
         #Each solid phase will have its own tab. The tab name should be the name of the solid
@@ -564,8 +565,11 @@ class ICS(object):
                 b.pressed.connect(lambda i=i: self.ics_change_tab(SOLIDS_TAB, i))
                 ui.tab_layout.addWidget(b, 0, i)
 
-        # Don't stay on disabled tab TODO
-        # if self.ics_current_tab == 1 and ...
+        # Don't stay on a disabled tab
+        if self.ics_current_tab == SOLIDS_TAB and not self.solids:
+            self.ics_change_tab(*self.ics_find_valid_tab())
+            setup_done = True
+
 
         #Scalar (tab) - Tab only available if scalar equations are solved
         # Move the 'Scalar' button to the right of all solids, if needed
@@ -580,13 +584,16 @@ class ICS(object):
             ui.tab_layout.removeWidget(b)
             ui.tab_layout.addWidget(b, 0, 1+len(self.solids))
 
-        # Don't stay on a disabled tab TODO
-        # if self.ics_current_tab == 2 and nscalar == 0:
-        #
-        self.P = self.ics_current_solid
-        self.ics_saved_solids_names = solids_names
+        # Don't stay on a disabled tab
+        if self.ics_current_tab == SCALAR_TAB and nscalar == 0:
+            self.ics_change_tab(*self.ics_find_valid_tab())
+            setup_done = True
 
-        self.ics_setup_current_tab()
+        self.ics_saved_solids_names = solids_names
+        self.P = self.ics_current_solid
+
+        if not setup_done:
+            self.ics_setup_current_tab()
 
         # make sure underline is in the right place, as # of solids may
         # have changed (lifted from animate_stacked_widget, which we
@@ -598,8 +605,21 @@ class ICS(object):
                    else self.ics_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
+
+
+    def ics_find_valid_tab(self): # Don't stay on a disabled tab
+        if not self.fluid_solver_disabled:
+            return (FLUID_TAB, None)
+        elif self.solids:
+            return (SOLIDS_TAB, 0)
+        elif self.project.get_value('nscalar', default=0) != 0:
+            return (SCALAR_TAB, None)
+        else:
+            self.error("Initial condition:  all tabs disabled!")
+            return (FLUID_TAB, None) # What else to do?
 
 
     def ics_setup_current_tab(self):
@@ -695,7 +715,7 @@ class ICS(object):
 
         if total == 0.0 and self.fluid_species:
             for IC in self.ics_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Skip last species
                     self.update_keyword('ic_x_g', 0.0, args=[IC, i])
                 self.update_keyword('ic_x_g', 1.0, args=[IC, len(self.fluid_species)]) # Last defined species
             self.update_ics_fluid_mass_fraction_table()
@@ -791,7 +811,7 @@ class ICS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for IC in self.ics_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Skip last species
                     self.update_keyword('ic_x_s', 0.0, args=[IC, P, i])
                 self.update_keyword('ic_x_s', 1.0, args=[IC, P, len(species)]) # Last defined species
             self.update_ics_solids_mass_fraction_table()
@@ -1053,10 +1073,11 @@ class ICS(object):
         # Some input decks may or may not contain IC_EP_S keyword:
         #  Volume fraction is specified using the solids bulk density
         #    IC_EP_S(#,#) == IC_ROP_S(#,#) / IC_ROs(#)
-        #    Solids density IC_ROs is determined by the solids density model
-        # IC_ROs(#) = RO_S0(#)
-        # IC_ROs(#) = -- FINISH LATER -
-        # (above section of spec NOT IMPLEMENTED)
+
+        #   Solids density IC_ROs is determined by the solids density model. For
+        #constant solids density, use RO_S0. For variable solids density, see
+        #“Calculating Variable Solids Density” section in the appendix.
+
 
         #  Volume fraction may be inferred from IC_EP_G
         #    IC_EP_S(#,#) = 1.0 - IC_EP_G(#)
@@ -1098,6 +1119,12 @@ class ICS(object):
         key = 'ic_p_star'
         default = 0.0
         setup_key_widget(key, default, enabled)
+        le = ui.lineedit_ic_p_star_args_IC
+        self.add_tooltip(le, key)
+        if not enabled:
+            tooltip = le.toolTip()
+            tooltip += '<br>Only enabled for TFM solids'
+            le.setToolTip(tooltip)
 
         #Define granular temperature
         # Specification only available for SOLIDS_MODEL(#)='TFM' and non-algebraic
@@ -1126,6 +1153,12 @@ class ICS(object):
         key = 'ic_pic_const_statwt'
         default = 10.0
         setup_key_widget(key, default, enabled)
+        le = ui.lineedit_keyword_ic_pic_const_statwt_args_IC_P
+        self.add_tooltip(le, key)
+        if not enabled:
+            tooltip = le.toolTip()
+            tooltip += '<br>Only enabled for PIC solids'
+            le.setToolTip(tooltip)
 
         #Select species and set mass fractions (table format)
         # Specification always available

@@ -1,4 +1,4 @@
-#!/bin/tcsh 
+#!/bin/tcsh
 # Script to run all the tutorial cases in serial
 
 # set up tutorial directory and model directory
@@ -31,7 +31,7 @@ do
    sh $mfix_model_dir/make_mfix -r >compile.log
    echo 'Done.'
    echo 'Running MFIX...'
-   ./mfix.exe > run.log 
+   ./mfixsolver.exe > run.log
    echo 'Done.'
    cd $tutorial_dir
 

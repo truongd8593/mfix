@@ -7,7 +7,7 @@ rm -f POST_* &> /dev/null
 
 for MU in 0.0100 0.0025; do
    rm -f ${RUN_NAME}* &> /dev/null
-   time -p mpirun -np 4 ./mfix MU_G0=${MU} nodesi=2 nodesj=2
+   time -p mpirun -np 4 ./mfixsolver MU_G0=${MU} nodesi=2 nodesj=2
 done
 
 post_dats=AUTOTEST/POST*.dat

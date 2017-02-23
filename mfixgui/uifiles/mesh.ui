@@ -17,7 +17,91 @@
    <property name="spacing">
     <number>5</number>
    </property>
-   <item row="3" column="4">
+   <item row="1" column="0" colspan="5">
+    <widget class="QFrame" name="frame">
+     <property name="styleSheet">
+      <string notr="true">QPushButton:hover {
+    color:#64B5F6;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #64B5F6;
+    background-color: transparent;
+}
+
+QPushButton:checked {
+    color:#64B5F6;
+    background-color: transparent;
+}
+
+</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QGridLayout" name="gridlayout_mesh_tab_btns">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="pushbutton_mesh_uniform">
+        <property name="text">
+         <string>Background</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="pushbutton_mesh_mesher">
+        <property name="text">
+         <string>Mesher</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="Line" name="line_mesh">
+        <property name="styleSheet">
+         <string notr="true">QWidget{
+  background-color: #64B5F6;
+  border-color: #64B5F6;
+}</string>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="3">
     <spacer name="verticalSpacer_41">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -33,40 +117,7 @@
      </property>
     </spacer>
    </item>
-   <item row="5" column="0">
-    <spacer name="horizontalSpacer_12">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="5" column="4">
-    <widget class="QPushButton" name="pushbutton_remove_mesh">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Remove Mesh</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="3">
-    <widget class="QPushButton" name="pushbutton_generate_mesh">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Generate Mesh</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="6">
+   <item row="4" column="0" colspan="5">
     <widget class="QStackedWidget" name="stackedwidget_mesh">
      <property name="currentIndex">
       <number>0</number>
@@ -467,16 +518,6 @@
        <property name="spacing">
         <number>5</number>
        </property>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_127">
-         <property name="text">
-          <string>Mesher:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="0" colspan="3">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="title">
@@ -718,47 +759,17 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="0" colspan="3">
-        <widget class="QGroupBox" name="groupBox_13">
-         <property name="title">
-          <string>Mesh Statistics</string>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_127">
+         <property name="text">
+          <string>Mesher:</string>
          </property>
-         <property name="flat">
-          <bool>true</bool>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
-         <layout class="QGridLayout" name="gridLayout_57">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_165">
-            <property name="text">
-             <string>Total Cells</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="lineedit_mesh_cells">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_166">
-            <property name="text">
-             <string>Cell Types</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPlainTextEdit" name="plaintextedit_mesh_cell_types">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="3" column="1">
         <spacer name="verticalSpacer_40">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -773,19 +784,12 @@
        </item>
        <item row="0" column="1" colspan="2">
         <widget class="QComboBox" name="combobox_mesher">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <item>
           <property name="text">
            <string>cutcell</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>vtkTableBasedClipDataSet</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>vtkThreshold</string>
           </property>
          </item>
         </widget>
@@ -795,105 +799,6 @@
      <widget class="QWidget" name="page_4">
       <layout class="QGridLayout" name="gridLayout_36"/>
      </widget>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="6">
-    <widget class="QFrame" name="frame">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton:hover {
-    color:#64B5F6;;
-    background-color: transparent;
-}
-
-QPushButton:pressed {
-    color: #64B5F6;
-    background-color: transparent;
-}
-
-QPushButton:checked {
-    color:#64B5F6;
-    background-color: transparent;
-}
-
-</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <layout class="QGridLayout" name="gridlayout_mesh_tab_btns">
-      <property name="margin">
-       <number>0</number>
-      </property>
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pushbutton_mesh_uniform">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Background</string>
-        </property>
-        <property name="checkable">
-         <bool>false</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="pushbutton_mesh_mesher">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Mesher</string>
-        </property>
-        <property name="checkable">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="Line" name="line_mesh">
-        <property name="styleSheet">
-         <string notr="true">QWidget{
-  background-color: #64B5F6;
-  border-color: #64B5F6;
-}</string>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <property name="lineWidth">
-         <number>0</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>
@@ -923,8 +828,6 @@ QPushButton:checked {
   <tabstop>lineedit_vtk_mesh_merge</tabstop>
   <tabstop>checkbox_threshold_inside</tabstop>
   <tabstop>checkbox_threshold_interface</tabstop>
-  <tabstop>lineedit_mesh_cells</tabstop>
-  <tabstop>plaintextedit_mesh_cell_types</tabstop>
  </tabstops>
  <resources/>
  <connections/>

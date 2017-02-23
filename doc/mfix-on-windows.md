@@ -31,7 +31,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 ```shell
    $ mkdir /somewhere/VBOX_SHARE
    $ cd /somewhere/VBOX_SHARE
-   $ git clone -b gui <working_dir>/mfix  # can clone local mfix repo
+   $ git clone -b gui <working_dir>/mfixsolver  # can clone local mfix repo
 ```
 
    Then setup a shared folder pointing to VBOX_SHARE, and you should see
@@ -79,7 +79,7 @@ At the time of this writing, distutils does not support Visual Studio 2015, whic
  - Edit `Anaconda3\Lib\distutils\cygwinccompiler.py`.
  - Search for VS2010
  - Add an elif clause after it for Visual Studio 2015 (msc_ver=='1900')
- 
+
 ```python
         elif msc_ver == '1600':
             # VS2010 / MSVC 10.0

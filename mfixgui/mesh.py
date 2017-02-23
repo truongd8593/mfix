@@ -24,7 +24,7 @@ def ctrl_pts_to_loc(ctrl, min_loc):
         cp = safe_float(pt['position'], 0.0)
         nc = safe_int(pt['cells'], 1)
 
-        # unifrom dx
+        # uniform dx
         dx = (cp-last)/nc
 
         # first dx?
@@ -49,6 +49,7 @@ def ctrl_pts_to_loc(ctrl, min_loc):
             prev_cell_w = cell_w
         last = loc[-1]
 
+    loc = [round(x, 10) for x in loc]
     return loc
 
 
@@ -61,6 +62,7 @@ def linspace(f, t, c):
     for i in range(c):
         l.append(l[-1]+dx)
     l[-1] = t # make sure the last value is the one given
+    l = [round(x, 10) for x in l]
     return l
 
 
@@ -256,7 +258,7 @@ class Mesh(object):
         table_dic = OrderedDict()
         d = ['x', 'y', 'z'][index]
 
-        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)], 1):
+        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
             loc = count*val + start
             start = loc
             self.update_mesh_keyword('cp' + d, loc, args=i)
@@ -264,7 +266,7 @@ class Mesh(object):
             table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
                             'first': 0.0, 'last': 0.0}
         for i in range(len(spacing)):
-            self.update_mesh_keyword('d' + d, None, args=i)
+            self.unset_keyword('d' + d, args=i)
 
         self.mesh_tables[index].set_value(table_dic)
         self.mesh_tables[index].fit_to_contents()

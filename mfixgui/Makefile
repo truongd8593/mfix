@@ -15,9 +15,10 @@ clean:
 	rm -rf doc/generated
 	rm -rf __pycache__ */__pycache__
 	find . -name \*.pyc -delete
-	find .. -name \*.stl.cgs -delete
-	find .. -name particle_input.dat.cgs -delete
-	find .. -name geometry.stl.original -delete
+	find .. -name \*.stl.cgs -exec rename .stl.cgs .stl {} \;
+	find .. -name particle_input.dat.cgs -exec rename .dat.cgs .dat {} \;
+	find .. -name geometry.stl.original -exec rename .stl.original .stl {} \;
+	find .. -name poly.dat.cgs -exec rename .dat.cgs .dat {} \;
 
 
 tags:
@@ -42,6 +43,10 @@ test-load-all-2: clean
 	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xargs -0 -n 1 ./run2.sh -linfo -t
 test-load-all-3: clean
 	find .. -name mfix.dat -print0 | MFIX_NO_VTK=1 xargs -0 -n 1 ./run3.sh -linfo -t
+
+thumbnails: clean
+	find ../tutorials ../defaults ../benchmarks -name mfix.dat -print0 | xargs -0 -n 1 ./run.sh -linfo -t -ct
+	python tools/collect_tutorial_info.py
 
 ../mfix:
 	cd ..; ./configure_mfix --python --smp

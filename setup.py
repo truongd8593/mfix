@@ -5,77 +5,224 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-# Always prefer setuptools over distutils
-from codecs import open
-from distutils.command.build_ext import build_ext
-from glob import glob
-from os import makedirs, path, walk
-from shutil import copyfile
-
+import platform
+import shutil
 import subprocess
 import sys
+import tempfile
+import zipfile
 
-from setuptools import setup, Extension
+import distutils.cygwinccompiler
+import errno
+
+import codecs
+from os import makedirs, path, walk
+from glob import glob
+
+# must import setuptools before numpy.distutils
+import setuptools
+from numpy.distutils.core import Extension, setup
+from numpy.distutils.command.build_ext import build_ext
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
-exec(open('mfixgui/version.py').read())
+exec(codecs.open('mfixgui/version.py').read())
 
 HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
 # Get the long description from the README file
-with open(path.join(HERE, 'README'), encoding='utf-8') as f:
+with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
+F90_TMP = tempfile.mkdtemp()
+CONFIGURE_ARGS = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
-data_files = []
+def get_data_files():
+    data_files = []
 
-for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests']:
-    for root,dirs,files in walk(subdir):
-        dir_files = []
-        for f in files:
-            dir_files.append(path.join(root,f))
-        data_files.append((path.join('share', NAME, root), dir_files))
+    for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
+        for root, dirs, files in walk(subdir):
+            dir_files = []
+            for f in files:
+                dir_files.append(path.join(root, f))
+            data_files.append((path.join('share', NAME, root), dir_files))
+
+    if platform.system() == 'Windows':
+        fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
+        data_files += fortran_dlls.namelist()
+        fortran_dlls.extractall()
+
+    return data_files
+
+def get_pymfix_src():
+    pymfix_src = [
+        'param_mod.f',
+        'param1_mod.f',
+        'dmp_modules/compar_mod.f',
+        'dmp_modules/debug_mod.f',
+        'dmp_modules/parallel_mpi_mod.f',
+        'fldvar_mod.f',
+        'des/discretelement_mod.f',
+        'des/des_time_march.f',
+        'iterate.f',
+        'residual_mod.f',
+        'time_step.f',
+        'main.f',
+        'run_mod.f',
+    ]
+
+    makedirs(path.join(F90_TMP, 'dmp_modules'))
+    makedirs(path.join(F90_TMP, 'des'))
+    for src in pymfix_src:
+        shutil.copyfile(path.join('model', src), path.join(F90_TMP, src)+'90')
+
+    return [path.join(F90_TMP, s)+'90' for s in pymfix_src]
+
+def cleanup_tmp():
+    # clean tempdir
+    try:
+        shutil.rmtree(F90_TMP)
+    except OSError as ex:
+        if ex.errno != errno.ENOENT:
+            raise
 
 
-class MfixBuildExt(build_ext):
-    """Override build_extension to copy the shared library file"""
+def make_mfixsolver():
+    build_dir = path.join('build', CONFIGURE_ARGS.replace(' ', '_').replace('=', '_'))
 
-    def build_extension(self, ext):
-        ''' Copies the already-compiled pyd
-        '''
-        # if platform.system() == 'Windows':
+    return Extension(name='mfixsolver',
+                     sources=get_pymfix_src(),
+                     extra_f90_compile_args=['-cpp'],
+                     module_dirs=[path.join(build_dir, 'model')],
+                     extra_objects=[
+                         '.build/read_database.o',
+                         '.build/read_namelist.o',
+                         path.join(build_dir, 'build-aux/libmfix.a'),
+                     ])
 
-        returncode = subprocess.call("./configure_mfix PYTHON_BIN=%s --python" % sys.executable, shell=True)
-        if(returncode!=0):
+
+def build_doc():
+    pandoc_args = ['-s', '--toc', '-N', '-m']
+    docs = [('', 'README'),
+            ('doc', 'SETUP_GUIDE'),
+            ('doc', 'USER_GUIDE')]
+    rendered_docs = []
+    for src in docs:
+
+        doc_src = path.join(*src) + '.md'
+
+        # doc_dest is useful for previewing docs using build_doc directly
+        doc_dest = path.join(*src) + '.html'
+
+        # doc_pkg is the location for the docs distributed in the package
+        doc_pkg = path.join('mfixgui', path.join(*src) + '.html')
+
+        subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
+
+        with codecs.open(doc_dest, encoding="utf8") as doc:
+            data = doc.read()
+
+        # fix links in README to the GUIDES
+        data = data.replace('SETUP_GUIDE.md', 'SETUP_GUIDE.html')
+        data = data.replace('USER_GUIDE.md', 'USER_GUIDE.html')
+
+        with codecs.open(doc_dest, 'w', encoding='utf8') as doc:
+            doc.write(data)
+
+        # fix links to images in packaged docs
+        data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
+
+        with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
+            doc.write(data)
+
+        rendered_docs.append(path.basename(doc_pkg))
+
+    return rendered_docs
+
+def build_doc_media():
+    dest_dir = path.join('mfixgui', 'doc', 'media')
+    if not path.isdir(dest_dir):
+        makedirs(dest_dir)
+
+    media = []
+    for image in glob(path.join('doc', 'media', '*')):
+        filename = path.basename(image)
+        shutil.copy(image, dest_dir)
+        media.append(filename)
+
+    return media
+
+class BuildDocCommand(setuptools.Command):
+    """ renders setup guide and user guide from Markdown to HTML """
+
+    description = "build mfix documentation (setup guide and user guide)"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        build_doc()
+
+
+class BuildMfixCommand(setuptools.Command):
+    """ builds libmfix (Python version agnostic) """
+    description = "build mfix (Fortran code)"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+
+        # should work Linux/Mac/Windows as long as bash is in PATH
+        cmd = 'bash ./configure_mfix %s' % CONFIGURE_ARGS
+        returncode = subprocess.call(cmd, shell=True)
+        if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
 
-        returncode = subprocess.call("make mfixsolver.so", shell=True)
-        if(returncode!=0):
-            raise EnvironmentError("Failed to build mfixsolver correctly")
+        returncode = subprocess.call("make", shell=True)
+        if returncode != 0:
+            raise EnvironmentError("Failed to build mfix correctly")
 
-        # make LDFLAGS='-static-libgcc -Wl,-Bstatic -lgfortran -lquadmath -Wl,-Bdynamic -lm -shared' LD=gcc
-        # ./configure_mfix --python --host=x86_64-w64-mingw32
 
-        extpath = path.dirname(self.get_ext_fullpath(ext.name))
-        if not path.exists(extpath):
-            makedirs(extpath)
 
-        mfixsolver_sharedlib = [p for p in glob('mfixsolver*.so') if path.isfile(p)]
-        if not mfixsolver_sharedlib:
-            raise EnvironmentError("setup requires mfixsolver shared library; run './configure --python; make' before 'python setup.py'")
-        mfixsolver_sharedlib = mfixsolver_sharedlib[0]
-        src = path.join(HERE, mfixsolver_sharedlib)
-        dest = self.get_ext_fullpath(ext.name)
-        if src != dest:
-            copyfile(src, dest)
+def mfix_prereq(command_subclass):
+    """A decorator for classes subclassing one of the setuptools commands.
+
+    It modifies the run() method to run build_mfix before build_ext
+    """
+    orig_run = command_subclass.run
+
+    def modified_run(self):
+        self.run_command('build_mfix')
+        orig_run(self)
+
+    command_subclass.run = modified_run
+    return command_subclass
+
+@mfix_prereq
+class BuildExtCommand(build_ext):
+    pass
+
 
 setup(
-    name='mfixgui',
-    cmdclass={'build_ext': MfixBuildExt},
+    name=NAME,
+
+    cmdclass={
+        'build_doc': BuildDocCommand,
+        'build_ext': BuildExtCommand,
+        'build_mfix': BuildMfixCommand,
+    },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -114,12 +261,10 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 
     # You can just specify the packages manually here if your project is
@@ -128,6 +273,7 @@ setup(
         'mfixgui',
         'mfixgui.colormaps',
         'mfixgui.doc',
+        'mfixgui.doc.media',
         'mfixgui.icons',
         'mfixgui.tests',
         'mfixgui.tools',
@@ -142,21 +288,22 @@ setup(
     install_requires=[
         'flask',
         'numpy==1.11.3',
-        'packaging',
         'qtpy',
     ],
 
-    ext_modules=[Extension('mfixsolver', sources=[])],
+    ext_modules=[make_mfixsolver(),],
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'mfixgui.widgets': ['burcat.pickle'],
-        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
-        'mfixgui.icons': ['*.png'],
-        'mfixgui.uifiles': ['*'],
         'mfixgui.colormaps': ['*'],
+        'mfixgui.icons': ['*.png'],
+        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
+        'mfixgui.uifiles': ['*'],
+        'mfixgui.widgets': ['burcat.pickle'],
+        'mfixgui.doc': build_doc(),
+        'mfixgui.doc.media': build_doc_media(),
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
@@ -166,15 +313,17 @@ setup(
     # data_files=[('lib/python2.7/site-packages', ['mfix.so']),
     #             ('tutorials', ['tutorials/fluidBed.pdf']),
     # ],
-    data_files=data_files,
+    data_files=get_data_files(),
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'mfixgui=mfixgui.gui:main',
+            'mfix=mfixgui.gui:main',
             'pymfix=mfixgui.pymfix:main',
         ],
     },
 )
+
+cleanup_tmp()

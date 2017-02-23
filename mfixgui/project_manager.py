@@ -1,7 +1,7 @@
 """ProjectManager is a subclass of Project,
   intermediating between Gui and Project objects
 
- It handles loading and storing MFIX-GUI projects,
+ It handles loading and storing MFiX-GUI projects,
    using primitives from Project
 
  It handles interaction between gui and Project objects,
@@ -221,7 +221,7 @@ class ProjectManager(Project):
 
     def load_project_file(self, project_file):
         """Loads an MFiX project file updating certain keywords to match expectations
-        of MFIX-GUI:
+        of MFiX-GUI:
            * reject certain types of files (cylindrical coordinates)
            * autoconvert CGS to SI
            * filter out keywords which will be passed on commandline  (issues/149)
@@ -259,12 +259,18 @@ class ProjectManager(Project):
                 warnings.warn('CGS units detected!  Automatically converting to SI.  Please check results of conversion.')
                 for kw in self.keywordItems():
                     # Don't attempt to convert non-floating point values
-
                     dtype = self.keyword_doc.get(kw.key,{}).get('dtype')
                     if dtype != 'DP':
                         continue
 
                     factor = cgs_to_SI.get(kw.key)
+
+                    #Special case is_pc, per Jeff Dietiker
+                    #is_pc: 0.0001 for 1st index (permeability, Length2),
+                    # 100.0 for 2nd index (Inertial resistance factor, 1/Length)
+                    if kw.key == 'is_pc' and len(kw.args) == 2:
+                        factor = {1: 0.001, 2:100}.get(kw.args[1])
+
                     if factor == 1:
                         continue
                     if factor is not None:
@@ -282,6 +288,13 @@ class ProjectManager(Project):
                         self.convert_particle_file_units(particle_file)
                     except Exception as e:
                         warnings.warn("Error %s while converting %s" % (e, particle_file))
+                # convert poly.dat
+                poly_file = os.path.join(os.path.dirname(project_file), 'poly.dat')
+                if os.path.exists(poly_file):
+                    try:
+                        self.convert_polygon_file_units(poly_file)
+                    except Exception as e:
+                        warnings.warn("Error %s while converting %s" % (e, poly_file))
                 # convert stl file
                 stl_file = os.path.join(os.path.dirname(project_file), 'geometry.stl')
                 if os.path.exists(stl_file):
@@ -350,6 +363,8 @@ class ProjectManager(Project):
                             break
                 if user_def:
                     (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                    if tmin == tmax == 0.0:
+                        tmin, tmax = 200.0, 6000.0
                     if mw_g is not None:
                         mol_weight = mw_g # mw_g overrides values in THERMO DATA
                     species_data = {'source': source,
@@ -394,8 +409,8 @@ class ProjectManager(Project):
                         'phase': phase,
                         'mol_weight': mw_g or 0,
                         'h_f': 0.0,
-                        'tmin':  0.0,
-                        'tmax': 0.0,
+                        'tmin':  200.0,
+                        'tmax': 6000.0,
                         'a_low': [0.0]*7,
                         'a_high': [0.0]*7}
 
@@ -458,6 +473,8 @@ class ProjectManager(Project):
                                 break
                     if user_def:
                         (tmin, tmax, mol_weight, coeffs, comment) = user_def
+                        if tmin == tmax == 0.0:
+                            tmin, tmax = 200.0, 6000.0
                         if mw_s is not None:
                             mol_weight = mw_s # mw_s overrides values in THERMO DATA
                         species_data = {'source': source,
@@ -502,8 +519,8 @@ class ProjectManager(Project):
                             'phase': phase,
                             'mol_weight': mw_s or 0,
                             'h_f': 0.0,
-                            'tmin':  0.0,
-                            'tmax': 0.0,
+                            'tmin':  200.0,
+                            'tmax': 6000.0,
                             'a_low': [0.0]*7,
                             'a_high': [0.0]*7}
 
@@ -549,6 +566,17 @@ class ProjectManager(Project):
                     if bc_ep_s is None and bc_ep_g is not None:
                         val = round(1.0-bc_ep_g, 10)
                         self.gui.update_keyword('bc_ep_s', val, args=[BC,1])
+
+            for IC in range(1, len(self.ics)+1):
+                ic_ep_g = self.get_value('ic_ep_g', args=[IC])
+                for s in range(1, len(self.solids)+1):
+                    ic_ep_s = self.get_value('ic_ep_s', args=[IC,s])
+
+            for BC in range(1, len(self.bcs)+1):
+                bc_ep_g = self.get_value('bc_ep_g', args=[IC])
+                for s in range(1, len(self.solids)+1):
+                    bc_ep_s = self.get_value('bc_ep_s', args=[BC,s])
+
 
             # issues/149 - don't save nodes[ijk] in file, pass on cmdline
             skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
@@ -768,6 +796,50 @@ class ProjectManager(Project):
 
                     out_line = ''.join('%-16s'%round((v*f),12) for (f,v) in zip(vals, factors))
 
+                out_file.write(out_line.strip()+'\n')
+
+    def convert_polygon_file_units(self, filename):
+        basename = os.path.basename(filename)
+        cgs_file = filename + '.cgs'
+        if os.path.exists(cgs_file):
+            # If we've converted before, use the '.cgs' file as input to avoid
+            # double-converting
+            warnings.warn('%s found, not converting particle data (already converted?)' % cgs_file)
+            return
+        else:
+            warnings.warn('%s saved as %s' % (basename, basename+'.cgs')) # info?
+            os.rename(filename, cgs_file)
+        lineno = 0
+        with open(filename, 'w') as out_file:
+            for line in open(cgs_file):
+                lineno += 1
+                line = line.strip()
+                if not line: # blank
+                    continue
+                line = line.replace('d', 'e').replace('D', 'E')
+                tok = line.split()
+                # data starts on line 13
+                if lineno <= 13:
+                    out_line = line # Pass through
+                # line 14 should be the number of polygons
+                elif lineno == 14 and len(tok) == 1:
+                    out_line = line # Pass through
+                elif len(tok) == 2: # new poly def, n verticies, sign
+                    out_line = line # Pass through
+                else:
+                    if len(tok) != 3: # vertex, x y bc_id
+                        warnings.warn('%s: bad line %s' % (filename, lineno))
+                        break
+                    try:
+                        vals = list(map(float, tok))
+                    except ValueError:
+                        warnings.warn('%s: bad value on line %s' % (filename, lineno))
+                        break
+                    factors = [0.01] * 2 # position, cm -> m
+
+
+                    out_line = ''.join('%-16s'%round((v*f),12) for (f,v) in zip(vals, factors))
+                    out_line += str(int(vals[-1]))
                 out_file.write(out_line.strip()+'\n')
 
     def convert_stl_file_units(self, filename):

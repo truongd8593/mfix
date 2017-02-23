@@ -10,15 +10,21 @@
     <height>666</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <property name="spacing">
-    <number>5</number>
+  <layout class="QGridLayout" name="gridLayout_5">
+   <property name="leftMargin">
+    <number>0</number>
    </property>
-   <property name="margin">
-    <number>5</number>
+   <property name="topMargin">
+    <number>0</number>
    </property>
-   <item>
-    <widget class="QFrame" name="frame_18">
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QFrame" name="button_frame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -35,7 +41,16 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -154,50 +169,65 @@
      </layout>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QSplitter" name="splitter">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="childrenCollapsible">
-      <bool>false</bool>
-     </property>
-     <widget class="Table" name="tablewidget_regions">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
+     <widget class="QFrame" name="top_frame">
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>16777215</height>
+        <height>100</height>
        </size>
       </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
       </property>
-      <property name="styleSheet">
-       <string notr="true">QTableView{
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="Table" name="tablewidget_regions">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QTableView{
   selection-background-color: #64B5F6;
   selection-color: white;
 }
@@ -227,65 +257,63 @@ QHeaderView::section:vertical{
   border-left: 1px solid grey;
   border-bottom: 1px solid grey;
 }</string>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="lineWidth">
-       <number>0</number>
-      </property>
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::ExtendedSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <attribute name="horizontalHeaderCascadingSectionResizes">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="horizontalHeaderStretchLastSection">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="verticalHeaderVisible">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="verticalHeaderCascadingSectionResizes">
-       <bool>false</bool>
-      </attribute>
-      <attribute name="verticalHeaderStretchLastSection">
-       <bool>false</bool>
-      </attribute>
-      <row>
-       <property name="text">
-        <string>test</string>
-       </property>
-      </row>
-      <column>
-       <property name="text">
-        <string>color</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>type</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>from</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>to</string>
-       </property>
-      </column>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="horizontalHeaderCascadingSectionResizes">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderCascadingSectionResizes">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Visible</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Color</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Type</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Used By</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="widget_lowerPane" native="true">
       <property name="sizePolicy">
@@ -298,11 +326,20 @@ QHeaderView::section:vertical{
        <property name="spacing">
         <number>5</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
         <number>5</number>
        </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QWidget" name="groupbox_region_parameters" native="true">
+        <widget class="QWidget" name="widget_region_parameters" native="true">
          <property name="enabled">
           <bool>true</bool>
          </property>
@@ -328,12 +365,6 @@ QHeaderView::section:vertical{
           <property name="spacing">
            <number>5</number>
           </property>
-          <item row="7" column="3">
-           <widget class="LineEdit" name="lineedit_regions_to_z"/>
-          </item>
-          <item row="6" column="1">
-           <widget class="LineEdit" name="lineedit_regions_from_x"/>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_34">
             <property name="sizePolicy">
@@ -342,116 +373,19 @@ QHeaderView::section:vertical{
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Name</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_35">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Type</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="2">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="1" colspan="3">
-           <widget class="LineEdit" name="lineedit_regions_name"/>
-          </item>
-          <item row="2" column="1">
-           <widget class="QToolButton" name="toolbutton_color">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1" colspan="3">
-           <widget class="QLabel" name="label_region_type">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_33">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>To</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Color</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="LineEdit" name="lineedit_regions_to_y"/>
-          </item>
-          <item row="6" column="2">
-           <widget class="LineEdit" name="lineedit_regions_from_y"/>
-          </item>
-          <item row="7" column="1">
-           <widget class="LineEdit" name="lineedit_regions_to_x"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Used by</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="QLabel" name="label_used_by">
-            <property name="styleSheet">
-             <string notr="true">QLabel{
-color: red;
-}</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="3">
-           <widget class="LineEdit" name="lineedit_regions_from_z"/>
-          </item>
-          <item row="10" column="0" colspan="4">
-           <widget class="QWidget" name="groupbox_stl" native="true">
+          <item row="5" column="0" colspan="3">
+           <widget class="QGroupBox" name="groupbox_stl">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -461,14 +395,32 @@ color: red;
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="title">
+             <string>Select Facets (STL)</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
             <layout class="QGridLayout" name="gridLayout">
              <property name="leftMargin">
-              <number>20</number>
+              <number>5</number>
              </property>
              <property name="topMargin">
               <number>0</number>
              </property>
              <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
               <number>0</number>
              </property>
              <property name="spacing">
@@ -553,6 +505,12 @@ color: red;
              </item>
              <item row="1" column="0" colspan="3">
               <widget class="CheckBox" name="checkbox_slice_facets">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="text">
                 <string>Slice facets</string>
                </property>
@@ -566,6 +524,12 @@ color: red;
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="text">
                 <string>Shape</string>
                </property>
@@ -573,6 +537,12 @@ color: red;
              </item>
              <item row="0" column="1" colspan="2">
               <widget class="ComboBox" name="combobox_stl_shape">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
                <item>
                 <property name="text">
                  <string>box</string>
@@ -588,21 +558,14 @@ color: red;
             </layout>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_32">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_4">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="text">
-             <string>From</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0" colspan="4">
-           <widget class="QCheckBox" name="checkbox_region_stl">
             <property name="font">
              <font>
               <weight>75</weight>
@@ -610,25 +573,150 @@ color: red;
              </font>
             </property>
             <property name="text">
-             <string>Select Facets (STL):</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+             <string>Color</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="3" column="0" colspan="3">
+           <widget class="QGroupBox" name="groupBox">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
+            <property name="title">
+             <string>Extents</string>
             </property>
-           </spacer>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>5</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_32">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>From</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="LineEdit" name="lineedit_regions_from_x">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="LineEdit" name="lineedit_regions_from_y">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="LineEdit" name="lineedit_regions_from_z">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_33">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>To</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="LineEdit" name="lineedit_regions_to_x">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="LineEdit" name="lineedit_regions_to_y">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="LineEdit" name="lineedit_regions_to_z">
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="LineEdit" name="lineedit_regions_name"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QToolButton" name="toolbutton_color">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="autoRaise">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -667,13 +755,13 @@ color: red;
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>ComboBox</class>
-   <extends>QComboBox</extends>
+   <class>Table</class>
+   <extends>QTableWidget</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>Table</class>
-   <extends>QTableWidget</extends>
+   <class>ComboBox</class>
+   <extends>QComboBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
  </customwidgets>
@@ -681,34 +769,10 @@ color: red;
   <tabstop>toolbutton_region_add</tabstop>
   <tabstop>toolbutton_region_delete</tabstop>
   <tabstop>toolbutton_region_copy</tabstop>
-  <tabstop>tablewidget_regions</tabstop>
   <tabstop>lineedit_regions_name</tabstop>
-  <tabstop>lineedit_regions_from_x</tabstop>
-  <tabstop>lineedit_regions_to_x</tabstop>
-  <tabstop>lineedit_regions_from_y</tabstop>
-  <tabstop>lineedit_regions_to_y</tabstop>
-  <tabstop>lineedit_regions_from_z</tabstop>
-  <tabstop>lineedit_regions_to_z</tabstop>
   <tabstop>combobox_stl_shape</tabstop>
   <tabstop>checkbox_slice_facets</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>checkbox_region_stl</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>groupbox_stl</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>75</x>
-     <y>480</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>14</x>
-     <y>543</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

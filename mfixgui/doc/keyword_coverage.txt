@@ -1,0 +1,675 @@
+Key                            GUI         Tutorial       Equivalent
+===                            ===         ========       ==========
+
+ADDED_MASS                     Y           N
+ADJUST_PROC_DOMAIN_SIZE        N           N              No, not needed
+AGGREGATION_EFF                N           N              ?
+ALPHA_MAX                      N           N              No, rarely used cutcell tol, not needed
+ASPERITIES                     Y           N
+AUTOMATIC_RESTART              N           N              No, not needed
+AUTO_RESTART                   N           N              No, not needed
+BAR_CHAR                       N           N              No, not needed
+BAR_RESOLUTION                 N           N              No, not needed
+BAR_WIDTH                      N           N              No, not needed
+BATCH_WALLCLOCK                N           Y              No, should be added next to CHK_BATCH_END
+BC_C_SCALAR                    Y           N
+BC_C_THETA_M                   Y           Y
+BC_C_T_G                       Y           Y
+BC_C_T_S                       Y           Y
+BC_C_X_G                       Y           Y
+BC_C_X_S                       N [1]       Y
+BC_DT_0                        Y           Y
+BC_DT_H                        N           Y              ??
+BC_DT_L                        N           Y              ??
+BC_EP_G                        Y [2]       Y
+BC_EP_S                        Y           Y
+BC_E_TURB_G                    Y           Y
+BC_HW_G                        Y           Y
+BC_HW_S                        Y           Y
+BC_HW_SCALAR                   Y           N
+BC_HW_THETA_M                  Y           Y
+BC_HW_T_G                      Y           Y
+BC_HW_T_S                      Y           Y
+BC_HW_X_G                      Y           Y
+BC_HW_X_S                      Y           Y
+BC_ID_Q                        N [1]       Y
+BC_I_E                         N           N              Yes (7)
+BC_I_W                         N           N              Yes (7)
+BC_JET_G0                      N           Y              ??
+BC_JET_GH                      N           Y              ??
+BC_JET_GL                      N           Y              ??
+BC_JJ_M                        Y           N
+BC_JJ_PS                       Y           Y
+BC_J_N                         N           N              Yes (7)
+BC_J_S                         N           N              Yes (7)
+BC_K_B                         N           N              Yes (7)
+BC_K_T                         N           N              Yes (7)
+BC_K_TURB_G                    Y           Y
+BC_MASSFLOW_G                  Y           Y
+BC_MASSFLOW_S                  Y           Y
+BC_MI_AS_WALL_FOR_DES          N           N              ?
+BC_PIC_MI_CONST_NPC            N           N              ?
+BC_PIC_MI_CONST_STATWT         N           N              ?
+BC_PO_APPLY_TO_DES             N           Y              ??
+BC_P_G                         Y           Y
+BC_ROP_S                       N           Y              Y ROP_S = RO_S * EP_S
+BC_SCALAR                      Y           N
+BC_SCALARW                     Y           N
+BC_THETAW_M                    Y           Y
+BC_THETA_M                     N           Y              No, should be added
+BC_TW_G                        Y           Y
+BC_TW_S                        Y           Y
+BC_TYPE                        Y           Y
+BC_T_G                         Y           Y
+BC_T_S                         Y           Y
+BC_UW_G                        Y           Y
+BC_UW_S                        Y           Y
+BC_U_G                         Y           Y
+BC_U_S                         Y           Y
+BC_VELMAG_G                    N           N              No, should be added (option to specify velocity components or magnitude)
+BC_VELMAG_S                    N           N              No, should be added (same as above)
+BC_VOLFLOW_G                   Y           N
+BC_VOLFLOW_S                   Y           N
+BC_VW_G                        Y           Y
+BC_VW_S                        Y           Y
+BC_V_G                         Y           Y
+BC_V_S                         Y           Y
+BC_WW_G                        Y           Y
+BC_WW_S                        Y           Y
+BC_W_G                         Y           Y
+BC_W_S                         Y           Y
+BC_XW_G                        Y           N
+BC_XW_S                        Y           N
+BC_X_E                         Y           Y
+BC_X_G                         Y           Y
+BC_X_S                         Y           Y
+BC_X_W                         Y           Y
+BC_Y_N                         Y           Y
+BC_Y_S                         Y           Y
+BC_Z_B                         Y           Y
+BC_Z_T                         Y           Y
+BDIST_IO                       N           N              No, should be added (DMP run)
+BEND_R1                        N [3]       N
+BEND_R2                        N [3]       N
+BEND_THETA1                    N [3]       N
+BEND_THETA2                    N [3]       N
+BLENDING_FUNCTION              Y           N
+BREAKAGE_EFF                   N           N              ?
+BSTART_WITH_ONE_RES            N           N              ?
+BWRITE_NETCDF                  Y           N
+C                              N           Y              ??
+C2C_R1                         N [3]       N
+C2C_R2                         N [3]       N
+C2C_Y1                         N [3]       N
+C2C_Y2                         N [3]       N
+CAD_PROPAGATE_ORDER            N           N              No, not needed
+CALL_DQMOM                     N           N              ?
+CALL_USR                       N           Y              ??
+CALL_USR_SOURCE                N           N              ?
+CARTESIAN_GRID                 Y           Y
+CFL_PIC                        Y           Y
+CG_SAFE_MODE                   N           N              No, not needed
+CG_UR_FAC                      N           N              No, not needed
+CHI_SCHEME                     Y           N
+CHK_BATCHQ_END                 Y           Y
+CLIP_XMAX                      Y           N
+CLIP_XMIN                      Y           N
+CLIP_YMAX                      Y           Y
+CLIP_YMIN                      Y           N
+CLIP_ZMAX                      Y           N
+CLIP_ZMIN                      Y           N
+CLOSE_PACKED                   Y           Y
+CN_ON                          Y           N
+COORDINATES                    Y           Y
+CPX                            Y           Y
+CPY                            Y           Y
+CPZ                            Y           N
+CYCLIC_X                       Y           N
+CYCLIC_X_PD                    Y           N
+CYCLIC_Y                       Y           Y
+CYCLIC_Y_PD                    Y           Y
+CYCLIC_Z                       Y           N
+CYCLIC_Z_PD                    Y           N
+CYLINDRICAL                    N           N              Not supported
+CYLINDRICAL_2D                 N           N              Not supported
+C_E                            Y           Y
+C_F                            Y           Y
+C_FAC                          Y           N
+C_NAME                         Y           Y
+C_PG0                          Y           Y
+C_PS0                          Y           Y
+DBGPRN_LAYOUT                  N           N              No, not needed
+DEBUG_DES                      N           N              ?
+DEBUG_RESID                    N           N              No, not needed
+DEF_COR                        Y           Y
+DELP_X                         Y           N
+DELP_Y                         Y           Y
+DELP_Z                         Y           N
+DESCRIPTION                    Y           Y
+DESGRIDSEARCH_IMAX             Y           Y
+DESGRIDSEARCH_JMAX             Y           Y
+DESGRIDSEARCH_KMAX             Y           Y
+DES_COLL_MODEL                 Y           N
+DES_CONV_CORR                  N           N               ?
+DES_DIFFUSE_WIDTH              Y           N
+DES_EM                         Y           Y
+DES_EN_INPUT                   Y           Y
+DES_EN_WALL_INPUT              Y           Y
+DES_ETAT_FAC                   Y           N
+DES_ETAT_W_FAC                 Y           N
+DES_ET_INPUT                   Y           N
+DES_ET_WALL_INPUT              Y           N
+DES_EXPLICITLY_COUPLED         Y           N
+DES_INTERP_MEAN_FIELDS         Y           Y
+DES_INTERP_ON                  Y           Y
+DES_INTERP_SCHEME              Y           Y
+DES_INTERP_WIDTH               Y           N
+DES_INTG_METHOD                Y           N
+DES_MIN_COND_DIST              Y           Y
+DES_NEIGHBOR_SEARCH            Y           Y
+DES_ONEWAY_COUPLED             Y           N
+DES_OUTPUT_TYPE                Y           N
+DES_REPORT_MASS_INTERP         N           Y              ??
+DES_USR_VAR_SIZE               Y           N
+DETECT_STALL                   N           Y              No, should be added
+DIF_G0                         Y           Y
+DIF_S0                         N           N              ?
+DIL_FACTOR_VSD                 N           N              ?
+DIL_INERT_X_VSD                N           N
+DIM_FACETS_PER_CELL            Y           Y
+DISCRETIZE                     Y           Y
+DO_TRANSPOSE                   N           N              ?
+DQUADRIC                       N [3]       Y
+DRAG_C1                        Y           Y
+DRAG_D1                        Y           Y
+DRAG_TYPE                      Y           Y
+DT                             Y           Y
+DT_FAC                         Y           Y
+DT_MAX                         Y           Y
+DT_MIN                         Y           Y
+DWALL_BRUTE_FORCE              N           N              ?
+DX                             Y           Y
+DY                             Y           Y
+DZ                             Y           Y
+D_P0                           Y           Y
+ENABLE_DMP_LOG                 N           Y              ??
+ENERGY_EQ                      Y           Y
+EPS_F_MIN                      Y           Y
+EP_STAR                        Y           Y
+EP_S_MAX                       N           Y              ??
+ERX                            Y           N
+ERY                            Y           Y
+ERZ                            Y           N
+EW_YOUNG                       Y           Y
+EW_YOUNG_ACTUAL                N           Y              ??
+E_W                            Y           Y
+E_YOUNG                        Y           Y
+E_YOUNG_ACTUAL                 N           Y              ??
+FACTOR_RLM                     Y           N
+FAC_DIM_MAX_CUT_CELL           Y           Y
+FEDORS_LANDEL                  Y           Y
+FILTER_SIZE_RATIO              Y           N
+FIRST_DX                       Y           Y
+FIRST_DY                       Y           Y
+FIRST_DZ                       Y           N
+FLPC                           Y           Y
+FLUID_IN_CLIPPED_REGION        N           Y              ?? (3)
+FLUX_G                         Y           Y
+FOCUS_PARTICLE                 N           N              ?
+FPFOI                          Y           Y
+FRAME                          Y           Y
+FRICTION_MODEL                 Y           Y
+FRIC_EXP_PIC                   Y           N
+FRIC_NON_SING_FAC              Y           N
+FULL_LOG                       N           Y              ??
+F_DASHBOARD                    N           Y              No, not needed
+GENER_PART_CONFIG              Y           Y
+GRAVITY                        Y           Y
+GRAVITY_X                      Y           Y
+GRAVITY_Y                      Y           Y
+GRAVITY_Z                      Y           N
+GROUP_Q                        N [3]       Y
+GROUP_RELATION                 N [3]       Y
+GROUP_RESID                    Y           Y
+GROUP_SIZE                     N [3]       Y
+HALF_ANGLE                     N           Y              ?? (3)
+HAMAKER_CONSTANT               Y           N
+ICHECK_BICGS                   N           N              ?
+IC_DES_FIT_TO_REGION           Y           N              No, should be added
+IC_EP_G                        Y [2]       Y
+IC_EP_S                        Y           Y
+IC_E_TURB_G                    Y           Y
+IC_GAMA_RG                     Y           N
+IC_GAMA_RS                     Y           N
+IC_I_E                         N           N              Yes (7)
+IC_I_W                         N           N              Yes (7)
+IC_J_N                         N           N              Yes (7)
+IC_J_S                         N           N              Yes (7)
+IC_K_B                         N           N              Yes (7)
+IC_K_T                         Y           Y              Please check, status should be "Not exposed"
+IC_K_TURB_G                    Y           Y
+IC_L_SCALE                     Y           Y
+IC_PIC_CONST_NPC               N           Y              No, shouls be added
+IC_PIC_CONST_STATWT            Y           N
+IC_P_G                         Y           Y
+IC_P_STAR                      Y           Y
+IC_ROP_S                       N           Y              Y ROP_S = RO_S * EP_S
+IC_SCALAR                      Y           N
+IC_THETA_M                     Y           Y
+IC_TYPE                        N           N              ?
+IC_T_G                         Y           Y
+IC_T_RG                        Y           N
+IC_T_RS                        Y           N
+IC_T_S                         Y           Y
+IC_U_G                         Y           Y
+IC_U_S                         Y           Y
+IC_V_G                         Y           Y
+IC_V_S                         Y           Y
+IC_W_G                         Y           Y
+IC_W_S                         Y           Y
+IC_X_E                         Y           Y
+IC_X_G                         Y           Y
+IC_X_S                         Y           Y
+IC_X_W                         Y           Y
+IC_Y_N                         Y           Y
+IC_Y_S                         Y           Y
+IC_Z_B                         Y           Y
+IC_Z_T                         Y           Y
+IMAX                           Y           Y
+INERT_SPECIES                  Y           Y
+ISHII                          Y           N
+IS_I_E                         N           N              Yes (7)
+IS_I_W                         N           N              Yes (7)
+IS_J_N                         N           N              Yes (7)
+IS_J_S                         N           N              Yes (7)
+IS_K_B                         N           N              Yes (7)
+IS_K_T                         N           N              Yes (7)
+IS_PC                          Y           N
+IS_SERIAL                      N           N              ?
+IS_TYPE                        Y           Y
+IS_VEL_S                       Y           N
+IS_X_E                         Y           Y
+IS_X_W                         Y           Y
+IS_Y_N                         Y           Y
+IS_Y_S                         Y           Y
+IS_Z_B                         Y           N
+IS_Z_T                         Y           N
+ITERMAX_INT                    Y           Y
+ITER_RESTART                   N           N              ?
+I_CYL_NUM                      N           N              ?
+I_CYL_TRANSITION               N           N              ?
+JACKSON                        Y           Y
+JENKINS                        Y           Y
+JMAX                           Y           Y
+KEYWORDLIST                    Y           N
+KMAX                           Y           Y
+KN                             Y           Y
+KN_W                           Y           Y
+KT_FAC                         Y           N
+KT_TYPE                        Y           Y
+KT_W_FAC                       Y           N
+K_G0                           Y           Y
+K_S0                           Y           Y
+LAMBDA_X                       N [3]       Y
+LAMBDA_Y                       N [3]       Y
+LAMBDA_Z                       N [3]       Y
+LAM_HYS                        Y           Y
+LAST_DX                        Y           Y
+LAST_DY                        Y           Y
+LAST_DZ                        Y           N
+LEQ_IT                         Y           Y
+LEQ_METHOD                     Y           Y
+LEQ_PC                         Y           Y
+LEQ_SWEEP                      Y           Y
+LEQ_TOL                        Y           Y
+MAX_INLET_VEL_FAC              Y           Y
+MAX_NIT                        Y           Y
+MEW                            Y           Y
+MEW_W                          Y           Y
+MINIMIZE_DES_FACET_LIST        N           N              ?
+MINIMIZE_SEND_RECV             N           N              ?
+MMAX                           Y           Y
+MODEL_B                        Y           N
+MOMENTUM_X_EQ                  Y           Y
+MOMENTUM_Y_EQ                  Y           Y
+MOMENTUM_Z_EQ                  Y           Y
+MPPIC_COEFF_EN1                Y           Y
+MPPIC_COEFF_EN2                N           Y              ??
+MPPIC_COEFF_EN_WALL            Y           Y
+MPPIC_COEFF_ET_WALL            Y           N
+MPPIC_GRAV_TREATMENT           N           N              ?
+MPPIC_PDRAG_IMPLICIT           Y           N
+MPPIC_SOLID_STRESS_SNIDER      Y           N
+MU_G0                          Y           Y
+MU_GMAX                        Y           Y
+MU_S0                          Y           N
+MW_AVG                         Y           Y
+MW_G                           Y           Y
+MW_S                           Y           Y
+M_AM                           Y           N
+NCX                            Y           Y
+NCY                            Y           Y
+NCZ                            Y           N
+NEIGHBOR_SEARCH_N              Y           Y
+NEIGHBOR_SEARCH_RAD_RATIO      Y           N
+NFACTOR                        Y           Y
+NLOG                           N           Y              ??
+NMAX                           Y           Y
+NMAX_G                         Y           Y
+NMAX_S                         Y           Y
+NODESI                         Y           Y
+NODESI_REPORT                  N           N              ?
+NODESJ                         Y           Y
+NODESJ_REPORT                  N           N              ?
+NODESK                         Y           Y
+NODESK_REPORT                  N           N              ?
+NORM_G                         Y           Y
+NORM_S                         Y           Y
+NO_K                           Y           Y
+NRR                            Y           Y
+NSCALAR                        Y           N
+N_GROUP                        N [3]       Y
+N_QUADRIC                      Y           Y
+N_USR_DEF                      N           Y              ??
+N_X                            N [3]       Y
+N_Y                            N [3]       Y
+N_Z                            N [3]       Y
+OPT_PARALLEL                   N           N              ?
+OUT_DT                         N           Y              ??
+OUT_MSH_VALUE                  N           Y              ??
+OUT_STL_VALUE                  Y           Y
+PARTICLES                      Y           Y
+PERSISTENT_MODE                N           N              ?
+PG_OPTION                      N           Y              No, rarely used cut cell option, not needed
+PHASE4SCALAR                   Y           N
+PHI                            Y           Y
+PHIP                           Y           Y
+PHIP0                          Y           N
+PHIP_OUT_JJ                    N           N              ?
+PHI_W                          Y           Y
+PIC_REPORT_DELETION_STATS      N           N              ?
+PIC_REPORT_MIN_EPG             N           Y              ??
+PIC_REPORT_SEEDING_STATS       N           N              ?
+PIECE_XMAX                     Y           Y
+PIECE_XMIN                     Y           Y
+PIECE_YMAX                     Y           Y
+PIECE_YMIN                     Y           Y
+PIECE_ZMAX                     Y           N
+PIECE_ZMIN                     Y           N
+PRINT_DES_DATA                 Y           Y
+PRINT_PROGRESS_BAR             N           Y              No, not needed
+PRINT_WARNINGS                 N           Y              No, not needed
+PSFAC_FRIC_PIC                 Y           N
+PS_I_E                         N           N              Yes (7)
+PS_I_W                         N           N              Yes (7)
+PS_J_N                         N           N              Yes (7)
+PS_J_S                         N           N              Yes (7)
+PS_K_B                         N           N              Yes (7)
+PS_K_T                         N           N              Yes (7)
+PS_MASSFLOW_G                  Y           Y
+PS_MASSFLOW_S                  Y           Y
+PS_T_G                         Y           Y
+PS_T_S                         Y           Y
+PS_U_G                         Y           Y
+PS_U_S                         Y           Y
+PS_V_G                         Y           Y
+PS_V_S                         Y           Y
+PS_W_G                         Y           Y
+PS_W_S                         Y           Y
+PS_X_E                         Y           Y
+PS_X_G                         Y           Y
+PS_X_S                         Y           Y
+PS_X_W                         Y           Y
+PS_Y_N                         Y           Y
+PS_Y_S                         Y           Y
+PS_Z_B                         Y           Y
+PS_Z_T                         Y           Y
+P_REF                          Y           N
+P_SCALE                        Y           N
+QUADRIC_FORM                   Y           Y
+QUADRIC_SCALE                  N [3]       N
+RADIUS                         Y           Y
+RAY_DIR                        N           N               No, not needed
+RDF_TYPE                       Y           Y
+REACTOR1_R1                    N [3]       N
+REACTOR1_R2                    N [3]       N
+REACTOR1_RR1                   N [3]       N
+REACTOR1_RR2                   N [3]       N
+REACTOR1_THETA1                N [3]       N
+REACTOR1_THETA2                N [3]       N
+REACTOR1_Y1                    N [3]       N
+REACTOR1_Y2                    N [3]       N
+REACTOR1_YR1                   N [3]       N
+REACTOR1_YR2                   N [3]       N
+RELATION_WITH_PREVIOUS         N           Y              ?? (3)
+REPORT_BEST_DOMAIN_SIZE        N           N              ?
+REPORT_MASS_BALANCE_DT         N           N              ?
+REPORT_NEG_DENSITY             N           N              ?
+REPORT_NEG_SPECIFICHEAT        N           N              ?
+RESID_STRING                   N [4]       Y              ?
+RES_BACKUPS                    Y           N
+RES_BACKUP_DT                  Y           N
+RES_DT                         Y           Y
+RE_INDEXING                    N           N              No, should be added (only for cut cell cases)
+RO_G0                          Y           Y
+RO_S0                          Y           Y
+RO_XS0                         Y           Y
+RUN_NAME                       Y           Y
+RUN_TYPE                       Y           Y
+R_P                            Y           Y
+SCALE_MSH                      N           Y              No, not needed
+SCALE_STL                      Y           Y
+SEGREGATION_SLOPE_COEFFICIENT  Y           Y
+SET_CORNER_CELLS               N           N              ?
+SHEAR                          N           N              ?
+SOLIDS_MODEL                   Y           Y
+SOLVER_STATISTICS              N           N              ?
+SPECIES_ALIAS_G                Y           Y
+SPECIES_ALIAS_S                Y           Y
+SPECIES_EQ                     Y           Y
+SPECIES_G                      Y           Y
+SPECIES_NAME                   Y           Y
+SPECIES_S                      Y           Y
+SPX_DT                         Y           Y
+STIFF_CHEMISTRY                Y           Y
+STIFF_CHEM_MAX_STEPS           N           N              No, should be added (next to stiff chemistry solver)
+STL_BC_ID                      Y           Y
+STL_SMALL_ANGLE                Y           N
+SUBGRID_TYPE                   Y           N
+SUBGRID_WALL                   Y           N
+TERM_BUFFER                    N           Y              No, should be added (next to CHECK_BATCH_END)
+THETA_X                        N [3]       N
+THETA_Y                        N [3]       N
+THETA_Z                        N [3]       Y
+TIME                           Y           Y
+TIME_DEPENDENT_FILENAME        Y           Y
+TOL_DELH                       N           Y              No, should be added
+TOL_DIVERGE                    Y           Y
+TOL_F                          N [3]       Y
+TOL_MERGE                      Y           N              No, should be added
+TOL_MSH                        N           N              No, not needed
+TOL_POLY                       N           N              ?
+TOL_RESID                      Y           Y
+TOL_RESID_K_EPSILON            N [6]       N              ?
+TOL_RESID_SCALAR               Y           N
+TOL_RESID_T                    Y           Y
+TOL_RESID_TH                   Y           Y
+TOL_RESID_X                    Y           N
+TOL_SMALL_AREA                 Y           Y
+TOL_SMALL_CELL                 Y           Y
+TOL_SNAP                       Y           Y
+TOL_STL                        Y           N
+TOL_STL_DP                     Y           N
+TORUS_R1                       N [3]       N
+TORUS_R2                       N [3]       N
+TSTOP                          Y           Y
+TURBULENCE_MODEL               Y           Y
+TX_MSH                         N           Y              No, not needed
+TX_STL                         Y           Y
+TY_MSH                         N           Y              No, not needed
+TY_STL                         Y           Y
+TZ_MSH                         N           Y              No, not needed
+TZ_STL                         Y           Y
+T_X                            Y           Y
+T_Y                            Y           Y
+T_Z                            Y           Y
+UCOIL_R1                       N [3]       N
+UCOIL_R2                       N [3]       N
+UCOIL_Y1                       N [3]       N
+UCOIL_Y2                       N [3]       N
+UNITS                          Y [5]       Y
+UR_FAC                         Y           Y
+UR_F_GS                        Y           N
+UR_KTH_SML                     Y           N
+USE_COHESION                   Y           N
+USE_DOLOOP                     N           N              ?
+USE_MSH                        Y           Y
+USE_POLYGON                    Y           Y
+USE_RRATES                     Y           Y
+USE_STL                        Y           Y
+USE_VDH_DEM_MODEL              N           N              ?
+USR_CPG                        Y           N
+USR_CPS                        Y           N
+USR_DIFG                       Y           N
+USR_DIFS                       N           N              ?
+USR_DT                         N           Y              ??
+USR_EXT                        N           N              ?
+USR_FGS                        N           N              ?
+USR_FORMAT                     N           N              ?
+USR_FSS                        N           N              ?
+USR_GAMA                       N           N              ?
+USR_I_E                        N           N              ?
+USR_I_W                        N           N              ?
+USR_J_N                        N           N              ?
+USR_J_S                        N           N              ?
+USR_KG                         Y           N
+USR_KS                         N           N              ?
+USR_K_B                        N           N              ?
+USR_K_T                        N           N              ?
+USR_MUG                        Y           N
+USR_MUS                        N           N              ?
+USR_ROG                        Y           N
+USR_ROS                        N           N              ?
+USR_TYPE                       N           Y              ??
+USR_VAR                        Y           Y              ?
+USR_X_E                        N           N              ?
+USR_X_W                        N           N              ?
+USR_Y_N                        N           N              ?
+USR_Y_S                        N           N              ?
+USR_Z_B                        N           N              ?
+USR_Z_T                        N           N              ?
+VAN_DER_WAALS                  Y           N
+VDW_INNER_CUTOFF               Y           N
+VDW_OUTER_CUTOFF               Y           N
+VTK_BC_ID                      Y           N
+VTK_CUTCELL_ONLY               N           N              No, should be added
+VTK_DATA                       Y           Y
+VTK_DBG_FILE                   N           N              ?
+VTK_DEBUG                      N           Y              ??
+VTK_DT                         Y           Y
+VTK_DWALL                      Y           N
+VTK_EP_G                       Y           Y
+VTK_E_TURB_G                   Y           N
+VTK_FACET_COUNT_DES            N           N              ?
+VTK_FILEBASE                   Y           Y
+VTK_IJK                        Y           N
+VTK_K_TURB_G                   Y           N
+VTK_LAMBDA_2                   Y           N
+VTK_NB_FACET_DES               N           N              ?
+VTK_NORMAL                     N           N              ?
+VTK_NXS                        Y           N
+VTK_NYS                        Y           Y
+VTK_NZS                        Y           N
+VTK_PARTITION                  Y           N
+VTK_PART_ANGULAR_VEL           Y           N
+VTK_PART_COHESION              N           N              No, should be added
+VTK_PART_DIAMETER              Y           Y
+VTK_PART_ID                    Y           N
+VTK_PART_ORIENTATION           Y           N
+VTK_PART_PHASE                 N           N              No, should be added
+VTK_PART_RANK                  Y           N
+VTK_PART_TEMP                  Y           N
+VTK_PART_USR_VAR               Y           N
+VTK_PART_VEL                   Y           Y
+VTK_PART_X_S                   Y           N
+VTK_P_G                        Y           Y
+VTK_P_STAR                     Y           N
+VTK_ROP_S                      Y           N
+VTK_RRATE                      Y           N
+VTK_SCALAR                     Y           N
+VTK_SELECT_MODE                N           Y               No, should be added
+VTK_SLICE_TOL                  N           N               No, should be added
+VTK_THETA_M                    Y           N
+VTK_T_G                        Y           N
+VTK_T_S                        Y           N
+VTK_U_G                        Y           N
+VTK_U_S                        Y           N
+VTK_VAR                        Y           Y
+VTK_VEL_G                      Y           Y
+VTK_VEL_S                      Y           Y
+VTK_VORTICITY                  Y           N
+VTK_V_G                        Y           N
+VTK_V_S                        Y           N
+VTK_W_G                        Y           N
+VTK_W_S                        Y           N
+VTK_X_E                        Y           Y
+VTK_X_G                        Y           N
+VTK_X_S                        Y           N
+VTK_X_W                        Y           Y
+VTK_Y_N                        Y           Y
+VTK_Y_S                        Y           Y
+VTK_Z_B                        Y           Y
+VTK_Z_T                        Y           Y
+VTP_DIR                        Y           N
+VTU_DIR                        Y           Y
+VW_POISSON                     Y           Y
+VW_POISSON_ACTUAL              N           Y              ??
+V_EX                           Y           Y
+V_POISSON                      Y           Y
+V_POISSON_ACTUAL               N           Y              ??
+V_SH                           N           N              ?
+WALL_HAMAKER_CONSTANT          Y           N
+WALL_VDW_INNER_CUTOFF          Y           N
+WALL_VDW_OUTER_CUTOFF          Y           N
+WRITE_DASHBOARD                N           Y              No, not needed
+WRITE_VTK_FILES                Y           Y
+XLENGTH                        Y           Y
+XMIN                           Y           Y
+X_MAX                          Y           Y
+X_MIN                          Y           Y
+X_S0                           Y           Y
+YLENGTH                        Y           Y
+YU_STANDISH                    N           Y              ??
+Y_MAX                          Y           N
+Y_MIN                          Y           N
+ZLENGTH                        Y           Y
+Z_MAX                          Y           N
+Z_MIN                          Y           N
+
+
+Notes:
+
+1) The SRS states:
+When solving solids species equations:
+   Set keyword BC_HW_X_S(#,#,#) to 0.0
+   Set keyword BC_C_X_S(#,#,#) to 0.0
+
+However, the GUI does not provide any way for these keys to be set to any nonzero value, or UNDEFINED
+
+A few tutorials set this key, but only to 0, see
+ SpoutedBedCombustor and silane_pyrolysis
+
+2)  *_EP_G computed from *_EP_S
+
+3)  Support for quadrics is being added to GUI as of 2017-02-22
+
+4)  RESID_STRING not exposed in GUI but set in some tutorials.
+    Pymfix references this keyword but seems to loop over all values (?)
+
+5)  cgs units are converted to SI
+
+6)  GUI has one control labeled "Scalar/K-e" which sets tol_resid_scalar but
+    not tol_resid_k_epsilon
+
+7) All coordinates are converted to indices. Specifying either coordinates or
+   indices is not needed in the GUI.

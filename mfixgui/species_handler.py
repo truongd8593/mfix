@@ -24,8 +24,8 @@ class SpeciesHandler(object):
         #naming conventions (i.e., alphanumeric combinations with a letter as the first
         #character).
         #Aliases are not case sensitive.
-        #Aliases cannot conflict with existing MFIX variable names (e.g., a species
-        # alias of MU_g will cause an error when compiling MFIX).
+        #Aliases cannot conflict with existing MFiX variable names (e.g., a species
+        # alias of MU_g will cause an error when compiling MFiX).
 
         alias = species.replace(' ', '_')
         alias = alias.replace('(', '_')

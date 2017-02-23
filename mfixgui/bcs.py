@@ -125,16 +125,6 @@ class BCS(object):
                 cb.help_text = 'Select %s %s specification type' % (phase_type, flow_direction)
                 cb.setToolTip(cb.help_text)
 
-        le = ui.lineedit_solids_inflow
-        cb = ui.combobox_solids_inflow_type
-        le.value_updated.connect(self.bcs_handle_flow_input)
-        le.key = 'Unset' # diagnostic
-        le.args = ['BC', 'P']
-        le.dtype = float
-        # Tooltip added dynamically
-        cb.value_updated.connect(self.bcs_handle_flow_type)
-        cb.key = 'solids_inflow'
-
         # Not auto-registered with project manager
         key = 'bc_ep_s'
         for widget in (ui.lineedit_bc_ep_s_args_BC_P, ui.lineedit_bc_ep_s_2_args_BC_P):
@@ -158,6 +148,33 @@ class BCS(object):
         le.dtype = float
         le.value_updated.connect(self.project.submit_change)
 
+        ui.combobox_bc_type.activated.connect(self.change_bc_type)
+
+
+    def change_bc_type(self, idx):
+        if not self.bcs_current_indices:
+            return
+        ui = self.ui.boundary_conditions
+        row = get_selected_row(ui.tablewidget_regions)
+        if row is None:
+            return
+        new_name = BC_NAMES[idx]
+        new_type = BC_TYPES[idx]
+        item = QtWidgets.QTableWidgetItem(new_name)
+        set_item_noedit(item)
+        ui.tablewidget_regions.setItem(row, 1, item)
+        for BC in self.bcs_current_indices:
+            old_type = self.project.get_value('bc_type', default='', args=[BC])
+            prefix = 'CG_' if old_type.startswith('CG_') else ''
+            self.update_keyword('bc_type', prefix+new_type, args=[BC])
+            for kw in list(self.project.keywordItems()):
+                if kw.key.startswith('bc_') and kw.args and kw.args[0]==BC:
+                    if kw.key not in ('bc_type',
+                                      'bc_x_e', 'bc_x_w',
+                                      'bc_y_s', 'bc_y_n',
+                                      'bc_z_b', 'bc_z_t'):
+                        self.unset_keyword(kw.key, args=kw.args)
+        self.bcs_setup_current_tab()
 
 
     def bcs_set_volume_fraction_limit(self):
@@ -193,8 +210,8 @@ class BCS(object):
         key = 'bc_ep_s'
         self.project.submit_change(widget, val, args)
 
-        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, s]))
-                for s in range(1, len(self.solids)+1))
+        s = sum(safe_float(self.project.get_value(key, default=0, args=[BC0, S]))
+                for S in range(1, len(self.solids)+1))
         if s > 1.0:
             self.warning("Volume fractions sum to %s, must be <= 1.0" % s,
                          popup=True)
@@ -215,7 +232,6 @@ class BCS(object):
         for (name,data) in self.bcs_region_dict.items():
             shape = data.get('type', '---')
             available = (data.get('available', True)
-                         #and not self.check_region_in_use(name)  # allow region sharing
                          and (shape in ('STL', 'box')
                               or 'plane' in shape))
             row = (name, shape, available)
@@ -233,11 +249,11 @@ class BCS(object):
         rp.save.connect(self.bcs_add_regions)
         rp.cancel.connect(self.bcs_cancel_add)
         for item in (ui.tablewidget_regions,
-                     ui.detail_pane,
+                     ui.bottom_frame,
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('boundary conditions')
+        rp.popup('Select region(s) for boundary conditions')
 
 
     def bcs_cancel_add(self):
@@ -248,7 +264,7 @@ class BCS(object):
             item.setEnabled(True)
 
         if get_selected_row(ui.tablewidget_regions) is not None:
-            for item in (ui.detail_pane,
+            for item in (ui.bottom_frame,
                          ui.toolbutton_delete):
                 item.setEnabled(True)
 
@@ -259,43 +275,10 @@ class BCS(object):
 
 
     def bcs_add_regions(self):
-        #Select boundary type
-        # Selection is required
-        # Available selections:
-        #  Mass Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MI'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MI'
-        #    Not available for volume regions
-        #  Pressure Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PO'
-        #    Not available for volume regions
-        #  No Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_NSW'
-        #  Free Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_FSW'
-        #  Partial Slip Wall
-        #    Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_PSW'
-        #  Pressure Inflow
-        #    Plane regions set keyword BC_TYPE(#) to 'PI'
-        #    Not available for volume regions
-        #    Not available for STL regions
-        # Mass Outflow
-        #    Plane regions set keyword BC_TYPE(#) to 'MO'
-        #    STL regions set keyword BC_TYPE(#) to 'CG_MO'
-        #    Not available for volume regions
-        #  Cyclic
-        #    No region to select
-        # Specification always available
-
+        # Interactively add regions to define BCs
         # DEFAULT - No slip wall
         # Error check: mass fractions must sum to one
         # (selection logic implemented in regions_popup.py)
-
-        # Interactively add regions to define BCs
         ui = self.ui.boundary_conditions
         rp = self.regions_popup
         self.bcs_cancel_add() # Reenable input widgets
@@ -472,16 +455,31 @@ class BCS(object):
         self.bcs_current_indices = indices
         self.bcs_current_regions = regions
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+                item.setEnabled(enabled)
+
         if not enabled:
+            #ui.combobox_bc_type.setCurrentIndex(NO_SLIP_WALL) # default type, but do we really need to set this ?  no.
             # Clear
-            for widget in widget_iter(ui.detail_pane):
+            for widget in widget_iter(ui.bottom_frame):
                 if isinstance(widget, LineEdit):
                     widget.setText('')
             return
+
         setup_done = False # change_tab calls setup, avoid double-calling
+
         if self.bc_is_cyclic(BC0):
+            # Setup bc_type combobox. Do not allow changing from cyclic to
+            # any other type, since there's no associated region
+
+            cb = ui.combobox_bc_type
+            cb.setCurrentIndex(CYCLIC_BOUNDARY)
+            for i in range(len(BC_TYPES)):
+                get_combobox_item(cb, i).setEnabled(i==CYCLIC_BOUNDARY)
+
+
             for i in range(ui.tab_layout.columnCount()-1): # Skip 'Cyclic'
                 item = ui.tab_layout.itemAtPosition(0, i)
                 if not item:
@@ -496,6 +494,79 @@ class BCS(object):
                 self.bcs_change_tab(CYCLIC_TAB, None)
                 setup_done = True
         else: # Not cyclic
+            # Setup bc_type combobox
+            cb = ui.combobox_bc_type
+            key = 'bc_type'
+            bc_type = self.project.get_value(key, args=[BC0])
+            cg = bc_type.startswith("CG_")
+            if cg:
+                bc_type = bc_type[3:]
+            if bc_type not in BC_TYPES:
+                self.error("Unknown BC_TYPE %s" % bc_type)
+                bc_type = 'NSW'
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, bc_type, args=[BC])
+            cb.setCurrentIndex(BC_TYPES.index(bc_type))
+
+            #regions = [self.bcs[r].get('region') for r in self.bcs_current_indices]
+            region_types = [self.bcs_region_dict.get(r,{}).get('type') for r in regions]
+
+            #Available selections:
+            # Mass Inflow
+            # Plane regions set keyword BC_TYPE(#) to 'MI'
+            # STL regions set keyword BC_TYPE(#) to 'CG_MI'
+            # Not available for volume regions
+            item = get_combobox_item(cb, MASS_INFLOW)
+            enabled = ('box' not in region_types)
+            item.setEnabled(enabled)
+
+            # Pressure Outflow
+            # Plane regions set keyword BC_TYPE(#) to 'PO'
+            # STL regions set keyword BC_TYPE(#) to 'CG_PO'
+            # Not available for volume regions
+            item = get_combobox_item(cb, PRESSURE_OUTFLOW)
+            enabled = ('box' not in region_types)
+            item.setEnabled(enabled)
+
+            # No Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'NSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_NSW'
+            item = get_combobox_item(cb, NO_SLIP_WALL)
+            item.setEnabled(True)
+
+            # Free Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'FSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_FSW'
+            item = get_combobox_item(cb, FREE_SLIP_WALL)
+            item.setEnabled(True)
+
+            # Partial Slip Wall
+            # Volume and plane regions set keyword BC_TYPE(#) to 'PSW'
+            # STL regions set keyword BC_TYPE(#) to 'CG_PSW'
+            item = get_combobox_item(cb, PARTIAL_SLIP_WALL)
+            item.setEnabled(True)
+
+            #Pressure Inflow
+            # Plane regions set keyword BC_TYPE(#) to 'PI'
+            # Not available for volume regions
+            # Not available for STL regions
+            item = get_combobox_item(cb, PRESSURE_INFLOW)
+            enabled = not ('box' in region_types or 'STL' in region_types)
+            item.setEnabled(enabled)
+
+            #Mass Outflow
+            # Plane regions set keyword BC_TYPE(#) to 'MO'
+            # STL regions set keyword BC_TYPE(#) to 'CG_MO'
+            # Not available for volume regions
+            item = get_combobox_item(cb, MASS_OUTFLOW)
+            enabled = 'box' not in region_types
+            item.setEnabled(enabled)
+
+            #Cyclic
+            # No region to select
+            item = get_combobox_item(cb, CYCLIC_BOUNDARY)
+            item.setEnabled(False)
+
             ui.pushbutton_fluid.setEnabled(not self.fluid_solver_disabled)
             if self.fluid_solver_disabled:
                 ui.pushbutton_fluid.setToolTip("Fluid solver disabled")
@@ -559,8 +630,8 @@ class BCS(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -594,8 +665,7 @@ class BCS(object):
         #     # then we have no input tabs on the BCs pane, so disable it completely
         #     regions = self.ui.regions.get_region_dict()
         #     nregions = sum(1 for (name, r) in regions.items()
-        #                    if not self.check_region_in_use(name)
-        #                    and (r.get('type')=='STL' or 'plane' in r.get('type')))
+        #                    if (r.get('type')=='STL' or 'plane' in r.get('type')))
         #     disabled = (nregions==0
         #                 or (self.fluid_solver_disabled
         #                     and self.project.get_value('nscalar',default=0)==0
@@ -792,8 +862,9 @@ class BCS(object):
             row = 0
             ui.tablewidget_regions.setCurrentCell(row, 0)
         enabled = (row is not None)
-        ui.toolbutton_delete.setEnabled(enabled)
-        ui.detail_pane.setEnabled(enabled)
+        for item in (ui.toolbutton_delete,
+                     ui.bottom_frame):
+            item.setEnabled(enabled)
 
         # Tabs group boundary condition parameters for phases and additional equations. Tabs are
         # unavailable if no input is required from the user.
@@ -898,12 +969,14 @@ class BCS(object):
                    else self.bcs_current_solid)
         line = ui.tab_underline
         btn_layout = ui.tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
 
     def bcs_setup_current_tab(self):
         self.setup_bcs_tab(self.bcs_current_tab)
+
 
     def setup_bcs_tab(self, tab):
         if self.bcs_current_tab == FLUID_TAB:
@@ -1304,6 +1377,8 @@ class BCS(object):
 
         def make_fluid_species_box(title, species_index):
             box = QGroupBox(title, parent=ui.page_fluid_wall)
+            box.setStyleSheet("QGroupBox { font-weight: bold; } ")
+            box.setFlat(True)
             box_layout = QGridLayout()
             #margins = ui.groupbox_fluid_energy_eq.getContentsMargins()
             box.setFlat(True)
@@ -1326,7 +1401,7 @@ class BCS(object):
             box_layout.addLayout(hbox, 0, 0, 1, 3)
             row = 0
             for (label_text, key, units) in (('Wall mass fraction', 'bc_xw_g', None),
-                                             ('Constant flux', 'bc_c_x_g', '1/m'),
+                                             ('Constant flux', 'bc_c_x_g', '/m'),
                                              ('Transfer coefficient', 'bc_hw_x_g', None),
                                              ('Free stream mass frac.', 'bc_xw_g', None)):
                 row += 1
@@ -1974,23 +2049,25 @@ class BCS(object):
 
         if bc_type.endswith('W'):
             self.setup_bcs_scalar_wall_tab()
+        elif bc_type.endswith('I'):
+            self.setup_bcs_scalar_inflow_tab()
+        elif bc_type.endswith('PO'):
+            self.setup_bcs_scalar_po_tab()
+        elif bc_type.endswith('MO'):
+            self.setup_bcs_scalar_mo_tab()
         else:
-            pass # TODO implement
+            self.error("Invalid bc_type %s" % bc_type)
 
 
     def clear_bcs_scalar_tab(self):
+        # returns spacer item, if present, so it can be re-added
         ui = self.ui.boundary_conditions
-        nscalar = self.project.get_value('nscalar', default=0)
-        if nscalar == 0:
-            # Clear contents?
-            return
-
         page = ui.page_scalar
-        layout = page.layout()
+        page_layout = page.layout()
 
         spacer = None
-        for i in range(layout.count()-1, -1, -1):
-            item = layout.itemAt(i)
+        for i in range(page_layout.count()-1, -1, -1):
+            item = page_layout.itemAt(i)
             if not item:
                 continue
             widget = item.widget()
@@ -2006,14 +2083,14 @@ class BCS(object):
             widget.deleteLater()
 
         if spacer:
-            layout.removeItem(spacer)
+            page_layout.removeItem(spacer)
         return spacer
 
+
     def set_bcs_scalar_eq_type(self, eq_type, i):
+        ui = self.ui.boundary_conditions
         if not self.bcs_current_indices:
             return
-
-        ui = self.ui.boundary_conditions
         cb = getattr(ui, 'combobox_scalar_%s_eq_type' % i, None)
         if cb is None:
             self.error("Invalid scalar_eq %s" % i)
@@ -2077,35 +2154,36 @@ class BCS(object):
         # Subtask Pane Tab for Wall type (NSW, FSW, PSW, CG_NSW, CG_FSW, CG_PSW) Boundary
         #Scalar (tab) - Tab only available if scalar equations are solved
         #Note that this tab should only be available if scalar
-        #equations are being solved.  Furthermore, the number of
-        #scalars requiring input (here 2) comes from the number of
-        #scalar equations specified by the user.
+        #equations are being solved.
         if not self.bcs_current_indices:
             return # No selection
         BC0 = self.bcs_current_indices[0]
 
         ui = self.ui.boundary_conditions
         nscalar = self.project.get_value('nscalar', default=0)
-        old_nscalar = getattr(ui, 'nscalar', None)
-        ui.nscalar = nscalar
+        old_nscalar = getattr(ui, 'nscalar_wall', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_wall = nscalar
+        ui.scalar_bc_type = 'WALL'
 
         if nscalar == 0:
-            # Clear contents?
+            # tab is disabled
             return
 
         page = ui.page_scalar
         page_layout = page.layout()
 
         spacer = None
-        if nscalar != old_nscalar:
+        if nscalar != old_nscalar or old_scalar_bc_type != 'WALL':
             spacer = self.clear_bcs_scalar_tab()
 
             for i in range(1, nscalar+1):
                 groupbox = QGroupBox('Scalar %s' % i)
+                groupbox.setStyleSheet("QGroupBox { font-weight: bold; } ")
                 groupbox.setFlat(True)
-                # TODO adjust margins/spacing
-                page_layout.addWidget(groupbox)
+                page_layout.addWidget(groupbox, i-1, 0, 1, -1)
                 groupbox_layout = QGridLayout()
+                groupbox_layout.setContentsMargins(5, 0, 0, 5)
                 groupbox.setLayout(groupbox_layout)
                 #  Select scalar boundary type:
                 hbox = QHBoxLayout()
@@ -2313,7 +2391,6 @@ class BCS(object):
             widget.updateValue(key, prev_val)
             return
 
-
         for BC in self.bcs_current_indices:
             self.update_keyword(key, new_val, args=[BC])
 
@@ -2482,7 +2559,7 @@ class BCS(object):
 
         if total == 0.0 and self.fluid_species:
             for BC in self.bcs_current_indices:
-                for i in range(1, len(self.fluid_species)):
+                for i in range(1, len(self.fluid_species)): # Intentionally not +1, skip last species
                     self.update_keyword('bc_x_g', 0.0, args=[BC, i])
                 self.update_keyword('bc_x_g', 1.0, args=[BC, len(self.fluid_species)]) # Last defined species
             self.update_bcs_fluid_mass_fraction_table()
@@ -2864,7 +2941,7 @@ class BCS(object):
         # (only enforce this if no mass fractions are set)
         if total == 0.0 and species:
             for BC in self.bcs_current_indices:
-                for i in range(1, len(species)):
+                for i in range(1, len(species)): # Intentionally not +1,  skip last species
                     self.update_keyword('bc_x_s', 0.0, args=[BC, P, i])
                 self.update_keyword('bc_x_s', 1.0, args=[BC, P, len(species)]) # Last defined species
             self.update_bcs_solids_mass_fraction_table()
@@ -2931,7 +3008,7 @@ class BCS(object):
         # TODO Error Check: For PI - either all are defined and sum to 1, or all are undefined
         enabled = True
         key = 'bc_ep_s'
-        s = sum(self.project.get_value(key, default=0, args=[BC0, p]) for p in range(1, P))
+        s = sum(self.project.get_value(key, default=0, args=[BC0, p]) for p in range(1, P)) # Sum of previous tabs
         default = (1.0 - s) if bc_type in ('MI', 'CG_MI') else None
         setup_key_widget(key, default, enabled)
 
@@ -3125,8 +3202,51 @@ class BCS(object):
         #    Define initial scalar value
         # Sets keyword BC_SCALAR(#,#)
         # DEFAULT value of 0.0
-        # TODO implement this tab
-        pass
+        # (almost same as setup_bcs_scalar_po_tab)
+        ui = self.ui.boundary_conditions
+        nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar_inflow', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_inflow = nscalar
+        ui.scalar_bc_type = 'INFLOW'
+
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = None
+        key = 'bc_scalar'
+        if nscalar != old_nscalar or old_scalar_bc_type != 'INFLOW':
+            spacer = self.clear_bcs_scalar_tab()
+            for i in range(1, nscalar+1):
+                label = QLabel('Scalar %s' % i)
+                page_layout.addWidget(label, i, 0)
+                le = LineEdit()
+                le.key = key
+                le.dtype = float
+                le.args = ['BC', i]
+                self.add_tooltip(le, key)
+                self.project.register_widget(le, [key], ['BC', i])
+                setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), le)
+                page_layout.addWidget(le, i, 1)
+
+            if spacer:
+                page_layout.addItem(spacer)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        for i in range(1, nscalar+1):
+            le = getattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), None)
+            if not le:
+                self.error("No widget for %s %s" % (key, i))
+                continue
+            args = [BC0, i]
+            val = self.project.get_value(key, args=args)
+            if val is None:
+                val = 0.0 # Default
+                for BC in self.bcs_current_indices:
+                    self.update_keyword(key, val, args=[BC,i])
+            le.updateValue(key, val, args=args)
+
 
 
     def setup_bcs_fluid_po_tab(self):
@@ -3319,8 +3439,49 @@ class BCS(object):
         #Define scalar value
         # Sets keyword BC_SCALAR(#,#)
         # NO DEFAULT value
-        # TODO implement this tab
-        pass
+        ui = self.ui.boundary_conditions
+        nscalar = self.project.get_value('nscalar', default=0)
+        old_nscalar = getattr(ui, 'nscalar_po', None)
+        old_scalar_bc_type = getattr(ui, 'scalar_bc_type', None)
+        ui.nscalar_wall = nscalar
+        ui.scalar_bc_type = 'PO'
+
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = None
+        key = 'bc_scalar'
+        if nscalar != old_nscalar or old_scalar_bc_type != 'PO':
+            spacer = self.clear_bcs_scalar_tab()
+            label = QLabel('<i>MFiX will calculate appropriate values if inputs are unspecified and backflow occurs at the outlet.</i>')
+            label.setWordWrap(True)
+            page_layout.addWidget(label, 0, 0, 1, -1)
+            for i in range(1, nscalar+1):
+                label = QLabel('Scalar %s' % i)
+                page_layout.addWidget(label, i, 0)
+                le = LineEdit()
+                le.key = key
+                le.dtype = float
+                le.args = ['BC', i]
+                self.add_tooltip(le, key)
+                self.project.register_widget(le, [key], ['BC', i])
+                setattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), le)
+                page_layout.addWidget(le, i, 1)
+
+            if spacer:
+                page_layout.addItem(spacer)
+
+        if not self.bcs_current_indices:
+            return
+        BC0 = self.bcs_current_indices[0]
+        for i in range(1, nscalar+1):
+            le = getattr(ui, 'lineedit_keyword_%s_args_BC_%s' % (key, i), None)
+            if not le:
+                self.error("No widget for %s %s" % (key, i))
+                continue
+            args = [BC0, i]
+            val = self.project.get_value(key, args=args)
+            if val is not None:
+                le.updateValue(key, val, args=args)
 
 
     def setup_bcs_fluid_mo_tab(self):
@@ -3822,12 +3983,18 @@ class BCS(object):
         key = 'bc_dt_0'
         default = 0.1
         setup_key_widget(key, default, enabled, suffix='_4')
-
         # TODO: No mass fraction table?  No volume fraction?
 
 
     def setup_bcs_scalar_mo_tab(self):
-        pass # ? not mentioned in SRS
+        # ? not mentioned in SRS JORDAN?
+        ui = self.ui.boundary_conditions
+        ui.scalar_bc_type = 'MO'
+        page = ui.page_scalar
+        page_layout = page.layout()
+        spacer = self.clear_bcs_scalar_tab()
+        if spacer:
+            page_layout.addItem(spacer)
 
 
     def set_cyclic_pd(self, val):
@@ -3946,7 +4113,6 @@ class BCS(object):
         key = 'flux_g'
         default = 0.0
         val = self.project.get_value(key)
-
         cb = ui.checkbox_flux_g
         cb.setChecked(checked and enabled and (val is not None))
         le = ui.lineedit_keyword_flux_g

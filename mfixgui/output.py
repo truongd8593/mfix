@@ -265,8 +265,8 @@ class Output(object):
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
-        # TODO FIXME scrollbar handling is not right - scrollbar status can change
-        # outside of this function.  We need to call this everytime window geometry changes
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
         if nrows==0:
@@ -320,7 +320,7 @@ class Output(object):
                      ui.toolbutton_add,
                      ui.toolbutton_delete):
             item.setEnabled(False)
-        rp.popup('VTK output') # repopulates combobox
+        rp.popup('Select region for VTK output')
         set_item_enabled(get_combobox_item(rp.combobox,1), enabled)
 
 
@@ -494,12 +494,25 @@ class Output(object):
             #    self.warn("vtk output %s: invalid extents %s" %
             #               (vtk.ind, extent))
             #    continue
+
+            output_type = d.get('vtk_data') # Returns a keyword object or None, not a value
+            if output_type is None:
+                output_type = 'C' # Default
+
+            else:
+                output_type = output_type.value # get value from keyword object
+                if output_type not in ('C', 'P'):
+                    self.error("Invalid type %s for VTK output %s" % (output_type, vtk.ind))
+                    continue
+
             for (region_name, data) in self.output_region_dict.items():
                 ext2 = [0 if x is None else x for x in
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent: # Don't need to check 'available' here since
                             # Regions can define multiple VTK regions.
-                    self.output_add_regions_1([region_name], indices=[vtk.ind], autoselect=False)
+                    self.output_add_regions_1([region_name], indices=[vtk.ind],
+                                              output_type=output_type,
+                                              autoselect=False)
                     break
             else:
                 self.warn("vtk output %s: could not match defined region %s" %
@@ -870,7 +883,7 @@ class Output(object):
     def setup_output_spx_tab(self):
         ui = self.ui.output
         #SPx (tab)
-        #Note: Technically, MFIX will now permit a user to mix-and-match the SPx output files meaning that
+        #Note: Technically, MFiX will now permit a user to mix-and-match the SPx output files meaning that
         #some can be written and others not. However, this is likely to break the ParaView reader.
         #Therefore, if the “Write binary SPx” checkbox is enabled, output is required for all SPx files.
         #Otherwise, all should remain unspecified to skip writing the SPx files.
@@ -1233,8 +1246,9 @@ class Output(object):
                    else self.vtk_current_solid)
         line = ui.line_subtab
         btn_layout = ui.bottom_tab_layout
-        btn_layout.addItem(btn_layout.takeAt(
-            btn_layout.indexOf(line)), 1, line_to)
+        if line_to is not None:
+            btn_layout.addItem(btn_layout.takeAt(
+                btn_layout.indexOf(line)), 1, line_to)
 
         # Don't stay on disabled tab TODO
 
@@ -1908,7 +1922,7 @@ class Output(object):
 
 
     def output_set_region_keys(self, name, idx, data, output_type=None):
-        # Update the keys which define the region the PS applies to
+        # Update the keys which define the region the vtk output applies to
         if output_type is not None:
             self.update_keyword('vtk_data', output_type, args=[idx])
 

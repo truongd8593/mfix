@@ -73,7 +73,7 @@ cgs_to_SI = {
   'bc_p_g':         0.1,  # barye -> Pa            : Gas pressure at the BC plane.
   'bc_pic_mi_const_statwt':None,# UNKNOWN          : Flag to specify the constant statistical weight for
   'bc_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Bulk density of solids phase at the BC plane.
-  'bc_scalar':      None, # UNKNOWN                : Boundary value for user-defined scalar equation.
+  'bc_scalar':      None, # problem dependent      : Boundary value for user-defined scalar equation.
   'bc_scalarw':     1,    # scalar                 : Specified scalar value at the wall, ScalarW, in diffusion
   'bc_t_g':         1,    # K                      : Gas phase temperature at the BC plane.
   'bc_t_s':         1,    # K                      : Solids phase-m temperature at the BC plane.
@@ -112,7 +112,7 @@ cgs_to_SI = {
   'bend_theta1':    1,    # angle                  : Bend start angle, in degrees (used when QUADRIC_FORM =
   'bend_theta2':    1,    # angle                  : Bend end angle, in degrees (used when QUADRIC_FORM = BEND*).
   'breakage_eff':   1,    # factor                 : Success-factor for breakage.
-  'c':              None, # UNKNOWN                : User defined constants.
+  'c':              None, # problem dependent      : User defined constants.
   'c2c_r1':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 1 (used when QUADRIC_FORM =
   'c2c_r2':         0.01, # cm -> m                : Cylinder-cone_cylinder Radius 2 (used when QUADRIC_FORM =
   'c2c_y1':         0.01, # cm -> m                : Cylinder-cone_cylinder Y1 (used when QUADRIC_FORM = C2C*).
@@ -138,7 +138,7 @@ cgs_to_SI = {
   'delp_y':         0.1,  # barye -> Pa            : Fluid pressure drop across YLENGTH when a cyclic boundary
   'delp_z':         0.1,  # barye -> Pa            : Fluid pressure drop across ZLENGTH when a cyclic boundary
   'des_diffuse_width':0.01,# cm -> m               : The length scale used to smooth dispersed phase averaged
-  'des_em':         1.0, # UNKNOWN                 : Emissivity of solids phase.
+  'des_em':         1.0,  # emissivity             : Emissivity of solids phase.
   'des_en_input':   1,    # factor                 : The normal restitution coefficient for inter-particle
   'des_en_wall_input':1,  # factor                 : The normal restitution coefficient for particle-wall
   'des_et_input':   1,    # max = 1.0              : Tangential restitution coefficient for inter-particle
@@ -151,9 +151,9 @@ cgs_to_SI = {
   'dif_s0':         0.0001,# cm^2/s -> m^2/s       : Specified constant solids diffusivity .
   'dil_factor_vsd': 1,    # volume fraction        : Factor to define the dilute region where the solids density
   'dil_inert_x_vsd':1,    # mass fraction          : Mass fraction of inert solids phase species in the dilute
-  'dquadric':       1.0, # factor                : Coefficient D in equation (1).
-  'drag_c1':        1.0, # factor                  : Quantity for calibrating Syamlal-O'Brien drag correlation
-  'drag_d1':        1.0, # factor                  : Quantity for calibrating Syamlal-O'Brien drag correlation
+  'dquadric':       1.0,  # coeff                  : Coefficient D in equation (1).
+  'drag_c1':        1.0,  # factor                 : Quantity for calibrating Syamlal-O'Brien drag correlation
+  'drag_d1':        1.0,  # factor                 : Quantity for calibrating Syamlal-O'Brien drag correlation
   'dt':             1,    # s                      : Initial time step size. If left undefined, a steady-state
   'dt_fac':         1,    # max = 1.0              : Factor for adjusting time step. * The value must be less
   'dt_max':         1,    # s                      : Maximum time step size.
@@ -173,7 +173,7 @@ cgs_to_SI = {
   'ew_young':       0.1,  # barye -> Pa            : Young's modulus for the wall . Required when using the
   'ew_young_actual':0.1,  # barye -> Pa            : Actual Young's modulus for the walls . Used for computing
   'fac_dim_max_cut_cell':1,# factor                : Factor used to allocate cut cell arrays (expressed as a
-  'factor_rlm':     0.01, # cm -> m                : Effectively increase the radius of a particle (multiple of
+  'factor_rlm':     1,    # factor                 : Effectively increase the radius of a particle (multiple of
   'filter_size_ratio':1,  # ratio                  : Ratio of filter size to computational cell size.
   'first_dx':       0.01, # cm -> m                : Value of first DX in a segment (x-direction). A negative
   'first_dy':       0.01, # cm -> m                : Value of first DY in a segment (y-direction). A negative
@@ -198,7 +198,7 @@ cgs_to_SI = {
   'ic_p_star':      0.1,  # barye -> Pa            : Initial solids pressure in the IC region. Usually, this
   'ic_pic_const_statwt':None,# UNKNOWN             : Flag to specify the initial constant statistical weight for
   'ic_rop_s':       1000.0,# g/cm^3 -> kg/m^3      : Initial bulk density (rop_s = ro_s x ep_s) of solids phase-m
-  'ic_scalar':      None, # UNKNOWN                : Initial value of Scalar n.
+  'ic_scalar':      None, # problem depedent       : Initial value of Scalar n.
   'ic_t_g':         1,    # K                      : Initial gas phase temperature in the IC region.
   'ic_t_rg':        1,    # K                      : Gas phase radiation temperature in the IC region.
   'ic_t_rs':        1,    # K                      : Solids phase-m radiation temperature in the IC region.
@@ -218,7 +218,7 @@ cgs_to_SI = {
   'ic_y_s':         0.01, # cm -> m                : Y coordinate of the south face.
   'ic_z_b':         0.01, # cm -> m                : Z coordinate of the bottom face.
   'ic_z_t':         0.01, # cm -> m                : Z coordinate of the top face.
-  'is_pc':          None, # UNKNOWN                : Parameters defining the internal surface. These values need
+  'is_pc':          None, # depends on index       : Internal surface parameters
   'is_vel_s':       0.01, # cm/s -> m/s            : Value of fixed solids velocity through semipermeable
   'is_x_e':         0.01, # cm -> m                : X coordinate of the east face or edge.
   'is_x_w':         0.01, # cm -> m                : X coordinate of the west face or edge.
@@ -233,9 +233,9 @@ cgs_to_SI = {
   'kt_fac':         1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
   'kt_w_fac':       1,    # max = 1.0              : Ratio of the tangential spring constant to normal spring
   'lam_hys':        0.01, # cm -> m                : The lubrication cutoff distance for HYS drag model.  In
-  'lambda_x':       1.0, # UNKNOWN                 : Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
-  'lambda_y':       1.0, # UNKNOWN                 : Coefficient LAMBDA_Y in equation (1) ('NORMAL' form) or
-  'lambda_z':       1.0, # UNKNOWN                 : Coefficient LAMBDA_Z in equation (1) ('NORMAL' form) or
+  'lambda_x':       10000.0, # per Jeff Dieteker,  : Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
+  'lambda_y':       10000.0, #  see issues/231     : Coefficient LAMBDA_Y in equation (1) ('NORMAL' form) or
+  'lambda_z':       10000.0, #                     : Coefficient LAMBDA_Z in equation (1) ('NORMAL' form) or
   'last_dx':        0.01, # cm -> m                : Value of last DX in a segment (x-direction). A negative
   'last_dy':        0.01, # cm -> m                : Value of last DY in a segment (y-direction). A negative
   'last_dz':        0.01, # cm -> m                : Value of last DZ in a segment (z-direction). A negative
@@ -258,7 +258,7 @@ cgs_to_SI = {
   'n_z':            1.0, # unit vector             : Z-component of normal vector defining the plane (used when
   'neighbor_search_rad_ratio':1,# ratio            : Ratio of the distance (imaginary sphere radius) to particle
   'norm_g':         1,    # factor                 : Factor to normalize the gas continuity equation residual.
-  'norm_s':         1,    # volume fraction        : Factor to normalize the solids continuity equation residual.
+  'norm_s':         1,    # factor                 : Factor to normalize the solids continuity equation residual.
   'out_dt':         1,    # s                      : Interval at which standard output (.OUT) file is updated.
   'out_msh_value':  1, # UNKNOWN                : Defines value of f outside of the .msh geometry. a value of
   'out_stl_value':  1, # UNKNOWN                : Defines value of F_STL outside of the STL geometry. A value
@@ -314,7 +314,7 @@ cgs_to_SI = {
   'ro_xs0':         1000.0,# g/cm^3 -> kg/m^3      : Specified constant solids species density .
   'scale_msh':      1,    # factor                 : Scaling factor, applied to the .msh geometry. Note that
   'scale_stl':      1,    # factor                 : Scaling factor, applied to the STL geometry. Note that
-  'segregation_slope_coefficient':1.0,# UNKNOWN   : Used in calculating the initial slope of segregation: see
+  'segregation_slope_coefficient':1.0,# coeff      : Used in calculating the initial slope of segregation: see
   'spx_dt':         1,    # s                      : Interval at which .SPX files are updated.
   'stl_small_angle':1,    # angle                  : Smallest angle accepted for valid STL triangles (in
   't_x':            0.01, # cm -> m                : Translation in x-direction.
@@ -485,6 +485,10 @@ def main():
             # All 'dt's are time.
             if key.endswith('_dt'):
                 SI_unit = 's'
+            if 'factor' in desc_lower or 'factor' in key:
+                SI_unit = 'factor'
+            elif 'ratio' in desc_lower or 'ratio' in key:
+                SI_unit = 'ratio'
             else:
                 # Anything which is a fraction is dimensionless
                 for s in ('volume fraction', 'void fraction', 'mass fraction', 'solids fraction'):
@@ -556,9 +560,6 @@ def main():
             # Velocities are m/s
             elif 'velocity' in desc_lower:
                 SI_unit = 'm/s'
-            # "Factors" are dimensionless
-            elif 'factor' in desc_lower:
-                SI_unit = 'factor'
             # Coefficient of restitition is dimensionless
             elif 'coefficient of restitution' in desc_lower:
                 SI_unit = 'coefficient'
@@ -568,12 +569,9 @@ def main():
             # Radii are meters
             elif 'radius' in desc_lower:
                 SI_unit = 'm'
-            # Distances are too, but avoid 'ratio of distance'
-            elif 'distance' in desc_lower and 'ratio ' not in desc_lower:
+            # Distances are too
+            elif 'distance' in desc_lower:
                 SI_unit = 'm'
-            # Ratios are dimensionless
-            elif 'ratio ' in desc_lower:
-                SI_unit = 'ratio'
             # Angles don't need to be converted
             elif 'angle' in desc_lower:
                 SI_unit = 'angle'
@@ -663,7 +661,6 @@ def main():
 
     start = lines.index('cgs_to_SI = {\n') + 1
     end = lines.index('}\n')
-
 
     head = lines[:start]
     data = lines[start:end]

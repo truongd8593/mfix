@@ -5,7 +5,7 @@ RUN_NAME="FLD08"
 rm -f POST_*.dat VTU* &> /dev/null
 
 rm -f ${RUN_NAME}* &> /dev/null
-time -p ./mfix
+time -p ./mfixsolver
 
 post_dats=AUTOTEST/POST*.dat
 

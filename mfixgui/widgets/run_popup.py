@@ -16,7 +16,7 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import PYQT5
+from qtpy import PYQT5, uic
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
                             QDialogButtonBox, QLabel, QComboBox, QSpinBox,
@@ -25,11 +25,6 @@ from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
 from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
 from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
-
-try:
-    from PyQt5 import uic
-except ImportError:
-    from PyQt4 import uic
 
 try: #2.7
     import ConfigParser as configparser
@@ -40,8 +35,7 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIX_EXE_NAMES = ['pymfix', 'pymfix.exe', 'mfix', 'mfix.exe']
-
+MFIXSOLVER_GLOB_NAMES = ['mfixsolver*.so', 'mfixsolver*.pyd', 'mfixsolver', 'mfixsolver.exe']
 
 class RunPopup(QDialog):
 
@@ -51,9 +45,7 @@ class RunPopup(QDialog):
     set_run_mfix_exe = Signal()
 
     def __init__(self, mfix_exe, parent):
-
         super(RunPopup, self).__init__(parent)
-
         self.commandline_option_exe = mfix_exe if mfix_exe else None
         self.mfix_available = False
         self.mfix_exe = None
@@ -66,12 +58,10 @@ class RunPopup(QDialog):
         self.settings = parent.settings
         self.project_dir = parent.get_project_dir()
         self.gui_comments = self.project.mfix_gui_comments
-
         # load ui
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
-
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
         ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
@@ -80,7 +70,6 @@ class RunPopup(QDialog):
             self.title = 'Resume'
         else:
             self.title = 'Run'
-
         self.signal_run.connect(self.handle_run)
         self.signal_submit.connect(self.handle_submit)
         self.signal_cancel.connect(self.close)
@@ -103,7 +92,7 @@ class RunPopup(QDialog):
         ui = self.ui
         self.setWindowTitle(self.title)
         # create initial executable list
-        self.generate_exe_list()
+        self.mfix_exe_list = self.get_exe_list()
 
         # set OMP_NUM_THREADS
         project_threads = self.gui_comments.get('OMP_NUM_THREADS', None)
@@ -127,7 +116,7 @@ class RunPopup(QDialog):
             self.mfix_exe = None
             self.parent.message(
                 icon='warning',
-                text='MFIX not found. Please browse for an executable.',
+                text='MFiX not found. Please browse for an executable.',
                 buttons=['ok','cancel'],
                 default='ok')
 
@@ -136,7 +125,7 @@ class RunPopup(QDialog):
     def init_templates(self):
 
         # look for templates in mfixgui/queue_templates
-        search_p = os.path.join(get_mfix_home(), 'mfixgui', 'queue_templates')
+        search_p = os.path.join(get_mfix_home(), 'queue_templates')
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
             for f in files:
@@ -285,7 +274,7 @@ class RunPopup(QDialog):
         self.ui.button_local_run.setEnabled(ok)
         self.ui.button_queue_submit.setEnabled(ok)
         if not ok:
-            self.parent.print_internal("Warning: no MFIX executables available")
+            self.parent.print_internal("Warning: no MFiX executables available")
 
     def popup(self):
         self.show()
@@ -382,18 +371,14 @@ class RunPopup(QDialog):
             return
         if PYQT5:
             new_exe = new_exe[0]
-        if not self.prepend_to_exe_list(new_exe):
-            self.parent.message(
-                icon='warning',
-                title='Warning',
-                text='The selected file is not an executable MFIX binary')
-            return
+        self.set_run_mfix_exe.emit()
+
+        self.save_selected_exe(new_exe)
         self.mfix_available = True
         self.mfix_exe = new_exe
-        self.prepend_to_exe_list(new_exe)
+        self.mfix_exe_list = self.get_exe_list()
         self.populate_combobox_mfix_exe()
-        log.debug('selected new exe %s' % new_exe)
-        self.set_run_mfix_exe.emit()
+        log.debug('selected new exe %s', new_exe)
 
     def handle_browse_template(self):
         """ Handle file open dialog for user specified exe """
@@ -435,16 +420,7 @@ class RunPopup(QDialog):
                         'recent_executables',
                         str(os.pathsep).join(recent_list))
 
-    def prepend_to_exe_list(self, exe):
-        """ Verify exe exists, is executable, and appears only once in list."""
-        if not (self.exe_exists(exe) and self.get_exe_flags(exe)):
-            return False
-        if exe in self.mfix_exe_list:
-            self.mfix_exe_list.pop(self.mfix_exe_list.index(exe))
-        self.mfix_exe_list.insert(0, exe)
-        return True
-
-    def generate_exe_list(self):
+    def get_exe_list(self):
         """ assemble list of executables from:
         - command line
         - project file 'mfix_exe'
@@ -462,7 +438,7 @@ class RunPopup(QDialog):
                     yield recent_exe
 
         def project_directory_executables():
-            for name in MFIX_EXE_NAMES:
+            for name in MFIXSOLVER_GLOB_NAMES:
                 for exe in glob(os.path.join(self.project_dir, name)):
                     yield os.path.abspath(exe)
 
@@ -470,6 +446,14 @@ class RunPopup(QDialog):
             project_exe = self.project.get_value('mfix_exe')
             if project_exe:
                 yield project_exe
+
+        def python_path():
+            for d in sys.path:
+                # filter out empty strings and current directory from $PATH
+                if d and d != os.path.curdir and os.path.isdir(d):
+                    for name in MFIXSOLVER_GLOB_NAMES:
+                        for exe in glob(os.path.join(d, name)):
+                            yield exe
 
         def os_path():
             PATH = os.environ.get("PATH")
@@ -481,7 +465,7 @@ class RunPopup(QDialog):
             for d in dirs.keys():
                 # filter out empty strings and current directory from $PATH
                 if d and d != os.path.curdir and os.path.isdir(d):
-                    for name in MFIX_EXE_NAMES:
+                    for name in MFIXSOLVER_GLOB_NAMES:
                         for exe in glob(os.path.join(d, name)):
                             yield exe
 
@@ -492,7 +476,7 @@ class RunPopup(QDialog):
             if os.path.isdir(bin_dir):
                 dir_list.add(bin_dir)
             for d in dir_list:
-                for name in MFIX_EXE_NAMES:
+                for name in MFIXSOLVER_GLOB_NAMES:
                     for exe in glob(os.path.join(d, name)):
                         yield exe
 
@@ -508,23 +492,30 @@ class RunPopup(QDialog):
         exe_list_order = [
             recently_used_executables,
             project_directory_executables,
+            python_path,
             os_path,
             mfix_build_directories,
             get_saved_exe,
             project_file_executable,
             command_line_option]
 
+        od = OrderedDict()
         # look for executables in the order listed in exe_list_order
         for exe_spec in exe_list_order:
             for exe in exe_spec():
-                self.prepend_to_exe_list(exe)
+                exe_exists = os.path.isfile(exe) and os.access(exe, os.X_OK)
+                if exe_exists and self.get_exe_flags(exe):
+                    od[exe] = True
 
-    def exe_exists(self, exe):
-        """ Verify exe exists and is executable """
-        return (os.path.isfile(exe) and os.access(exe, os.X_OK))
+        return list(od.keys())
 
     def get_exe_flags(self, mfix_exe):
         """ get and cache (and update) executable features """
+
+        # let non-exe solvers through
+        if mfix_exe and os.path.splitext(mfix_exe)[1] in ['.so', '.pyd']:
+            return {'flags': 'python'}
+
         if mfix_exe is None:
             return None
         try:
@@ -538,13 +529,13 @@ class RunPopup(QDialog):
             _, flags = self.mfix_exe_cache[(stat, mfix_exe)]
             return flags
         try:
-            log.debug('Feature testing MFIX %s' % mfix_exe)
+            log.debug('Feature testing MFiX %s' % mfix_exe)
             exe_dir = os.path.dirname(mfix_exe)
             popen = Popen(mfix_exe + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
             if err:
-                log.error('MFIX %s' % str(err))
+                log.error('MFiX %s' % str(err))
         except:
             log.error("could not run %s --print-flags", mfix_exe)
             return None
@@ -580,7 +571,14 @@ class RunPopup(QDialog):
         else:
             smp = []
 
-        run_cmd = smp + dmp + [self.mfix_exe]
+        # FIXME: code-cleanup; mfix_exe really should be renamed to mfixsolver everywhere
+        extension = os.path.splitext(self.mfix_exe)[1]
+        if extension == '.so' or extension == '.pyd':
+            pymfix = ['pymfix', '--solver']
+        else:
+            pymfix = []
+
+        run_cmd = smp + dmp + pymfix + [self.mfix_exe]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
@@ -606,6 +604,7 @@ class RunPopup(QDialog):
         replace_dict.update({
             'PROJECT_NAME': self.parent.project.get_value('run_name', default=''),
             'COMMAND': ' '.join(cmd),
+            'MFIX_HOME': get_mfix_home(),
         })
 
         # replace twice to make sure that any references added the first time
@@ -656,9 +655,9 @@ class RunPopup(QDialog):
 
         def slot_start():
             # Keep a copy because it gets reset
-            msg = "MFIX process %d is running" % self.mfixproc.pid()
+            msg = "MFiX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFIX startup parameters: %s", self.cmdline)
+            log.debug("Full MFiX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
@@ -669,7 +668,7 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
-            msg = "MFIX process has stopped"
+            msg = "MFiX process has stopped"
             self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_error(error):

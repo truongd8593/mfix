@@ -6,7 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import glob
 from collections import OrderedDict
-from qtpy import QtWidgets
+from qtpy import QtWidgets, PYQT5
 
 from qtpy import uic
 
@@ -27,6 +27,8 @@ DEFAULT_REGION_DATA = {
     'type': 'box',
     'visibility': True}
 
+
+
 def safe_int(obj, default=None):
     try:
         return int(obj)
@@ -37,7 +39,7 @@ def clean_region_dict(region_dict):
     """remove qt objects and values that are equal to the default"""
     clean_dict = {}
     for key, value in region_dict.items():
-        if key in ['visible']:
+        if key in ['visible', 'used by']:
             pass
         elif key == 'color':
             clean_dict['color'] = region_dict['color'].color_hex
@@ -93,7 +95,7 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget._setModel()
         tablewidget.set_selection_model()
         tablewidget.set_value(OrderedDict())
-        tablewidget.set_columns(['visible', 'color', 'type'])
+        tablewidget.set_columns(['visible', 'color', 'type', 'used by'])
         tablewidget.show_vertical_header(True)
         tablewidget.auto_update_rows(True)
         tablewidget.new_selection.connect(self.update_region_parameters)
@@ -101,8 +103,8 @@ class RegionsWidget(QtWidgets.QWidget):
         tablewidget.default_value = OrderedDict()
         self.inhibit_toggle = True
 
-        self.groupbox_region_parameters.setEnabled(False)
-        for widget in widget_iter(self.groupbox_region_parameters):
+        self.widget_region_parameters.setEnabled(False)
+        for widget in widget_iter(self.widget_region_parameters):
             if hasattr(widget, 'value_updated'):
                 widget.value_updated.connect(self.region_value_changed)
 
@@ -132,7 +134,7 @@ class RegionsWidget(QtWidgets.QWidget):
         self.error = self.parent.error
         self.warning = self.warn = self.parent.warn
 
-        self.checkbox_region_stl.clicked.connect(self.stl_type_changed)
+        self.groupbox_stl.clicked.connect(self.stl_type_changed)
 
         # default region buttons
         for btn, region in [(self.toolbutton_region_a, 'all'),
@@ -143,13 +145,16 @@ class RegionsWidget(QtWidgets.QWidget):
             btn.setIcon(get_icon(region + '_region.png'))
             btn.setToolTip(region)
 
+
     def reset_regions(self):
         self.tablewidget_regions.value.clear()
         self.parameter_key_map = {}
 
+
     def get_visibility_image(self, visible=True):
         return get_pixmap('visibility.png' if visible else 'visibilityofftransparent.png',
                           16, 16)
+
 
     def cell_clicked(self, index):
         if self.inhibit_toggle: # Don't toggle visibility on a row selection event
@@ -166,9 +171,11 @@ class RegionsWidget(QtWidgets.QWidget):
             data[name]['visible'] = self.get_visibility_image(vis)
 
             self.tablewidget_regions.set_value(data)
+        elif index.column() == 1:
+            self.change_color()
+
 
     def new_default_region(self, region):
-
         f = ['xmin', 'ymin', 'zmin']
         t = ['xmax', 'ymax', 'zmax']
         typ = 'box'
@@ -194,6 +201,7 @@ class RegionsWidget(QtWidgets.QWidget):
         # convert strings to equations
         extents = [[Equation(e) for e in f], [Equation(e) for e in t]]
         self.new_region(region, extents, typ)
+
 
     def new_region(self, name=None, extents=None, rtype=None, defer_update=False):
         """create a new region"""
@@ -224,10 +232,12 @@ class RegionsWidget(QtWidgets.QWidget):
         if defer_update:
             return
 
-        self.tablewidget_regions.fit_to_contents()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
         self.tablewidget_regions.selectRow(len(data)-1) # Select new row
         self.parent.set_unsaved_flag()
         self.parent.update_nav_tree() # Enable/disable ICs/BCs etc
+
 
     def delete_region(self):
         'remove the currently selected region'
@@ -237,7 +247,7 @@ class RegionsWidget(QtWidgets.QWidget):
             data = self.tablewidget_regions.value
             for row in rows:
                 name = list(data.keys())[row]
-                if self.check_region_in_use(name):
+                if self.parent.get_region_users(name):
                     self.parent.message(text="Region %s is in use" % name)
                     return
                 deleted_region = data.pop(name)
@@ -256,10 +266,11 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.tablewidget_regions.selectRow(nrows-1)
 
         enabled = (nrows > 0) # Any left?
-        self.groupbox_region_parameters.setEnabled(enabled)
+        self.widget_region_parameters.setEnabled(enabled)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
         self.update_region_parameters()
+
 
     def copy_region(self):
         'copy the currently selected region'
@@ -281,10 +292,12 @@ class RegionsWidget(QtWidgets.QWidget):
                 self.vtkwidget.new_region(new_name, data[new_name])
 
             self.tablewidget_regions.set_value(data)
-            self.tablewidget_regions.fit_to_contents()
+            #self.tablewidget_regions.fit_to_contents()
+            self.fixup_regions_table(self.tablewidget_regions)
             self.tablewidget_regions.selectRow(len(data)-1)
             self.parent.set_unsaved_flag()
             self.parent.update_nav_tree()
+
 
     def update_region_parameters(self):
         'a new region was selected, update region widgets'
@@ -294,7 +307,7 @@ class RegionsWidget(QtWidgets.QWidget):
         enabled = bool(rows)
         self.toolbutton_region_delete.setEnabled(enabled)
         self.toolbutton_region_copy.setEnabled(enabled)
-        self.groupbox_region_parameters.setEnabled(enabled)
+        self.widget_region_parameters.setEnabled(enabled)
 
         if enabled:
             data = self.tablewidget_regions.value
@@ -314,19 +327,19 @@ class RegionsWidget(QtWidgets.QWidget):
         self.lineedit_regions_name.updateValue(None, name)
 
         # Disable widgets for regions that are in use
-        in_use = self.check_region_in_use(name)
-        if in_use:
+        users = self.parent.get_region_users(name)
+        if users:
             self.enable_disable_widgets(name)
         else:
             self.enable_disable_widgets(name, enable_all=True)
-        self.toolbutton_region_delete.setEnabled(not in_use)
-        self.checkbox_region_stl.setEnabled(not in_use)
-        self.label_used_by.setText(', '.join(in_use))
+        self.toolbutton_region_delete.setEnabled(not users)
+        self.groupbox_stl.setEnabled(not users)
+        users_str = ', '.join(users)
+        data['used by'] = users_str
 
         # type
         r_type = data.get('type', 'box')
-        self.label_region_type.setText(r_type)
-        self.checkbox_region_stl.setChecked(r_type == 'STL')
+        self.groupbox_stl.setChecked(r_type == 'STL')
 
         # from
         for widget, value in zip(self.extent_lineedits[::2], data['from']):
@@ -346,13 +359,25 @@ class RegionsWidget(QtWidgets.QWidget):
                                   data['filter']):
             widget.updateValue(None, value)
 
-    def stl_type_changed(self):
-        checked = self.checkbox_region_stl.isChecked()
 
-        type_ = None
-        if checked:
-            type_ = 'STL'
-        self.region_value_changed(self.checkbox_region_stl, {'type': type_}, [])
+    def setup_regions(self):
+        # Set up all widgets in pane to current state,
+        # including updates we deferred during extract_region
+
+        data = self.tablewidget_regions.value
+        for (k,v) in data.items():
+            users = self.parent.get_region_users(k)
+            users_str = ', '.join(users)
+            data[k]['used by'] = users_str
+        self.update_region_parameters()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
+
+
+    def stl_type_changed(self):
+        val = 'STL' if self.groupbox_stl.isChecked() else None
+        self.region_value_changed(self.groupbox_stl, {'type': val}, [])
+
 
     def region_value_changed(self, widget, value, args, name=None, update_param=True):
         'one of the region widgets values changed, update'
@@ -368,6 +393,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         self.parent.set_unsaved_flag()
 
+        shape = row_data['type']
         if 'to' in key or 'from' in key:
             item = key.split('_')
             index = ['x', 'y', 'z'].index(item[1])
@@ -385,22 +411,21 @@ class RegionsWidget(QtWidgets.QWidget):
             # update data dict
             row_data[item[0]][index] = val
 
-            in_use = self.check_region_in_use(name)
+            users = self.parent.get_region_users(name)
             # Infer shape from extents
-            if not in_use:
+            if not users:
                 old_shape = row_data.get('type', 'box')
-                stl = self.checkbox_region_stl.isChecked()
+                stl = self.groupbox_stl.isChecked()
                 if stl:
                     shape = 'STL'
                 else:
                     shape = row_data['type'] = self.get_region_type([row_data['from'], row_data['to']])
-                self.label_region_type.setText(shape)
                 if old_shape != shape:
                     self.vtkwidget.change_region_type(name, row_data)
 
             # check for and update point and plane extents
             shape = data[name]['type']
-            if in_use and any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
+            if users and any(s in shape for s in ['plane', 'point']) and item[1] not in shape.lower():
                 self.update_parameter_map(val, name, 'to_'+str(item[1]))
                 row_data['to'][index] = val
                 self.extent_lineedits[index*2+1].updateValue(None, val)
@@ -481,6 +506,7 @@ class RegionsWidget(QtWidgets.QWidget):
         if key == 'type':
             self.parent.update_nav_tree() # ICs/BCs availability depends on region types
 
+
     def enable_disable_widgets(self, name, enable_all=False):
         data = self.tablewidget_regions.value
 
@@ -497,6 +523,7 @@ class RegionsWidget(QtWidgets.QWidget):
 
         for widget, enable in zip(self.extent_lineedits, enable_list):
             widget.setEnabled(enable)
+
 
     def change_color(self):
         color = QtWidgets.QColorDialog.getColor()
@@ -515,8 +542,6 @@ class RegionsWidget(QtWidgets.QWidget):
             self.parent.set_unsaved_flag()
             self.vtkwidget.change_region_color(name, data[name]['color'])
 
-    def check_region_in_use(self, name):
-        return self.parent.check_region_in_use(name)
 
     def regions_to_str(self):
         """ convert regions data to a string for saving """
@@ -526,6 +551,7 @@ class RegionsWidget(QtWidgets.QWidget):
         for region in data['order']:
             data['regions'][region] = clean_region_dict(self.tablewidget_regions.value[region])
         return ExtendedJSON.dumps(data)
+
 
     def regions_from_str(self, string):
         """ load regions data from a saved string """
@@ -554,7 +580,9 @@ class RegionsWidget(QtWidgets.QWidget):
             self.vtkwidget.new_region(region, region_data)
 
         self.tablewidget_regions.set_value(data)
-        self.tablewidget_regions.fit_to_contents()
+        #self.tablewidget_regions.fit_to_contents()
+        self.fixup_regions_table(self.tablewidget_regions)
+
 
     def extract_regions(self, proj, proj_dir=None):
         """ extract regions from IC, BC, PS, IS, VTK"""
@@ -623,6 +651,47 @@ class RegionsWidget(QtWidgets.QWidget):
                 if add:
                     self.new_region(name, extents, rtype, defer_update=True)
 
+
+
+    def fixup_regions_table(self, tw, stretch_column=3):
+        ui = self # !!
+        hv = QtWidgets.QHeaderView
+        if PYQT5:
+            resize = tw.horizontalHeader().setSectionResizeMode
+        else:
+            resize = tw.horizontalHeader().setResizeMode
+        ncols = tw.model().columnCount()
+        for n in range(0, ncols):
+            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+
+        # trim excess vertical space - can't figure out how to do this in designer
+        header_height = tw.horizontalHeader().height()
+
+        # Note - scrollbar status can change outside of this function.
+        # Do we need to call this everytime window geometry changes?
+        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        nrows = tw.model().rowCount()
+        if nrows==0:
+            row_height = 0
+            height = header_height+scrollbar_height
+        else:
+            row_height = tw.rowHeight(0)
+            height =  (header_height+scrollbar_height
+                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar
+
+        if tw == ui.tablewidget_regions:
+            ui.top_frame.setMaximumHeight(height+24)
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
+            ui.top_frame.updateGeometry()
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(header_height)
+        else:
+            tw.setMaximumHeight(height)
+            tw.setMinimumHeight(height)
+        tw.updateGeometry() #? needed?
+
+
+
     def check_extents_in_regions(self, extents):
         """ check to see if the extents are already in a region """
         region_dict = self.tablewidget_regions.value
@@ -632,6 +701,7 @@ class RegionsWidget(QtWidgets.QWidget):
             if extents == region_extent:
                 return True
         return False
+
 
     def get_region_type(self, extents):
         """ given the extents, guess the region type """
@@ -646,10 +716,12 @@ class RegionsWidget(QtWidgets.QWidget):
                     break
         return rtype
 
+
     def get_region_dict(self):
         """return region dict, for use by clients"""
         region_dict = self.tablewidget_regions.value
         return deepcopy_dict(region_dict) # Allow clients to modify dict
+
 
     def get_value(self, name, key):
         """given a region name and value key, return the value"""
@@ -665,6 +737,7 @@ class RegionsWidget(QtWidgets.QWidget):
         else:
             val = data[key]
         return val
+
 
     def update_parameter_map(self, new_value, name, key):
         """update the mapping of parameters and keywords"""
@@ -689,17 +762,20 @@ class RegionsWidget(QtWidgets.QWidget):
         for param in remove:
             self.remove_namekey(param, name_key)
 
+
     def add_namekey(self, param, name_key):
         """add the name_key to the parameter list"""
         if param not in self.parameter_key_map:
             self.parameter_key_map[param] = set()
         self.parameter_key_map[param].add(name_key)
 
+
     def remove_namekey(self, param, name_key):
         """remove the name_key from the parameter list"""
         self.parameter_key_map[param].remove(name_key)
         if len(self.parameter_key_map[param]) == 0:
             self.parameter_key_map.pop(param)
+
 
     def update_parameters(self, params):
         """parameters have changed, update regions"""
@@ -711,6 +787,7 @@ class RegionsWidget(QtWidgets.QWidget):
                         None, {key: self.get_value(name, key)}, None,
                         name=name, update_param=False)
 
+
     def remove_from_parameter_map(self, name, del_region):
         """a region was deleted, make sure to remove from parameter map"""
         for key, value in del_region.items():
@@ -720,6 +797,7 @@ class RegionsWidget(QtWidgets.QWidget):
                     self._remove_key('_'.join([name_key, xyz]), item)
             else:
                 self._remove_key(key, value)
+
 
     def update_parameter_name(self, old_name, new_name, region):
         """a region name changed, update map"""
@@ -731,6 +809,7 @@ class RegionsWidget(QtWidgets.QWidget):
                     self.update_parameter_map(item, new_name, '_'.join([k, xyz]))
             else:
                 self.update_parameter_map(v, new_name, k)
+
 
     def _remove_key(self, name_key, value):
         if not isinstance(value, Equation): return

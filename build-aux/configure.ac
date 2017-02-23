@@ -8,6 +8,7 @@ AC_CONFIG_AUX_DIR([../build-aux])
 m4_include([ax_check_compile_flag.m4])
 m4_include([ax_python.m4])
 m4_include([ax_python_devel.m4])
+m4_include([ax_prog_cc_mpi.m4])
 m4_include([ax_prog_fc_mpi.m4])
 m4_include([netcdf.m4])
 m4_include([netcdff.m4])
@@ -32,10 +33,17 @@ AC_ARG_ENABLE([dmp],
   *) AC_MSG_ERROR([bad value ${enableval} for --enable-dmp]) ;;
 esac],[dmp=false])
 
+AX_PROG_CC_MPI([test x"$dmp" = xtrue],[use_mpi=yes],[
+       use_mpi=no
+       if test x"$dmp" = xtrue; then
+         AC_MSG_FAILURE([DMP support requested, but no C MPI compiler found.  Specify an MPI compiler as a configure_mfix option, such as CC=mpicc])
+       fi
+     ])
+
 AX_PROG_FC_MPI([test x"$dmp" = xtrue],[use_mpi=yes],[
        use_mpi=no
        if test x"$dmp" = xtrue; then
-         AC_MSG_FAILURE([DMP support requested, but no MPI compiler found.  Specify an MPI compiler as a configure_mfix option, such as FC=mpifort or FC=mpif90])
+         AC_MSG_FAILURE([DMP support requested, but no Fortran MPI compiler found.  Specify an MPI compiler as a configure_mfix option, such as FC=mpifort or FC=mpif90])
        fi
      ])
 
@@ -216,4 +224,7 @@ AC_MSG_NOTICE([FC=$FC])
 AC_MSG_NOTICE([FCFLAGS=$FCFLAGS])
 AC_MSG_NOTICE([F77=$F77])
 AC_MSG_NOTICE([FFLAGS=$FFLAGS])
+if test "$python" = "true"; then
+AC_MSG_NOTICE([PYTHON_BIN=$PYTHON_BIN])
+fi
 AC_MSG_NOTICE([==============================================================])

@@ -4,7 +4,9 @@ from collections import OrderedDict
 # Solver types
 # must match combobox_solver in model.ui
 SINGLE, TFM, DEM, PIC, HYBRID = range(5)
-CONSTANT, AIR, UDF = 0, 1, 2  # model types
+
+# model types
+CONSTANT, AIR, UDF = 0, 1, 2
 VARIABLE = MIXTURE = OTHER = AIR  # continuum, etc
 
 DRAG_TYPES = ['SYAM_OBRIEN', # (DEFAULT)

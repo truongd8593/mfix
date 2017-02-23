@@ -7,7 +7,7 @@ for DES_IM in EULER ADAMS_BASHFORTH; do
   DES_KN=10000
   for DES_ETA in 0.9 0.8 0.7 0.6; do
     rm -f ${RUN_NAME}* &> /dev/null
-    time -p ./mfix DES_INTG_METHOD=\"${DES_IM}\" \
+    time -p ./mfixsolver DES_INTG_METHOD=\"${DES_IM}\" \
       DES_EN_INPUT=${DES_ETA} DES_EN_WALL_INPUT=${DES_ETA} \
       KN=${DES_KN} KN_W=${DES_KN}
   done
@@ -15,7 +15,7 @@ for DES_IM in EULER ADAMS_BASHFORTH; do
   for DES_KN in 25000 50000 100000; do
     for DES_ETA in 1.0 0.9 0.8 0.7 0.6; do
       rm -f ${RUN_NAME}* &> /dev/null
-      time -p ./mfix DES_INTG_METHOD=\"${DES_IM}\" \
+      time -p ./mfixsolver DES_INTG_METHOD=\"${DES_IM}\" \
         DES_EN_INPUT=${DES_ETA} DES_EN_WALL_INPUT=${DES_ETA} \
         KN=${DES_KN} KN_W=${DES_KN}
     done

@@ -33,19 +33,19 @@ rm -f de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
-./mfix imax=8 jmax=8 #> out.log
+./mfixsolver imax=8 jmax=8 #> out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
-./mfix imax=16 jmax=16 > out.log
+./mfixsolver imax=16 jmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
-mpirun -np 4 mfix imax=32 jmax=32 nodesi=2 nodesj=2 nodesk=1 > out.log
+mpirun -np 4 mfixsolver imax=32 jmax=32 nodesi=2 nodesj=2 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #mkdir mesh_32
@@ -56,7 +56,7 @@ rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
 #echo "******** Running mesh_64..."
-#mpirun -np 16 mfix imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
+#mpirun -np 16 mfixsolver imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 #rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 ##mkdir mesh_64
@@ -64,7 +64,7 @@ rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #
 ## Run mesh_128 (i.e., 128x128 for 2D, 128x128x128 for 3D)
 #echo "******** Running mesh_128..."
-#mpirun -np 32 mfix imax=128 jmax=128 nodesi=8 nodesj=4 nodesk=1 > out.log
+#mpirun -np 32 mfixsolver imax=128 jmax=128 nodesi=8 nodesj=4 nodesk=1 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 #rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 

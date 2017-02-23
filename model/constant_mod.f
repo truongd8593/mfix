@@ -210,15 +210,14 @@
       ENDIF
 
 ! If all components of the gravitational acceleration vector are
-! undefined (zero), then use the default value for the negative
+! undefined, then use the default value for the negative
 ! y-direction. This ensures backward compatibility with the old
 ! (legacy) GRAVITY keyword. At this point GRAVITY is defined,
 ! either from mfix.dat or by default above
-      IF(GRAVITY_X==ZERO.AND.GRAVITY_Y==ZERO.AND.GRAVITY_Z==ZERO) THEN
-         GRAVITY_X = ZERO
-         GRAVITY_Y = - GRAVITY
-         GRAVITY_Z = ZERO
-      ENDIF
+
+      IF(GRAVITY_X==UNDEFINED) GRAVITY_X = ZERO
+      IF(GRAVITY_Y==UNDEFINED) GRAVITY_Y = - GRAVITY
+      IF(GRAVITY_Z==UNDEFINED) GRAVITY_Z = ZERO
 
       RETURN
       END SUBROUTINE SET_CONSTANTS

@@ -6,35 +6,35 @@ rm -f solution_tec_block.dat
 
 # Run case
 echo "******** Running simulation..."
-#mpirun -np 1 ./mfix.exe nodesi=1 nodesj=1 nodesk=1
-./mfix Discretize=9*0
+#mpirun -np 1 ./mfixsolver.exe nodesi=1 nodesj=1 nodesk=1
+./mfixsolver Discretize=9*0
 rm -f TFM04.*
 
-./mfix Discretize=9*3
+./mfixsolver Discretize=9*3
 rm -f TFM04.*
 
-./mfix Discretize=9*2
+./mfixsolver Discretize=9*2
 rm -f TFM04.*
 
-./mfix Discretize=9*5
+./mfixsolver Discretize=9*5
 rm -f TFM04.*
 
-#./mfix Discretize=9*4
+#./mfixsolver Discretize=9*4
 #rm -f TFM04.*
 
-./mfix Discretize=9*7
+./mfixsolver Discretize=9*7
 rm -f TFM04.*
 
-./mfix Discretize=9*6
+./mfixsolver Discretize=9*6
 rm -f TFM04.*
 
-./mfix Discretize=9*8
+./mfixsolver Discretize=9*8
 rm -f TFM04.*
 
-./mfix Discretize=9*9
+./mfixsolver Discretize=9*9
 rm -f TFM04.*
 
-rm ./mfix
+rm ./mfixsolver
 
 echo "******** Done."
 
