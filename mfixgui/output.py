@@ -495,11 +495,15 @@ class Output(object):
             #               (vtk.ind, extent))
             #    continue
 
-            output_type = d.get('vtk_data') # sic
+            output_type = d.get('vtk_data') # Returns a keyword object or None, not a value
             if output_type is None:
-                self.error("No type for VTK output" % vtk.ind)
-                continue
-            output_type = output_type.value #
+                output_type = 'C' # Default
+
+            else:
+                output_type = output_type.value # get value from keyword object
+                if output_type not in ('C', 'P'):
+                    self.error("Invalid type %s for VTK output %s" % (output_type, vtk.ind))
+                    continue
 
             for (region_name, data) in self.output_region_dict.items():
                 ext2 = [0 if x is None else x for x in
@@ -1918,7 +1922,7 @@ class Output(object):
 
 
     def output_set_region_keys(self, name, idx, data, output_type=None):
-        # Update the keys which define the region the PS applies to
+        # Update the keys which define the region the vtk output applies to
         if output_type is not None:
             self.update_keyword('vtk_data', output_type, args=[idx])
 
