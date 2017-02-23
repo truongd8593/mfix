@@ -607,8 +607,8 @@ class MainMenu(object):
         self.ui.main_menu_return.setMinimumWidth(tw)
         self.ui.main_menu_return.setMinimumHeight(th)
 
-        # hide vtk
-        self.vtkwidget.vtkWindowWidget.hide()
+        # hide the current widget, issue #291, VTK widget overlay issues
+        self.ui.tabWidgetGraphics.currentWidget().hide()
 
         # animate
         w, h = self.width(), self.height()
@@ -667,15 +667,10 @@ class MainMenu(object):
         animation.setDuration(self.main_menu_animation_speed)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))
         animation.setEndValue(QtCore.QPoint(x_end,y_end))
-
         return animation
 
     def handle_main_menu_hide(self):
         """Show the main menu"""
-
-        # hide vtk
-        self.vtkwidget.vtkWindowWidget.show()
-
         # animate
         w= self.width()
         ani = self.main_menu_animation = self.create_main_menu_animation(self.main_menu, 0, 0, -w/4, 0)
@@ -683,12 +678,16 @@ class MainMenu(object):
         ani.start()
 
     def main_menu_animation_finished(self):
+        """callback when the show animation is finished"""
         w, h = self.width(), self.height()
         self.main_menu.setGeometry(0, 0, w, h)
         self.main_menu.show()
         self.main_menu.raise_()
 
     def main_menu_animation_finished_hide(self):
+        """callback when the hide animation is finished"""
+        # show the current widget, issue #291, VTK widget overlay issues
+        self.ui.tabWidgetGraphics.currentWidget().show()
         self.main_menu.hide()
 
     def disable_main_menu_items(self, items, except_items=[]):
