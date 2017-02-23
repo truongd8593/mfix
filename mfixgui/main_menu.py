@@ -490,24 +490,35 @@ class MainMenu(object):
         if int(self.settings.value('developer_mode', 0)):
             git_des = get_git_revision_short_hash()
 
-        labels = [QtWidgets.QLabel('<b>MFiX GUI version:</b> {}'.format(__version__)),
-                  QtWidgets.QLabel('<b>Git description:</b> {}'.format(git_des)) if git_des is not None else None,
-                  QtWidgets.QLabel('<b>Python version:</b> {}'.format(sys.version)),
-                  QtWidgets.QLabel('<b>Qt Wrapper:</b> {}'.format(API_NAME)),
-                  QtWidgets.QLabel('<b>Qt Version:</b> {}'.format(QT_VERSION)),
-                  QtWidgets.QLabel('<b>qtpy Version:</b> {}'.format(qtpy.__version__)),
-                  QtWidgets.QLabel('<b>Numpy Version:</b> {}'.format(numpy_version)),
-                  QtWidgets.QLabel('<b>VTK Version:</b> {}'.format(vtkVersion)),
-                  ]
+        self.version_labels = [
+            '<b>MFiX GUI version:</b> {}'.format(__version__),
+            '<b>Git description:</b> {}'.format(git_des) if git_des is not None else None,
+            '<b>Python version:</b> {}'.format(sys.version),
+            '<b>Qt Wrapper:</b> {}'.format(API_NAME),
+            '<b>Qt Version:</b> {}'.format(QT_VERSION),
+            '<b>qtpy Version:</b> {}'.format(qtpy.__version__),
+            '<b>Numpy Version:</b> {}'.format(numpy_version),
+            '<b>VTK Version:</b> {}'.format(vtkVersion),
+            ]
 
-        for i, label in enumerate(labels):
+        for i, label in enumerate(self.version_labels):
             if label is None:
                 continue
-            label.setStyleSheet('background-color: white;')
-            label.setWordWrap(True)
-            aw_layout.addWidget(label, 10+i, 0, 1, -1)
+            ql = QtWidgets.QLabel(label)
+            ql.setStyleSheet('background-color: white;')
+            ql.setWordWrap(True)
+            aw_layout.addWidget(ql, 10+i, 0, 1, -1)
 
-        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+        # copy to clipboard btn
+        def copy_version_info():
+            cp = self.app.clipboard()
+            cp.setText('\n'.join(str(v).replace('<b>', '').replace('</b>', '') for v in self.version_labels))
+        copy_btn = QtWidgets.QToolButton()
+        copy_btn.setText('Copy Version Info')
+        copy_btn.clicked.connect(copy_version_info)
+        aw_layout.addWidget(copy_btn, 100, 0, 1, 2)
+
+        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1000, 0)
 
     def handle_main_menu_open_project(self, item):
         """Open the project of the selected item"""
