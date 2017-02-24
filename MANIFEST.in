@@ -4,7 +4,7 @@ include DISCLAIMER
 include NOTICE
 include README.md
 include configure_mfix
-include doc/INSTALL.md
+include doc/SETUP_GUIDE.md
 include doc/USER_GUIDE.md
 include mfix_user_guide.pdf
 
