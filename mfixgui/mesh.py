@@ -49,7 +49,6 @@ def ctrl_pts_to_loc(ctrl, min_loc):
             prev_cell_w = cell_w
         last = loc[-1]
 
-    #loc = [round(x, 10) for x in loc] # ???
     return loc
 
 
@@ -62,7 +61,6 @@ def linspace(f, t, c):
     for i in range(c):
         l.append(l[-1]+dx)
     l[-1] = t # make sure the last value is the one given
-    #l = [round(x, 10) for x in l] # ????
     return l
 
 
