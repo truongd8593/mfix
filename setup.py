@@ -48,7 +48,7 @@ def get_data_files():
             dir_files = []
             for f in files:
                 dir_files.append(path.join(root, f))
-            data_files.append((path.join('share', NAME, root), dir_files))
+            data_files.append((path.join(NAME, root), dir_files))
 
     if platform.system() == 'Windows':
         fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
@@ -138,7 +138,7 @@ def build_doc():
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
 
-        rendered_docs.append(doc_dest)
+        rendered_docs.append(path.basename(doc_pkg))
 
     return rendered_docs
 

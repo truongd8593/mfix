@@ -37,8 +37,7 @@ CC0 1.0 Universal public domain.
 Please see the LICENSE.md for more information.
 """
 
-
-# Import from the future for Python 2 and 3 compatability!
+# Import from the future for Python 2 and 3 compatability
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 # Python core imports
@@ -395,6 +394,14 @@ class Equation(object):
 
     def __rmul__(self,x):
         return self.r_binop(x, '*')
+
+    def __div__(self, x):
+        return self.binop(x, '/')
+    __truediv__ = __floordiv__ = __div__
+
+    def __rdiv__(self, x):
+        return self.r_binop(x, '/')
+    __rtruediv__ = __rfloordiv__ = __rdiv__
 
     def __pow__(self, x):
         return self.binop(x, '**')
