@@ -142,7 +142,15 @@ using the two fluid model. The model setup is:
 
 <img alt="create project" src="media/gui_tfm_2d_output_vtk.png" style="width:800;height:600" />
 
-#### Step 10. Run the project
+#### Step 10. Change run parameters
+
+- Select the `Run` pane
+- Change the `Time step` to "1e-3" seconds
+- Change the `Maximum time step` to "1e-2" seconds
+
+<img alt="create project" src="media/gui_tfm_2d_run.png" style="width:800;height:600" />
+
+#### Step 11. Run the project
 
 - Save project by clicking ![new](../mfixgui/icons/save.png) button
 - Run the project by clicking the ![new](../mfixgui/icons/play.png) button
@@ -151,7 +159,7 @@ using the two fluid model. The model setup is:
 
 <img alt="create project" src="media/gui_rundialog_local.png" style="width:800;height:600" />
 
-#### Step 11. View results
+#### Step 12. View results
 
 Results can be viewed, and plotted, while the simulation is running.
 
@@ -164,4 +172,8 @@ Results can be viewed, and plotted, while the simulation is running.
 
 <img alt="create project" src="media/gui_vtk_visible_dialog.png" style="width:800;height:600" />
 
--
+- Change frames with the ![new](../mfixgui/icons/first.png), ![new](../mfixgui/icons/back.png), ![new](../mfixgui/icons/next.png), and ![new](../mfixgui/icons/last.png) buttons
+- Click the ![new](../mfixgui/icons/play.png) button to play the available vtk files.
+- Change the playback speed with the ![new](../mfixgui/icons/speed.png) button
+
+<img alt="create project" src="media/gui_tfm_2d_vtk_view.png" style="width:800;height:600" />
