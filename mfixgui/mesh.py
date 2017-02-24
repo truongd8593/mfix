@@ -91,7 +91,7 @@ class Mesh(object):
     def init_mesh(self):
         self.mesh_extents = []
         self.mesh_cells = []
-        self.mesh_spacing = [[],[],[]]
+        self.mesh_spacing = [[],[],[]] # x, y, z
         ui = self.ui.mesh
         self.cell_spacing_widgets = [ui.lineedit_mesh_cells_size_x, ui.lineedit_mesh_cells_size_y,
             ui.lineedit_mesh_cells_size_z]
@@ -101,21 +101,21 @@ class Mesh(object):
         self.mesh_add_btns = [ui.toolbutton_mesh_add_x, ui.toolbutton_mesh_add_y, ui.toolbutton_mesh_add_z]
 
         # connect delete btns
-        for i, btn in enumerate(self.mesh_delete_btns):
+        for (i, btn) in enumerate(self.mesh_delete_btns):
             btn.clicked.connect(lambda ignore, i=i: self.mesh_delete(i))
 
         # connect add btns
-        for i, btn in enumerate(self.mesh_add_btns):
+        for (i, btn) in enumerate(self.mesh_add_btns):
             btn.clicked.connect(lambda ignore, i=i: self.mesh_add(i))
 
-        # key hadler
+        # key handler
         self.mesh_key_handler = KeyHandler()
         self.project.register_widget(self.mesh_key_handler, MESH_EXTENT_KEYS + MESH_CELL_KEYS + ['no_k'], [])
         self.mesh_key_handler.update_mesh_extents.connect(self.update_background_mesh_extents)
         self.mesh_key_handler.update_mesh_cells.connect(self.update_background_mesh_cells)
 
         # connect mesh tab btns
-        for i, btn in enumerate([ui.pushbutton_mesh_uniform, ui.pushbutton_mesh_mesher]):
+        for (i, btn) in enumerate([ui.pushbutton_mesh_uniform, ui.pushbutton_mesh_mesher]):
             btn.clicked.connect(lambda ignore, i=i, btn=btn:self.change_mesh_tab(i, btn))
 
         ui.combobox_mesher.currentIndexChanged.connect(
@@ -134,7 +134,7 @@ class Mesh(object):
                            }
 
         # setup tables
-        for i, (d, table) in enumerate(zip(['x', 'y', 'z'], self.mesh_tables)):
+        for (i, (d, table)) in enumerate(zip(['x', 'y', 'z'], self.mesh_tables)):
             table.dtype = OrderedDict
             table._setModel() # FIXME: Should be in __init__
             table.set_selection_model()
@@ -222,9 +222,6 @@ class Mesh(object):
             if l > 0:
                 self.mesh_cells[i] = l
                 self.update_mesh_keyword(c, l)
-                #m = sum(d)
-                #self.mesh_extents[i*2+1] = m
-                #self.update_mesh_keyword(e, m)
                 self.mesh_spacing[i] = d
                 self.extract_mesh_spacing(i, d)
 
@@ -262,9 +259,11 @@ class Mesh(object):
             self.update_mesh_keyword('nc' + d, count, args=i)
             table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
                             'first': 0.0, 'last': 0.0}
-        #Ending location is [xyz]_max
+        #Use location of final control point for [xyz]_max
         self.mesh_extents[index*2+1] = loc
         self.update_mesh_keyword(MESH_EXTENT_KEYS[1::2][index], loc)
+
+        #Unset d[xyz] keys
         for i in range(len(spacing)):
             self.unset_keyword('d' + d, args=i)
 
@@ -305,7 +304,7 @@ class Mesh(object):
         # rebuild dict
         # TODO: better way?
         new = OrderedDict()
-        for i, ctrl in enumerate(data.values()):
+        for (i, ctrl) in enumerate(data.values()):
             new[i] = ctrl
             if i >= min_row:
                 self.mesh_update_mfixkeys(ctrl, i, d)
@@ -433,7 +432,7 @@ class Mesh(object):
 
         # determine cell spacing
         spacing = []
-        for i, table in enumerate(self.mesh_tables):
+        for (i, table) in enumerate(self.mesh_tables):
             axis='xyz'[i]
             val = table.value
             if val:
