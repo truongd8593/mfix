@@ -691,8 +691,8 @@ class ProjectManager(Project):
                 if kw.key in ['xlength', 'ylength', 'zlength']:
                     self.gui.unset_keyword(kw.key)
                     axis = kw.key[0]
-                    min_ = self.get_value('%s_min'%axis, 0)
-                    self.submit_change(None, {'%s_min'%axis: min_, '%s_max'%axis: kw.value}, args=None)
+                    val = self.get_value('%s_min'%axis, 0)
+                    self.submit_change(None, {'%s_min'%axis: val, '%s_max'%axis: kw.value}, args=None)
                     continue
 
                 if kw.key in thermo_keys:
