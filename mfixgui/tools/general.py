@@ -43,7 +43,6 @@ SCRIPT_DIRECTORY = find_mfixgui_module_directory()
 # Helper functions
 def get_mfix_home():
     """return the top level MFiX directory containing directories defaults,model,tutorials"""
-
     mfix_src_root = os.path.dirname(find_mfixgui_module_directory())
     if os.path.isfile(os.path.join(mfix_src_root, 'configure_mfix')):
         # if configure_mfix is present, we are in a source directory
