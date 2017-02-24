@@ -47,7 +47,7 @@ def get_mfix_home():
     mfix_src_root = os.path.dirname(find_mfixgui_module_directory())
     if os.path.isfile(os.path.join(mfix_src_root, 'configure_mfix')):
         # if configure_mfix is present, we are in a source directory
-        return mfix_src_root
+        return os.path.dirname(mfix_src_root)
     else:
         # we are in an installed package, search PYPATH for directory named "mfix"
         for pypath in sys.path:
