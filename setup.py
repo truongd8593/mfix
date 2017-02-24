@@ -17,12 +17,12 @@ import zipfile
 from glob import glob
 from os import makedirs, path, walk
 
+# must import setuptools before numpy.distutils
+import setuptools
+
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 from numpy.distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension, setup
-
-# must import setuptools before numpy.distutils
-import setuptools
 
 exec(codecs.open('mfixgui/version.py').read())
 
