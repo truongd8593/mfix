@@ -1,6 +1,6 @@
 # Tutorials
 
-## Two-Fluid Models (MFiX-TFM)
+## Basic Tutorials
 
 ### 2D Fluid Bed
 
@@ -13,7 +13,7 @@ using the two fluid model. The model setup is:
 | mesh           | 20 x 60                |
 | solid diameter | 200 microns (200e-6 m) |
 | solid density  | 2500 kg/m2             |
-| gas velocity   | 1 m/s                  |
+| gas velocity   | 0.25 m/s               |
 | temperature    | 298 K                  |
 | pressure       | 101325 Pa              |
 
@@ -49,6 +49,8 @@ using the two fluid model. The model setup is:
 <img alt="create project" src="media/gui_tfm_2d_mesh.png" style="width:800;height:600" />
 
 #### Step 5. Create regions for initial and boundary condition specification
+
+- Select the `Regions` pane
 - click the ![new](../mfixgui/icons/add.png) button to create a new region to be used for the bed initial condition.
   - Enter a name for the region in the `Name` field
   - Change the color by pressing the `Color` button
@@ -73,15 +75,93 @@ using the two fluid model. The model setup is:
 
 #### Step 6. Create a solid
 
+- Select the `Solids` pane
 - Click the ![new](../mfixgui/icons/add.png) button to create a new solid
 - Enter a descriptive name in the `Name` field
-- Enter the particle diameter of "200e-6" in the `Diameter` field
-- ENter the particle density of "2500" in the `Density` field
+- Enter the particle diameter of "200e-6" m in the `Diameter` field
+- Enter the particle density of "2500" kg/m2 in the `Density` field
 
 <img alt="create project" src="media/gui_tfm_2d_solids.png" style="width:800;height:600" />
 
-## Multiphase Particle in Cell Models (MFiX-PIC)
+#### Step 7. Create Initial Conditions
 
-## Discrete Element Models (MFiX-DEM)
+- Select the `Initial Conditions` pane
+- Select the already populated "Background IC" from the region list
+- Enter "101325" Pa in the `Pressure (optional)` field
 
-## Eulerian-Lagrangian-Eulerian (MFiX-Hybrid)
+<img alt="create project" src="media/gui_tfm_2d_ics1.png" style="width:800;height:600" />
+
+- Create a new Initial Condition by pressing the ![new](../mfixgui/icons/add.png) button
+- Select the region created previously for the bed Initial Condition and click the `OK` button
+
+<img alt="create project" src="media/gui_tfm_2d_newic.png" style="width:800;height:600" />
+
+- Select the solid (named previously) sub-pane and enter a volume fraction of "0.4" in the `Volume Fraction` field.
+
+<img alt="create project" src="media/gui_tfm_2d_ics2.png" style="width:800;height:600" />
+
+#### Step 8. Create Boundary Conditions
+
+- Select the `Boundary Conditions` pane
+- Create a new Boundary condition by clicking the ![new](../mfixgui/icons/add.png) button
+- On the `Select Region` dialog, select "Mass Inflow" from the `Boundary type` combo-box
+- Select the "inlet" region and click `OK`
+
+<img alt="create project" src="media/gui_tfm_2d_newbc1.png" style="width:800;height:600" />
+
+- On the "Fluid" sub-pane, enter a velocity in the `Y-axial velocity` field of "0.25" m/s
+
+<img alt="create project" src="media/gui_tfm_2d_bcs1.png" style="width:800;height:600" />
+
+- Create another Boundary condition by clicking the ![new](../mfixgui/icons/add.png) button
+- On the `Select Region` dialog, select "Pressure Outflow" from the `Boundary type` combo-box
+- Select the "outlet" region and click `OK`
+
+> Note: The default pressure is already set to 101325 Pa, no changes need to be
+> made to the outlet boundary condition.
+
+<img alt="create project" src="media/gui_tfm_2d_newbc2.png" style="width:800;height:600" />
+
+#### Step 9. Select output options
+
+- Select the `Output` pane
+- On the `Basic` sub-pane, check the `Write VTK output files (VTU/VTP)` checkbox
+
+<img alt="create project" src="media/gui_tfm_2d_output.png" style="width:800;height:600" />
+
+- Select the `VTK` sub-pane
+- Create a new output by clicking the ![new](../mfixgui/icons/add.png) button
+- Select the "Background IC" region from the list to save all the cell data
+- Click `OK` to create the output
+
+<img alt="create project" src="media/gui_tfm_2d_newoutput.png" style="width:800;height:600" />
+
+- Enter a base name for the `*.vtu` files in the `Filename base` field
+- Change the `Write interval` to "0.1" seconds
+- Select the `Volume fraction`, `Pressure`, and `Velocity vector` check-boxes on the `Fluid` sub-sub-pane
+
+<img alt="create project" src="media/gui_tfm_2d_output_vtk.png" style="width:800;height:600" />
+
+#### Step 10. Run the project
+
+- Save project by clicking ![new](../mfixgui/icons/save.png) button
+- Run the project by clicking the ![new](../mfixgui/icons/play.png) button
+- On the `Run` dialog, select the executable from the combo-box
+- Click the `Run` button to actually start the simulation
+
+<img alt="create project" src="media/gui_rundialog_local.png" style="width:800;height:600" />
+
+#### Step 11. View results
+
+Results can be viewed, and plotted, while the simulation is running.
+
+- Create a new visualization tab by pressing the ![new](../mfixgui/icons/add.png) in the upper right hand corner.
+- Select an item to view, such as plotting the time step (dt) or click the `VTK` button to view the vtk output files.
+
+<img alt="create project" src="media/gui_tfm_2d_new_output.png" style="width:800;height:600" />
+
+- On the `VTK` results tab, the visibility and representation of the `*.vtk` files can be controlled with the `Visibility` menu.
+
+<img alt="create project" src="media/gui_vtk_visible_dialog.png" style="width:800;height:600" />
+
+-
