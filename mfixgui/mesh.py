@@ -49,7 +49,7 @@ def ctrl_pts_to_loc(ctrl, min_loc):
             prev_cell_w = cell_w
         last = loc[-1]
 
-    loc = [round(x, 10) for x in loc]
+    #loc = [round(x, 10) for x in loc] # ???
     return loc
 
 
@@ -62,7 +62,7 @@ def linspace(f, t, c):
     for i in range(c):
         l.append(l[-1]+dx)
     l[-1] = t # make sure the last value is the one given
-    l = [round(x, 10) for x in l]
+    #l = [round(x, 10) for x in l] # ????
     return l
 
 
@@ -204,22 +204,19 @@ class Mesh(object):
     def init_background_mesh(self):
         """init the background mesh"""
         project = self.project
-        self.mesh_extents = []
+
+        self.mesh_extents = [safe_float(project.get_value(key, default=0.0))
+                             for key in MESH_EXTENT_KEYS]
+        self.mesh_cells = [safe_int(project.get_value(key, default=1))
+                           for key in MESH_CELL_KEYS]
         self.mesh_spacing = [[], [], []]
 
         # disable delete btns
         for btn in self.mesh_delete_btns:
             btn.setEnabled(False)
 
-        for key in MESH_EXTENT_KEYS:
-            self.mesh_extents.append(safe_float(project.get_value(key, default=0.0)))
-
-        self.mesh_cells = []
-        for key in MESH_CELL_KEYS:
-            self.mesh_cells.append(safe_int(project.get_value(key, default=1)))
-
         # collect dx, dy, dz
-        for i, (s, c, e) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS, MESH_EXTENT_KEYS[1::2])):
+        for (i, (s, c)) in enumerate(zip(['dx', 'dy', 'dz'], MESH_CELL_KEYS)):
             d = [project.get_value(s, args=args) for args in sorted(project.get_key_indices(s))]
             l = len(d)
 
@@ -227,14 +224,14 @@ class Mesh(object):
             if l > 0:
                 self.mesh_cells[i] = l
                 self.update_mesh_keyword(c, l)
-                m = sum(d)
-                self.mesh_extents[i*2+1] = m
-                self.update_mesh_keyword(e, m)
+                #m = sum(d)
+                #self.mesh_extents[i*2+1] = m
+                #self.update_mesh_keyword(e, m)
                 self.mesh_spacing[i] = d
                 self.extract_mesh_spacing(i, d)
 
         # collect variable grid spacing keywords
-        for i, k in enumerate(['x', 'y', 'z']):
+        for (i, k) in enumerate(['x', 'y', 'z']):
             indices = project.get_key_indices('cp' + k)
             if indices:
                 table_dic = OrderedDict()
@@ -252,19 +249,24 @@ class Mesh(object):
         self.update_background_mesh()
 
     def extract_mesh_spacing(self, index, spacing):
-        """given a list of cell spacing, convert to control points"""
+        """given a list of cell spacing, convert to control points,
+        also update [xyz]_max"""
 
         start = 0
         table_dic = OrderedDict()
         d = ['x', 'y', 'z'][index]
 
-        for i, (val, count)  in enumerate([(k, sum(1 for i in g)) for k, g in groupby(spacing)]):
+        for (i, (val, count)) in enumerate((k, sum(1 for _i in g))
+                                         for (k,g) in groupby(spacing)):
             loc = count*val + start
             start = loc
             self.update_mesh_keyword('cp' + d, loc, args=i)
             self.update_mesh_keyword('nc' + d, count, args=i)
             table_dic[i] = {'position': loc, 'cells': count, 'stretch': 1.0,
                             'first': 0.0, 'last': 0.0}
+        #Ending location is [xyz]_max
+        self.mesh_extents[index*2+1] = loc
+        self.update_mesh_keyword(MESH_EXTENT_KEYS[1::2][index], loc)
         for i in range(len(spacing)):
             self.unset_keyword('d' + d, args=i)
 
