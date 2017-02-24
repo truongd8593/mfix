@@ -26,3 +26,5 @@ Install MFIX with:
 For information on building and installing MFIX, see the [Setup Guide](doc/SETUP_GUIDE.md).
 
 For information on running MFIX, see the [User Guide](doc/USER_GUIDE.md).
+
+For tutorials, see the [Tutorials](doc/TUTORIALS.md).
