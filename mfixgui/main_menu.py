@@ -440,20 +440,21 @@ class MainMenu(object):
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
         # link only works after running: python setup.py build_doc
-        help_info = QtWidgets.QLabel('''
-        See <a href="%s">User Guide</a> for documentation on using the GUI;
-        See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers
-        ''' % (path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
-               path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'INSTALL.html'))))
-        help_info.setStyleSheet('background-color: white;')
-        help_info.setWordWrap(True)
-        hw_layout.addWidget(help_info, 2, 0, 1, -1)
-
         def open_user_guide(linkStr):
             QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
-        help_info.linkActivated.connect(open_user_guide)
-        help_info.setOpenExternalLinks(True)
+        for i, help_text in enumerate([
+            'See <a href="%s">User Guide</a> for documentation on using the GUI' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
+            'See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'INSTALL.html')),
+            'See <a href="%s">Tutorials</a> text based model setup tutorials' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'TUTORIALS.html')),
+            ]):
+
+            help_info = QtWidgets.QLabel(help_text)
+            help_info.setStyleSheet('background-color: white;')
+            help_info.setWordWrap(True)
+            help_info.linkActivated.connect(open_user_guide)
+            help_info.setOpenExternalLinks(True)
+            hw_layout.addWidget(help_info, 10+i, 0, 1, -1)
 
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 

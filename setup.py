@@ -5,26 +5,24 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
+import codecs
+import distutils.cygwinccompiler
+import errno
 import platform
 import shutil
 import subprocess
 import sys
 import tempfile
 import zipfile
-
-import distutils.cygwinccompiler
-import errno
-
-import codecs
-from os import makedirs, path, walk
 from glob import glob
+from os import makedirs, path, walk
+
+from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
+from numpy.distutils.command.build_ext import build_ext
+from numpy.distutils.core import Extension, setup
 
 # must import setuptools before numpy.distutils
 import setuptools
-from numpy.distutils.core import Extension, setup
-from numpy.distutils.command.build_ext import build_ext
-
-from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
 exec(codecs.open('mfixgui/version.py').read())
 
@@ -108,7 +106,8 @@ def build_doc():
     pandoc_args = ['-s', '--toc', '-N', '-m']
     docs = [('', 'README'),
             ('doc', 'SETUP_GUIDE'),
-            ('doc', 'USER_GUIDE')]
+            ('doc', 'USER_GUIDE'),
+            ('doc', 'TUTORIALS')]
     rendered_docs = []
     for src in docs:
 
@@ -128,6 +127,7 @@ def build_doc():
         # fix links in README to the GUIDES
         data = data.replace('SETUP_GUIDE.md', 'SETUP_GUIDE.html')
         data = data.replace('USER_GUIDE.md', 'USER_GUIDE.html')
+        data = data.replace('TUTORIALS.md', 'TUTORIALS.html')
 
         with codecs.open(doc_dest, 'w', encoding='utf8') as doc:
             doc.write(data)
