@@ -299,7 +299,7 @@ setup(
     package_data={
         'mfixgui.colormaps': ['*'],
         'mfixgui.icons': ['*.png'],
-        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
+        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt', 'template_data.json'],
         'mfixgui.uifiles': ['*'],
         'mfixgui.widgets': ['burcat.pickle'],
         'mfixgui.doc': build_doc(),

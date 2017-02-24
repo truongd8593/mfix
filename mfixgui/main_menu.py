@@ -755,7 +755,7 @@ class MainMenu(object):
 
         # read info about the template files
         temp_info = {}
-        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
+        temp_info_file = os.path.join(SCRIPT_DIRECTORY, 'tools', 'template_data.json')
         if os.path.exists(temp_info_file):
             with open(temp_info_file) as f:
                 temp_info = json.load(f)
