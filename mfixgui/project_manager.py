@@ -322,7 +322,6 @@ class ProjectManager(Project):
                 warnings.warn("nmax_g = %d, %d gas species defined" %
                               (nmax_g, len(self.gasSpecies)))
 
-
             # Make sure they are sorted by index before inserting into gui
             self.gasSpecies.sort(key=lambda a: a.ind)
             self.solids.sort(key=lambda a:a.ind)
@@ -549,7 +548,11 @@ class ProjectManager(Project):
             vector_keys = set(['des_en_input', 'des_en_wall_input',
                         'des_et_input', 'des_et_wall_input'])
 
+
             # issues/142: set ic_ep_s from ic_ep_g
+
+            # Volume fraction may be inferred from BC_EP_G resp IC_EP_G
+            # Only valid for one solids phase (MMAX=1)
             if len(self.solids) == 1:
                 for IC in range(1, len(self.ics)+1):
                     ic_ep_g = self.get_value('ic_ep_g', args=[IC])
@@ -673,6 +676,87 @@ class ProjectManager(Project):
                     self.gui.unset_keyword(key, args=args)
 
 
+            # Compute BC_EP_S from BC_ROP_S if present, same for IC
+
+            # Some input decks may or may not contain BC_EP_S keyword:
+            for prefix in 'bc_', 'ic_':
+                key = prefix + 'rop_s'
+                for args in self.get_key_indices(key):
+                    if len(args) != 2:
+                        warnings.warn('invalid key %s' %
+                                      format_key_with_args(key, args))
+                        self.gui.unset_keyword(key, args=args)
+                        continue
+                    ep_s_key = prefix + 'ep_s'
+                    if self.get_value(ep_s_key, args=args) is not None:
+                        warnings.warn('%s and %s both set' % (
+                            format_key_with_args(key, args),
+                            format_key_with_args(ep_s_key, args)))
+                        self.gui.unset_keyword(key, args=args) #? remove redundant key
+                        continue
+
+                    # Volume fraction is specified using the solids bulk density
+                    # BC_EP_S(#,#) == BC_ROP_S(#,#) / BC_ROs(#)
+
+                    # Solids density BC_ROs is determined by the solids density
+                    # model. For constant solids density, use RO_S0.
+                    rop = self.get_value(key, args=args)
+                    self.gui.unset_keyword(key, args=args) # Don't keep redundant key defined
+                    C, M = args
+                    ro = self.get_value('ro_s0', args=[M])
+                    if ro is None:  # Variable solids density
+                        # SRS Appendix E
+                        #Calculating the solids density is done in the context an
+                        # initial condition (IC) region, but it is the same calculations
+                        # hold for boundary conditions (BCs).
+                        #    Keyword RO_S0(#) must be undefined
+                        #    Requires material densities for all solids species, RO_XS0(#,#)
+                        nmax_s = self.get_value('nmax_s', args=[M], default=0)
+                        if nmax_s == 0:
+                            warnings.warn('no species for phase %s' % M)
+                            continue
+                        ro_xs0 = [self.get_value(prefix+'ro_xs0', args=[M,S])
+                              for S in range(1, 1+nmax_s)]
+                        if None in ro_xs0:
+                            warnings.warn('no density (ro_xs0) for phase %s species %s' %
+                                          (M, 1+ro_xs0.index(None)))
+                            continue
+                        #    Requires base composition be specified, X_S0(#,#)
+                        x_s0 = [self.get_value('x_s0', args=[M,S], default=0.0)
+                           for S in range(1, 1+nmax_s)]
+                        #if None in x_s0:
+                        #    warnings.warn('no volume fraction (xs0) for phase %s species %s' %
+                        #                  (M, 1+xs0.index(None)))
+                        #    continue
+
+                        #    Requires an inert species be identified, INERT_SPECIES(#)
+                        I = self.get_value('inert_species', args=[M])
+                        if I is None:
+                            warnings.warn('no inert species for phase %s' % M)
+                            continue
+
+                        #1) Calculate the baseline density,
+                        # RO_S0(M) = 1.0/sumk(X_S0(M,K)/RO_XS0(M,K))
+                        ro_s0 = 1.0 / sum(a/b for (a,b) in zip(x_s0, ro_xs0))
+
+                        #2) Calculate the solids density:
+                        #a. Let I=INERT_SPECIES(M)
+                        #b. IC_RO_S(M) = RO_S0(M) * X_S0(M,I)/IC_X_S(#,M,I)
+                        x_s = self.get_value(prefix+'x_s', args=[N,M,I], default=0.0)
+                        try:
+                            ro = ro_s0 * x_s0[I-1] / x_s
+                        except Exception as e:
+                            excs.append(e)
+                            continue
+                    try:
+                        ep = rop / ro
+                    except Exception as e:
+                        excs.append(e)
+                        continue
+                    self.gui.update_keyword(ep_s_key, ep, args=args)
+
+
+
             # Submit all remaining keyword updates, except the ones we're skipping
             # some of these changes may cause new keywords to be instantiated,
             # so iterate over a copy of the list, which may change
@@ -734,9 +818,13 @@ class ProjectManager(Project):
             else:
                 if ws:
                     msg = plural(len(ws), 'warning')
-                    self.gui.print_internal("Loaded %s with %s" % (os.path.basename(project_file), msg), color='red')
+                    self.gui.print_internal("Loaded %s with %s" %
+                                            (os.path.basename(project_file), msg),
+                                            color='red')
                 else:
-                    self.gui.print_internal("Loaded %s" % os.path.basename(project_file), color='blue')
+                    self.gui.print_internal("Loaded %s" % os.path.basename(project_file),
+                                            color='blue')
+
 
     def convert_particle_file_units(self, filename):
         basename = os.path.basename(filename)
