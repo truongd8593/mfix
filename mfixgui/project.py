@@ -1386,7 +1386,7 @@ class Project(object):
                               format_key_with_args(key, args))
             # Solid Species
             elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
-                         'ro_s', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
+                         'ro_s0', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
                          'solids_model', 'close_packed', ]:
                 if args[0] not in self.solids:
                     solid = self.solids.new(args[0])
