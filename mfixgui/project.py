@@ -340,6 +340,9 @@ class Equation(object):
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
 
+    def __round__(self, n):
+        return self
+
     def dumps(self):
         return '%s #!MFIX-GUI eq{%s}' % (
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
