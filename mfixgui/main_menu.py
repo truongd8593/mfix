@@ -1,13 +1,12 @@
 """the main (file menu) bar."""
 import json
 import os
-import subprocess
 import sys
 
 import qtpy
 from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
                                    get_pixmap, get_separator)
-from mfixgui.version import __version__, get_git_revision_short_hash
+from mfixgui.version import get_git_revision_short_hash, get_version
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 from qtpy import API_NAME, QtCore, QtGui, QtWidgets
 
@@ -44,7 +43,7 @@ except ImportError:
 def path2url(path):
     """Convert path to url."""
     return urlparse.urljoin(
-      'file:', urllib.pathname2url(path))
+        'file:', urllib.pathname2url(path))
 
 class MainMenu(object):
     """Main menu mixin for the gui."""
@@ -484,7 +483,7 @@ class MainMenu(object):
             git_des = get_git_revision_short_hash()
 
         self.version_labels = [
-            '<b>MFiX GUI version:</b> {}'.format(__version__),
+            '<b>MFiX GUI version:</b> {}'.format(get_version()),
             '<b>Git description:</b> {}'.format(git_des) if git_des is not None else None,
             '<b>Python version:</b> {}'.format(sys.version),
             '<b>Qt Wrapper:</b> {}'.format(API_NAME),
