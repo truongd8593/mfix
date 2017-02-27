@@ -133,7 +133,7 @@
       IF(MODE==0) CALL OPEN_PVD_FILE
 
       IF(.NOT.VTK_DOMAIN_DECOMPOSITION(VTK_REGION)) THEN
-         
+
          CALL CLEAN_GEOMETRY
 
          DO PASS=WRITE_HEADER,WRITE_DATA
@@ -314,7 +314,7 @@
 
 
          ENDDO ! PASS LOOP, EITHER HEADER OR DATA
-         
+
       ENDIF
 
 
@@ -484,7 +484,6 @@
               ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'SEQUENTIAL' if 'STREAM' is not supported
               ACTION   = 'WRITE',            &
-              CONVERT  = 'BIG_ENDIAN',       &
               IOSTAT=ISTAT)
 
 
@@ -549,7 +548,7 @@
       Z1 = LIST_OF_Z_LINES_DES(0)
       Z2 = LIST_OF_Z_LINES_DES(NODESK)
 
-! Change extension to .vtr (rectilinear mesh)      
+! Change extension to .vtr (rectilinear mesh)
       LAST_CHAR = LEN(TRIM(VTU_FILENAME))
       VTU_FILENAME(LAST_CHAR:LAST_CHAR) = 'r'
 
@@ -563,7 +562,7 @@
          &WholeExtent="',0,NODESI,0,NODESJ,0,NODESK,'">'
 
       WRITE(VTU_UNIT,'(A,6I6,A)') '<Piece Extent="',0,&
-         NODESI,0,NODESJ,0,NODESK,'">' 
+         NODESI,0,NODESJ,0,NODESK,'">'
       WRITE(VTU_UNIT,'(A)') '<Coordinates>'
 
 
