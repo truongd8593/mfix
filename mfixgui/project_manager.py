@@ -276,6 +276,8 @@ class ProjectManager(Project):
                     if factor is not None:
                         try:
                             kw.value *= factor
+                            if isinstance(kw.value, float):
+                                kw.value = round(kw.value, 16)
                             self.gui.set_unsaved_flag()
                         except Exception as e:
                             warnings.warn('%s: %s * %s' % (str(e), factor, kw.value))
