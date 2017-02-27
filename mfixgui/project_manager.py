@@ -751,7 +751,8 @@ class ProjectManager(Project):
                             excs.append(e)
                             continue
                     try:
-                        ep = rop / ro
+                        ep = round(rop / ro, 10)
+
                     except Exception as e:
                         excs.append(e)
                         continue
