@@ -124,6 +124,8 @@ def main():
     """The main function starts MFiX on a separate thread, then
        start the Flask server. """
 
+    os.environ['GFORTRAN_CONVERT_UNIT'] = 'BIG_ENDIAN'
+
     mfix_dat, solver, paused, port, keyword_args = parse_command_line_arguments()
 
     import_mfixsolver(solver)
