@@ -749,7 +749,8 @@ class Collection(list):
             return False
 
     def __getitem__(self, item):
-        for itm in self: # XX FIXME - O(n^2)
+        for itm in self:
+            # Slow - O(n^2).  But we're not really using this.
             if itm.ind == item:
                 return itm
 
@@ -1113,8 +1114,8 @@ class Project(object):
                                 keywordArgList.append([n] + args[1:])
                         else:
                             # hack for species eq
-                            # FIXME - do this for more keywords which start
-                            # at 0, like momentum_eq (?)
+                            # TODO - do we need to dothis for more
+                            # keywords which start at 0, like momentum_eq (?)
                             start = 0 if key == 'species_eq' else 1
                             for val in range(start, numVals+1):
                                 keywordArgList.append([val]+args[1:])

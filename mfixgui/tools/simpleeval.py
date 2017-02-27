@@ -303,11 +303,11 @@ class SimpleEval(object): # pylint: disable=too-few-public-methods
                                       "evaluator".format(type(node).__name__ ))
 
 def simple_eval(expr, names={}):
-    ''' Simply evaluate an expresssion '''
+    ''' evaluate an expresssion '''
     s = SimpleEval(names=names)
     v = s.eval(expr)
-    if isinstance(v, float):
-        v = round(v, 6)
+    #if isinstance(v, float):
+    #    v = round(v, 10)
     return v
 
 
