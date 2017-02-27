@@ -133,7 +133,7 @@ def build_doc():
             doc.write(data)
 
         # fix links to images in packaged docs
-        data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
+        data = data.replace('../mfixgui/icons', '../icons')
 
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)

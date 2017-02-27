@@ -3,7 +3,7 @@
 This document explains how to run MFIX 17.1, using either the GUI or the command line.
 
 This document assumes MFIX is already installed. For information on building or
-installing MFIX, please see the setup guide: [INSTALL.html](INSTALL.html)
+installing MFIX, please see the [Setup Guide](SETUP_GUIDE.html).
 
 Everything in this document applies to each platform (Linux, Mac, Windows)
 unless otherwise noted.
@@ -268,7 +268,7 @@ To run locally, select the "Run local MFiX executable" tab. Select an executable
 from the dropdown list or click the browse button to specify an executable that
 is not in the list. Usually the default installed solver should be sufficient.
 If running a case with UDFs, you need to first build a case-specific MFIX as
-described in the [setup guide](INSTALL.html#building-custom-mfixsolver). You may
+described in the [setup guide](SETUP_GUIDE.html#building-custom-mfixsolver). You may
 want to build your own solver for other reasons, such as specifying various
 compiler flags to optimize the executable for your specific hardware.
 
