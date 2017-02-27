@@ -177,7 +177,7 @@ If you built MFIX as described in [Building MFIX](#building-mfix), use those bin
 Otherwise, download the latest binaries for your platform:
 
 - [latest Linux binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_linux_py3)
-- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_windows_py3)
+- [latest Mac binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_mac_py3)
 - [latest Windows binaries](https://mfix.netl.doe.gov/gitlab/develop/mfix/builds/artifacts/develop/download?job=build_windows_py3)
 
 <!-- TODO: replace with links to website for actual release -->

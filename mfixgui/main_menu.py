@@ -445,7 +445,7 @@ class MainMenu(object):
 
         for i, help_text in enumerate([
             'See <a href="%s">User Guide</a> for documentation on using the GUI' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
-            'See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'INSTALL.html')),
+            'See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'SETUP_GUIDE.html')),
             'See <a href="%s">Tutorials</a> text based model setup tutorials' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'TUTORIALS.html')),
             ]):
 
