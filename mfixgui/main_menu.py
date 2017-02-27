@@ -7,7 +7,7 @@ import sys
 import qtpy
 from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
                                    get_pixmap, get_separator)
-from mfixgui.version import __version__
+from mfixgui.version import __version__, get_git_revision_short_hash
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 from qtpy import API_NAME, QtCore, QtGui, QtWidgets
 
@@ -45,14 +45,6 @@ def path2url(path):
     """Convert path to url."""
     return urlparse.urljoin(
       'file:', urllib.pathname2url(path))
-
-def get_git_revision_short_hash():
-    """Try to get the current git hash"""
-    try:
-        git_hash = subprocess.check_output(['git', 'describe', '--always']).strip()
-    except:
-        git_hash = None
-    return git_hash
 
 class MainMenu(object):
     """Main menu mixin for the gui."""
