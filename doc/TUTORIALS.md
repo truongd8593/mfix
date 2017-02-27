@@ -2,7 +2,7 @@
 
 ## Basic Tutorials
 
-### 2D Fluid Bed
+### 2 Dimensional Fluid Bed, Two Fluid Model (TFM)
 
 This tutorial shows how to create a two dimensional fluidized bed simulation
 using the two fluid model. The model setup is:
@@ -51,7 +51,8 @@ using the two fluid model. The model setup is:
 #### Step 5. Create regions for initial and boundary condition specification
 
 - Select the `Regions` pane
-- click the ![new](../mfixgui/icons/add.png) button to create a new region to be used for the bed initial condition.
+- click the ![new](../mfixgui/icons/add.png) button to create a new region to be
+used for the bed initial condition.
   - Enter a name for the region in the `Name` field
   - Change the color by pressing the `Color` button
   - Enter "xmin" or "min" in the `From X` field
@@ -63,12 +64,18 @@ using the two fluid model. The model setup is:
 
 <img alt="create project" src="media/gui_tfm_2d_region1.png" style="width:800;height:600" />
 
-- Click the ![new](../mfixgui/icons/bottom_region.png) button to create a new region with the `From` and `To` fields already filled out for a region at the bottom of the domain, to be used by the gas inlet boundary condition. `From Y` should equal `To Y`, defining an XZ-plane.
+- Click the ![new](../mfixgui/icons/bottom_region.png) button to create a new
+region with the `From` and `To` fields already filled out for a region at the
+bottom of the domain, to be used by the gas inlet boundary condition. `From Y`
+should equal `To Y`, defining an XZ-plane.
   - Enter a name for the region in the `Name` field
 
 <img alt="create project" src="media/gui_tfm_2d_region2.png" style="width:800;height:600" />
 
-- Click the ![new](../mfixgui/icons/top_region.png) button to create a new region with the `From` and `To` fields already filled out for a region at the top of the domain, to be used by the pressure outlet boundary condition. `From Y` should equal `To Y`, defining an XZ-plane.
+- Click the ![new](../mfixgui/icons/top_region.png) button to create a new
+region with the `From` and `To` fields already filled out for a region at the
+top of the domain, to be used by the pressure outlet boundary condition.
+`From Y` should equal `To Y`, defining an XZ-plane.
   - Enter a name for the region in the `Name` field
 
 <img alt="create project" src="media/gui_tfm_2d_region3.png" style="width:800;height:600" />
@@ -91,30 +98,38 @@ using the two fluid model. The model setup is:
 
 <img alt="create project" src="media/gui_tfm_2d_ics1.png" style="width:800;height:600" />
 
-- Create a new Initial Condition by pressing the ![new](../mfixgui/icons/add.png) button
-- Select the region created previously for the bed Initial Condition and click the `OK` button
+- Create a new Initial Condition by pressing the
+![new](../mfixgui/icons/add.png) button
+- Select the region created previously for the bed Initial Condition and click
+the `OK` button
 
 <img alt="create project" src="media/gui_tfm_2d_newic.png" style="width:800;height:600" />
 
-- Select the solid (named previously) sub-pane and enter a volume fraction of "0.4" in the `Volume Fraction` field.
+- Select the solid (named previously) sub-pane and enter a volume fraction of
+"0.4" in the `Volume Fraction` field.
 
 <img alt="create project" src="media/gui_tfm_2d_ics2.png" style="width:800;height:600" />
 
 #### Step 8. Create Boundary Conditions
 
 - Select the `Boundary Conditions` pane
-- Create a new Boundary condition by clicking the ![new](../mfixgui/icons/add.png) button
-- On the `Select Region` dialog, select "Mass Inflow" from the `Boundary type` combo-box
+- Create a new Boundary condition by clicking the
+![new](../mfixgui/icons/add.png) button
+- On the `Select Region` dialog, select "Mass Inflow" from the `Boundary type`
+combo-box
 - Select the "inlet" region and click `OK`
 
 <img alt="create project" src="media/gui_tfm_2d_newbc1.png" style="width:800;height:600" />
 
-- On the "Fluid" sub-pane, enter a velocity in the `Y-axial velocity` field of "0.25" m/s
+- On the "Fluid" sub-pane, enter a velocity in the `Y-axial velocity` field of
+"0.25" m/s
 
 <img alt="create project" src="media/gui_tfm_2d_bcs1.png" style="width:800;height:600" />
 
-- Create another Boundary condition by clicking the ![new](../mfixgui/icons/add.png) button
-- On the `Select Region` dialog, select "Pressure Outflow" from the `Boundary type` combo-box
+- Create another Boundary condition by clicking the
+![new](../mfixgui/icons/add.png) button
+- On the `Select Region` dialog, select "Pressure Outflow" from the
+`Boundary type` combo-box
 - Select the "outlet" region and click `OK`
 
 > Note: The default pressure is already set to 101325 Pa, no changes need to be
@@ -138,7 +153,8 @@ using the two fluid model. The model setup is:
 
 - Enter a base name for the `*.vtu` files in the `Filename base` field
 - Change the `Write interval` to "0.1" seconds
-- Select the `Volume fraction`, `Pressure`, and `Velocity vector` check-boxes on the `Fluid` sub-sub-pane
+- Select the `Volume fraction`, `Pressure`, and `Velocity vector` check-boxes on
+the `Fluid` sub-sub-pane
 
 <img alt="create project" src="media/gui_tfm_2d_output_vtk.png" style="width:800;height:600" />
 
@@ -163,17 +179,39 @@ using the two fluid model. The model setup is:
 
 Results can be viewed, and plotted, while the simulation is running.
 
-- Create a new visualization tab by pressing the ![new](../mfixgui/icons/add.png) in the upper right hand corner.
-- Select an item to view, such as plotting the time step (dt) or click the `VTK` button to view the vtk output files.
+- Create a new visualization tab by pressing the
+![new](../mfixgui/icons/add.png) in the upper right hand corner.
+- Select an item to view, such as plotting the time step (dt) or click the `VTK`
+button to view the vtk output files.
 
 <img alt="create project" src="media/gui_tfm_2d_new_output.png" style="width:800;height:600" />
 
-- On the `VTK` results tab, the visibility and representation of the `*.vtk` files can be controlled with the `Visibility` menu.
+- On the `VTK` results tab, the visibility and representation of the `*.vtk`
+files can be controlled with the `Visibility` menu.
 
 <img alt="create project" src="media/gui_vtk_visible_dialog.png" style="width:800;height:600" />
 
-- Change frames with the ![new](../mfixgui/icons/first.png), ![new](../mfixgui/icons/back.png), ![new](../mfixgui/icons/next.png), and ![new](../mfixgui/icons/last.png) buttons
-- Click the ![new](../mfixgui/icons/play.png) button to play the available vtk files.
+- Change frames with the ![new](../mfixgui/icons/first.png),
+![new](../mfixgui/icons/back.png), ![new](../mfixgui/icons/next.png), and
+![new](../mfixgui/icons/last.png) buttons
+- Click the ![new](../mfixgui/icons/play.png) button to play the available vtk
+files.
 - Change the playback speed with the ![new](../mfixgui/icons/speed.png) button
 
 <img alt="create project" src="media/gui_tfm_2d_vtk_view.png" style="width:800;height:600" />
+
+
+### 2 Dimensional Fluid Bed, Discrete Element Model (DEM)
+
+This tutorial shows how to create a two dimensional fluidized bed simulation
+using the Discrete Element Model. The model setup is:
+
+| Property       | Value                    |
+|----------------|--------------------------|
+| geometry       | 5 cm x 10 cm x 2 cm      |
+| mesh           | 20 x 40 x 1              |
+| solid diameter | 1000 microns (1000e-6 m) |
+| solid density  | 2500 kg/m2               |
+| gas velocity   | 3.0 m/s                  |
+| temperature    | 298 K                    |
+| pressure       | 101325 Pa                |
