@@ -550,38 +550,34 @@ class ProjectManager(Project):
             vector_keys = set(['des_en_input', 'des_en_wall_input',
                         'des_et_input', 'des_et_wall_input'])
 
-
             # issues/142: set ic_ep_s from ic_ep_g
-
             # Volume fraction may be inferred from BC_EP_G resp IC_EP_G
             # Only valid for one solids phase (MMAX=1)
-            if len(self.solids) == 1:
-                for IC in range(1, len(self.ics)+1):
-                    ic_ep_g = self.get_value('ic_ep_g', args=[IC])
+            #  or if IC_EP_G == 1.0, when all IC_EP_S must be 0
+            for IC in range(1, len(self.ics)+1):
+                ic_ep_g = self.get_value('ic_ep_g', args=[IC])
+                if ic_ep_g == 1.0:
+                    for P in range(1, len(self.solids)+1):
+                        self.gui.update_keyword('ic_ep_s', 0.0, args=[IC,P])
+                elif len(self.solids) == 1:
                     ic_ep_s = self.get_value('ic_ep_s', args=[IC,1])
                     if ic_ep_s is None and ic_ep_g is not None:
-                        # For files saved by the gui, this should not happen  - we explicitly save all ic_ep keys
+                        # For files saved by the gui, this should not happen,
+                        # we explicitly save all ic_ep keys
                         val = round(1.0-ic_ep_g, 10)
                         self.gui.update_keyword('ic_ep_s', val, args=[IC,1])
 
-                # same for bc_ep_s
-                for BC in range(1, len(self.bcs)+1):
-                    bc_ep_g = self.get_value('bc_ep_g', args=[BC])
+            # same for bc_ep_s
+            for BC in range(1, len(self.bcs)+1):
+                bc_ep_g = self.get_value('bc_ep_g', args=[BC])
+                if bc_ep_g == 1.0:
+                    for P in range(1, len(self.solids)+1):
+                        self.gui.update_keyword('bc_ep_s', 0.0, args=[BC,P])
+                elif len(self.solids) == 1:
                     bc_ep_s = self.get_value('bc_ep_s', args=[BC,1])
                     if bc_ep_s is None and bc_ep_g is not None:
                         val = round(1.0-bc_ep_g, 10)
                         self.gui.update_keyword('bc_ep_s', val, args=[BC,1])
-
-            for IC in range(1, len(self.ics)+1):
-                ic_ep_g = self.get_value('ic_ep_g', args=[IC])
-                for s in range(1, len(self.solids)+1):
-                    ic_ep_s = self.get_value('ic_ep_s', args=[IC,s])
-
-            for BC in range(1, len(self.bcs)+1):
-                bc_ep_g = self.get_value('bc_ep_g', args=[IC])
-                for s in range(1, len(self.solids)+1):
-                    bc_ep_s = self.get_value('bc_ep_s', args=[BC,s])
-
 
             # issues/149 - don't save nodes[ijk] in file, pass on cmdline
             skipped_keys = set(['nodesi', 'nodesj', 'nodesk'])
