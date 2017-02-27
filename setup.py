@@ -6,23 +6,23 @@ http://mfix.netl.doe.gov/
 """
 
 import codecs
-import distutils.cygwinccompiler
 import errno
 import platform
 import shutil
 import subprocess
-import sys
 import tempfile
 import zipfile
 from glob import glob
 from os import makedirs, path, walk
 
-# must import setuptools before numpy.distutils
+# must import setuptools and cygwinccompiler before numpy.distutils
 import setuptools
+import distutils.cygwinccompiler
 
-from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 from numpy.distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension, setup
+
+from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
 exec(codecs.open('mfixgui/version.py').read())
 
@@ -39,6 +39,7 @@ MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
 def get_data_files():
+    """ walks subdirectories to generate a list of all files that get packaged as data_files """
     data_files = []
 
     for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
@@ -56,6 +57,7 @@ def get_data_files():
     return data_files
 
 def get_pymfix_src():
+    """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
         'param_mod.f',
         'param1_mod.f',
@@ -214,7 +216,6 @@ def mfix_prereq(command_subclass):
 class BuildExtCommand(build_ext):
     pass
 
-
 setup(
     name=NAME,
 
@@ -227,7 +228,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=__version__,
+    version=get_git_revision_short_hash(),
 
     description='A GUI for the MFiX computational fluid dynamics solver',
     long_description=LONG_DESCRIPTION,

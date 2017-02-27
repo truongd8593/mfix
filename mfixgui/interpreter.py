@@ -2,11 +2,12 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import sys, traceback
+import sys
+import traceback
 
 from code import InteractiveConsole
 
-from mfixgui.version import __version__
+from mfixgui.version import get_version
 
 from qtpy import QtGui
 from qtpy.QtCore import QEvent, Qt
@@ -75,7 +76,7 @@ class Interpreter(object):
         self.stderr = Output(err=True)
         self.interp = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
-        banner += 'MFiX-GUI version %s' % __version__ + '\n'
+        banner += 'MFiX-GUI version %s' % get_version + '\n'
         te.insertPlainText(banner)
 
 
