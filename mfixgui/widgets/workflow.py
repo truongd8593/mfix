@@ -345,13 +345,16 @@ class WorkflowWidget(QtWidgets.QWidget):
         if not self.file_timer.isActive():
             self.file_timer.start(1000)
 
-    def export_project(self, path=None, param_dict={}, keyword_dict={}):
+    def export_project(self, path=None, param_dict={}, keyword_dict={},
+                       restart=None, copy_project=None):
         """
         export a mfix project
 
         :path: directory to export the project to
         :param_dict: dictionary of parameters and values to use {'x':1.3}
         :keyword_dict: dictionary of keywords and values {'BC_V_g,1': 5.0}
+        :restart: must be one of None, 'restart_1', or 'restart_2'
+        :copy_project: directory to copy *.RES, *.SP?, and *.pvd files from
         """
         # copy parameters
         param_copy = copy.deepcopy(PARAMETER_DICT)
@@ -361,7 +364,17 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # copy files
         proj_dir = self.mfixgui.get_project_dir()
-        files_to_copy = glob.glob(os.path.join(proj_dir, '*.stl'))
+        f_patterns = ['*.stl', 'particle_input.dat', 'poly.dat']
+        if restart == 'restart_1':
+            f_patterns += ['*.RES', '*.SP?', '*.pvd']
+        elif restart == 'restart_2':
+            f_patterns += ['*.RES']
+        files_to_copy = []
+        for f_pattern in f_patterns:
+            src = proj_dir
+            if copy_project is not None and f_pattern in ['*.RES', '*.SP?', '*.pvd']:
+                src = copy_project
+            files_to_copy += glob.glob(os.path.join(src, f_pattern))
         for f in files_to_copy:
             shutil.copyfile(f, os.path.join(path, os.path.basename(f)))
 
