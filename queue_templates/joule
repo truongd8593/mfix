@@ -85,8 +85,5 @@ ${LOG}
 ##Load Modules
 module load ${MODULES}
 
-##Add mfix_home to python path so pymfix.py can be imported
-setenv PYTHONPATH ${MFIX_HOME}
-
 ##Run the job
 ${COMMAND}
