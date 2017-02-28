@@ -15,47 +15,43 @@ import os
 import random
 import re
 import shlex
-import site
 import subprocess
 import sys
 
 from collections import OrderedDict
 
-log = logging.getLogger(__name__)
 
 # TODO: factor out util funcs which don't require Qt
 # import qt
 from qtpy import QtGui, QtWidgets, QtCore
 
+log = logging.getLogger(__name__)
+
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
 
-SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+def find_mfixgui_module_directory():
+    """ return the directory corresponding to the module mfixgui/__init__.py """
+
+    general_mod = os.path.realpath(__file__)
+    tools_mod = os.path.dirname(general_mod)
+    mfixgui_mod = os.path.dirname(tools_mod)
+    return mfixgui_mod
+
+SCRIPT_DIRECTORY = find_mfixgui_module_directory()
 
 # Helper functions
 def get_mfix_home():
-    """return the top level MFiX directory"""
-    # TODO:  This is confusing, add comment why both get_mfix_home and
-    # SCRIPT_DIRECTORY are needed, and how they differ
-    top_level_pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-    # if configure_mfix is present, we weren't installed via setup.py
-    if os.path.exists(os.path.join(top_level_pkg_dir,'configure_mfix')):
-        return top_level_pkg_dir
-    elif os.path.exists(os.path.join(site.USER_BASE, 'share', 'mfix')):
-        return os.path.join(site.USER_BASE, 'share', 'mfix')
-    elif os.path.exists(os.path.join(sys.prefix, 'share', 'mfix')):
-        return os.path.join(sys.prefix, 'share', 'mfix')
-    elif os.path.exists(os.path.join('/usr', 'local', 'share', 'mfix')):
-        return os.path.join('/usr', 'local', 'share', 'mfix')
-    elif os.path.exists(os.path.join('/usr', 'share', 'mfix')):
-        return os.path.join('/usr', 'share', 'mfix')
+    """return the top level MFiX directory containing directories defaults,model,tutorials"""
+    mfix_src_root = os.path.dirname(find_mfixgui_module_directory())
+    if os.path.isfile(os.path.join(mfix_src_root, 'configure_mfix')):
+        # if configure_mfix is present, we are in a source directory
+        return mfix_src_root
     else:
-        for p in sys.path:
-            mfix_path = os.path.join(p, 'share', 'mfix')
-            if os.path.exists(mfix_path):
-                return mfix_path
-            mfix_path = os.path.join(p, os.pardir, os.pardir, os.pardir, 'share', 'mfix')
-            if os.path.exists(mfix_path):
+        # we are in an installed package, search PYPATH for directory named "mfix"
+        for pypath in sys.path:
+            mfix_path = os.path.join(pypath, 'mfix')
+            if os.path.isdir(mfix_path):
                 return mfix_path
         raise Exception("Unable to find MFIX_HOME")
 
@@ -190,7 +186,7 @@ def get_icon(name, default=None, resample=False):
     created from SVG images on non-Windows platforms due to a Qt bug (see
     http://code.google.com/p/spyderlib/issues/detail?id=1314)."""
 
-    icon = icon_cache.get((name,default,resample))
+    icon = icon_cache.get((name, default, resample))
     if icon:
         return icon
 
@@ -208,7 +204,7 @@ def get_icon(name, default=None, resample=False):
         icon_cache[(name, default, resample)] = icon0
         ret = icon0
     else:
-        ret= icon
+        ret = icon
     icon_cache[(name, default, resample)] = ret
     return ret
 

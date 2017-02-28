@@ -5,24 +5,22 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
+import codecs
+import errno
 import platform
 import shutil
 import subprocess
-import sys
 import tempfile
 import zipfile
-
-import distutils.cygwinccompiler
-import errno
-
-import codecs
-from os import makedirs, path, walk
 from glob import glob
+from os import makedirs, path, walk
 
-# must import setuptools before numpy.distutils
+# must import setuptools and cygwinccompiler before numpy.distutils
 import setuptools
-from numpy.distutils.core import Extension, setup
+import distutils.cygwinccompiler
+
 from numpy.distutils.command.build_ext import build_ext
+from numpy.distutils.core import Extension, setup
 
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
@@ -41,6 +39,7 @@ MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
 def get_data_files():
+    """ walks subdirectories to generate a list of all files that get packaged as data_files """
     data_files = []
 
     for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
@@ -48,20 +47,17 @@ def get_data_files():
             dir_files = []
             for f in files:
                 dir_files.append(path.join(root, f))
-            data_files.append((path.join('share', NAME, root), dir_files))
+            data_files.append((path.join(NAME, root), dir_files))
 
     if platform.system() == 'Windows':
         fortran_dlls = zipfile.ZipFile(path.join('build-aux', 'Win64', 'FORTRAN_DLLS.zip'))
         data_files += fortran_dlls.namelist()
         fortran_dlls.extractall()
 
-        if sys.version_info[0] == 3:
-            # Python 3 on Windows needs patched
-            patch_distutils()
-
     return data_files
 
 def get_pymfix_src():
+    """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
         'param_mod.f',
         'param1_mod.f',
@@ -110,26 +106,41 @@ def make_mfixsolver():
 
 def build_doc():
     pandoc_args = ['-s', '--toc', '-N', '-m']
-    docs = ['README', 'INSTALL', 'USER_GUIDE']
+    docs = [('', 'README'),
+            ('doc', 'SETUP_GUIDE'),
+            ('doc', 'USER_GUIDE'),
+            ('doc', 'TUTORIALS')]
     rendered_docs = []
-    for docname in docs:
+    for src in docs:
 
-        doc_src = docname + '.md'
-        doc_dest = '%s.html' % docname
-        doc_pkg = 'mfixgui/doc/%s.html' % docname
+        doc_src = path.join(*src) + '.md'
+
+        # doc_dest is useful for previewing docs using build_doc directly
+        doc_dest = path.join(*src) + '.html'
+
+        # doc_pkg is the location for the docs distributed in the package
+        doc_pkg = path.join('mfixgui', path.join(*src) + '.html')
 
         subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
 
         with codecs.open(doc_dest, encoding="utf8") as doc:
             data = doc.read()
 
-        # fix links to images
-        data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
+        # fix links in README to the GUIDES
+        data = data.replace('SETUP_GUIDE.md', 'SETUP_GUIDE.html')
+        data = data.replace('USER_GUIDE.md', 'USER_GUIDE.html')
+        data = data.replace('TUTORIALS.md', 'TUTORIALS.html')
+
+        with codecs.open(doc_dest, 'w', encoding='utf8') as doc:
+            doc.write(data)
+
+        # fix links to images in packaged docs
+        data = data.replace('../mfixgui/icons', '../icons')
 
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
 
-        rendered_docs.append(doc_dest)
+        rendered_docs.append(path.basename(doc_pkg))
 
     return rendered_docs
 
@@ -205,39 +216,6 @@ def mfix_prereq(command_subclass):
 class BuildExtCommand(build_ext):
     pass
 
-
-def patch_distutils():
-
-    def get_msvcr():
-        """Include the appropriate MSVC runtime library if Python was built
-        with MSVC 7.0 or later.
-        """
-        msc_pos = sys.version.find('MSC v.')
-        if msc_pos != -1:
-            msc_ver = sys.version[msc_pos+6:msc_pos+10]
-            if msc_ver == '1300':
-                # MSVC 7.0
-                return ['msvcr70']
-            elif msc_ver == '1310':
-                # MSVC 7.1
-                return ['msvcr71']
-            elif msc_ver == '1400':
-                # VS2005 / MSVC 8.0
-                return ['msvcr80']
-            elif msc_ver == '1500':
-                # VS2008 / MSVC 9.0
-                return ['msvcr90']
-            elif msc_ver == '1600':
-                # VS2010 / MSVC 10.0
-                return ['msvcr100']
-            elif msc_ver == '1900':
-                # VS2014 / MSVC 14.0
-                return ['msvcsr140']
-            else:
-                raise ValueError("Unknown MS Compiler version %s " % msc_ver)
-
-    distutils.cygwinccompiler.get_msvcr = get_msvcr
-
 setup(
     name=NAME,
 
@@ -250,7 +228,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=__version__,
+    version=get_git_revision_short_hash(),
 
     description='A GUI for the MFiX computational fluid dynamics solver',
     long_description=LONG_DESCRIPTION,
@@ -322,7 +300,7 @@ setup(
     package_data={
         'mfixgui.colormaps': ['*'],
         'mfixgui.icons': ['*.png'],
-        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt'],
+        'mfixgui.tools': ['keyword_args.txt', 'keywordDoc.json', 'keywordList.txt', 'template_data.json'],
         'mfixgui.uifiles': ['*'],
         'mfixgui.widgets': ['burcat.pickle'],
         'mfixgui.doc': build_doc(),

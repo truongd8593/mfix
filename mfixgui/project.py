@@ -37,8 +37,7 @@ CC0 1.0 Universal public domain.
 Please see the LICENSE.md for more information.
 """
 
-
-# Import from the future for Python 2 and 3 compatability!
+# Import from the future for Python 2 and 3 compatability
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 # Python core imports
@@ -341,6 +340,9 @@ class Equation(object):
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
 
+    def __round__(self, n):
+        return self
+
     def dumps(self):
         return '%s #!MFIX-GUI eq{%s}' % (
             self.dtype(self._eval()), ','.join([self.eq, PYTHON_TYPE_DICT_REVERSE[self.dtype]]))
@@ -395,6 +397,14 @@ class Equation(object):
 
     def __rmul__(self,x):
         return self.r_binop(x, '*')
+
+    def __div__(self, x):
+        return self.binop(x, '/')
+    __truediv__ = __floordiv__ = __div__
+
+    def __rdiv__(self, x):
+        return self.r_binop(x, '/')
+    __rtruediv__ = __rfloordiv__ = __rdiv__
 
     def __pow__(self, x):
         return self.binop(x, '**')
@@ -742,7 +752,8 @@ class Collection(list):
             return False
 
     def __getitem__(self, item):
-        for itm in self: # XX FIXME - O(n^2)
+        for itm in self:
+            # Slow - O(n^2).  But we're not really using this.
             if itm.ind == item:
                 return itm
 
@@ -1106,8 +1117,8 @@ class Project(object):
                                 keywordArgList.append([n] + args[1:])
                         else:
                             # hack for species eq
-                            # FIXME - do this for more keywords which start
-                            # at 0, like momentum_eq (?)
+                            # TODO - do we need to dothis for more
+                            # keywords which start at 0, like momentum_eq (?)
                             start = 0 if key == 'species_eq' else 1
                             for val in range(start, numVals+1):
                                 keywordArgList.append([val]+args[1:])
@@ -1386,7 +1397,7 @@ class Project(object):
                               format_key_with_args(key, args))
             # Solid Species
             elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
-                         'ro_s', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
+                         'ro_s0', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
                          'solids_model', 'close_packed', ]:
                 if args[0] not in self.solids:
                     solid = self.solids.new(args[0])

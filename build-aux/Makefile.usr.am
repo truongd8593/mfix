@@ -76,7 +76,7 @@ $(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/../model/read_database
 	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/../model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
-	RUN_DIR=. $(top_srcdir)/../config/rxn_preproc.sh
+	RUN_DIR=. $(top_srcdir)/../build-aux/rxn_preproc.sh
 
 ################################################################
 #                                                              #

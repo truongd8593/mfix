@@ -186,6 +186,8 @@
       LOGICAL :: VEL_FLUCT
       DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
 
+      DOUBLE PRECISION :: BC_MAX_RADIUS
+
 !......................................................................!
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
@@ -212,11 +214,13 @@
       DOM_VOL = DOML(1)*DOML(2)*DOML(3)
 
       rPARTS=0
+      BC_MAX_RADIUS = ZERO
       DO M=MMAX+1,MMAX+DES_MMAX
          IF(SOLIDS_MODEL(M) == 'DEM') THEN
 ! Number of particles for phase M
             rPARTS(M) = &
                floor((6.0d0*IC_EP_S(ICV,M)*DOM_VOL)/(PI*(D_P0(M)**3)))
+            IF(IC_EP_S(ICV,M)>ZERO.AND.D_P0(M)>BC_MAX_RADIUS) BC_MAX_RADIUS = HALF * D_P0(M)
          ENDIF
       ENDDO
 
@@ -224,7 +228,7 @@
       tPARTS = sum(rPARTS)
       IF(tPARTS == 0) RETURN
 
-      ADJ_DIA = 2.0d0*MAX_RADIUS*lFAC
+      ADJ_DIA = 2.0d0*BC_MAX_RADIUS*lFAC
 
 ! Attempt to seed particle throughout the IC region
       FIT_FAILED=.FALSE.
@@ -291,7 +295,7 @@
          IF(tCOUNT > int(tPARTS)) THEN
             EXIT JJ_LP
 ! Find the next phase that needs to be seeded
-         ELSEIF(pCOUNT(M) > int(rPARTS(M))) THEN
+         ELSEIF((pCOUNT(M) > int(rPARTS(M))).OR.(rParts(M)==ZERO)) THEN
             MM_LP: DO MM=M+1,MMAX+DES_MMAX
                IF(rPARTS(MM) > 0.0) THEN
                   M=MM

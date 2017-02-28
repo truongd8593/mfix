@@ -3,7 +3,7 @@
 This document explains how to run MFIX 17.1, using either the GUI or the command line.
 
 This document assumes MFIX is already installed. For information on building or
-installing MFIX, please see the setup guide: [INSTALL.html](INSTALL.html)
+installing MFIX, please see the [Setup Guide](SETUP_GUIDE.html).
 
 Everything in this document applies to each platform (Linux, Mac, Windows)
 unless otherwise noted.
@@ -11,7 +11,7 @@ unless otherwise noted.
 ## About MFIX
 
 MFIX is an open-source multiphase flow solver and is free to download and use. A
-one-time no-cost registration is required prior to downloading the source code.
+one-time, no-cost registration is required prior to downloading the source code.
 To register, go to https://mfix.netl.doe.gov/ and click on the "Register" button
 in the upper right corner. Once you have read the notice, you can submit your
 application by clicking on "REGISTER." After your application has been reviewed
@@ -19,8 +19,10 @@ and accepted, you will receive an email notification and instructions on how to
 download the code. Please allow for 2-3 business days for your registration to
 be processed.
 
-Potential users may find reviewing the Frequently Asked Questions section of the
-MFIX website useful before downloading the code.
+Potential users may find reviewing the
+[Frequently Asked Questions](https://mfix.netl.doe.gov/mfix/faq/)
+section of the MFIX website useful before downloading the code.
+
 
 ## About the GUI
 The GUI is written in pure Python, leveraging the strengths of Python for quick
@@ -39,6 +41,7 @@ the gas phase) and disperse phase (typically the solids phase)
 differently. Their current state of development is summarized in the
 tables below.
 
+
 **MFIX-TFM (Two-Fluid Model)** is an Eulerian-Eulerian model, which
 supports a broad range of capabilities for dense, reacting, multiphase
 flows by representing the fluid and solids as interpenetrating continua.
@@ -51,28 +54,14 @@ behavior. This includes transport properties, heterogeneous reaction
 kinetics, and constitutive relations for interaction between fluid and
 solid phases, e.g., solids phase drag and interphase heat transfer.
 
-<div>
-
-<div style="float:left">
-
-|                      | Serial   | ^†^DMP   | ^‡^SMP   |
-| -------------------- | -------- | -------- | -------- |
+| Feature              | Serial   | <sup>†</sup>DMP | <sup>‡</sup>SMP   |
+| -------------------- | :------: | :------: | :------: |
 | Momentum Equations   | ●        | ●        | ●        |
 | Energy Equations     | ●        | ●        | ●        |
 | Species Equations    | ●        | ●        | ●        |
 | Chemical Reactions   | ●        | ●        |          |
 | Cartesian cut-cell   | ●        | ●        | **□**    |
 
-</div>
-
-<div>
-
-[]{#TFM_pic .anchor}![](doc/media/devstate_tfm.png){width="3.022222222222222in"
-height="1.8520833333333333in"}
-
-</div>
-
-</div>
 
 **MFIX-DEM (Discrete Element Model)** is an Eulerian-Lagrangian model
 that treats the fluid phase as a continuum and models the individual
@@ -85,28 +74,15 @@ high performance computing (HPC) resources and large amounts of computer
 time. Code optimization and speed up are critical research fronts to
 support industrial scale applications.
 
-<div>
 
-<div style="float:left">
-
-|                      | Serial   | ^†^DMP   | ^‡^SMP   |
-| -------------------- | -------- | -------- | -------- |
+| Feature              | Serial   | <sup>†</sup>DMP | <sup>‡</sup>SMP   |
+| -------------------- | :------: | :------: | :------: |
 | Momentum Equations   | ●        | ●        | ●        |
 | Energy Equations     | ●        | ●        |          |
 | Species Equations    | ●        | ●        |          |
 | Chemical Reactions   | ●        | ●        |          |
 | Cartesian cut-cell   | ○        | ○        |          |
 
-</div>
-
-<div>
-
-[]{#DEM_pic .anchor}![](doc/media/devstate_dem.png){width="3.0125in"
-height="1.5895833333333333in"}
-
-</div>
-
-</div>
 
 **MFIX-PIC (Multiphase Particle in Cell)** is another
 Eulerian-Lagrangian model that represents the fluid as a continuum while
@@ -118,29 +94,15 @@ modeling approximations influence the overall accuracy of the method.
 Development, validation, and optimization of modeling approximations are
 critical research fronts.
 
-<div>
 
-<div style="float:left">
-
-|                      | Serial   | ^†^DMP   | ^‡^SMP   |
-| -------------------- | -------- | -------- | -------- |
+| Feature              | Serial   | <sup>†</sup>DMP | <sup>‡</sup>SMP   |
+| -------------------- | :------: | :------: | :------: |
 | Momentum Equations   | ●        |          | ○        |
 | Energy Equations     |          |          |          |
 | Species Equations    |          |          |          |
 | Chemical Reactions   |          |          |          |
 | Cartesian cut-cell   | ○        | □        |          |
 
-</div>
-
-<div>
-
-[]{#MPPIC_pic
-.anchor}![](doc/media/devstate_pic.png){width="3.0104166666666665in"
-height="1.7055555555555555in"}
-
-</div>
-
-</div>
 
 **MFIX-Hybrid (Eulerian-Lagrangian-Eulerian)** is a blend of MFIX-TFM
 and MFIX-DEM that represents the fluid as a continuum and models solids
@@ -149,39 +111,24 @@ technique is presently restricted to solving only the momentum equations
 to yield hydrodynamic predictions. This model is still in its infancy
 and has seen only limited testing.
 
-<div>
+| Feature              | Serial   | <sup>†</sup>DMP | <sup>‡</sup>SMP   |
+| -------------------- | :------: | :------: | :------: |
+| Momentum Equations   | ○        | ○        | ○        |
+| Energy Equations     |          |          |          |
+| Species Equations    |          |          |          |
+| Chemical Reactions   |          |          |          |
+| Cartesian cut-cell   | ○        | ○        | ○        |
 
-<div style="float:left">
 
-|                      | Serial   | ^†^DMP   | ^‡^SMP|
-| -------------------- | -------- | -------- | ------|
-| Momentum Equations   | ○        | ○        | ○     |
-| Energy Equations     |          |          |       |
-| Species Equations    |          |          |       |
-| Chemical Reactions   |          |          |       |
-| Cartesian cut-cell   | ○        | ○        | ○     |
 
-</div>
+| Symbol | Description |
+| :----: | -------- |
+|   ●    | implemented and fully tested            |
+|   ○    | implemented with limited testing        |
+| **□**  | not tested or status unknown            |
+|   †    | Models not extended to DMP-parallel are only available for serial runs.                                   |
+|   ‡    | Models not extended to SMP-parallel are available for SMP runs but do not scale with thread count.        |
 
-[]{#Hybrid_pic .anchor}![](doc/media/devstate_hybrid.png){width="3.017361111111111in" height="1.601388888888889in"}
-
-<div>
-
-</div>
-
-</div>
-
-● – implemented and fully tested
-
-○ – implemented with limited testing
-
-**□** – not tested or status unknown
-
-† Models not extended to DMP-parallel are only available for serial
-runs.
-
-‡ Models not extended to SMP-parallel are available for SMP runs but do
-not scale with thread count.
 
 # Quick Start Running MFIX with the GUI
 
@@ -194,29 +141,29 @@ The MFIX install should put an `mfix` binary in your PATH. To start the MFIX GUI
 > Note: If this is the first time opening the GUI, the File menu will
 > automatically open. Otherwise, the previous project will automatically open.
 
- - Click on the ![new](mfixgui/icons/newfolder.png) button
- - Filter the templates by de-selecting the ![single](mfixgui/icons/single.png),
-![geometry](mfixgui/icons/geometry.png), and
-![chemistry](mfixgui/icons/chemistry.png) icons
+ - Click on the ![new](../mfixgui/icons/newfolder.png) button
+ - Filter the templates by de-selecting the ![single](../mfixgui/icons/single.png),
+![geometry](../mfixgui/icons/geometry.png), and
+![chemistry](../mfixgui/icons/chemistry.png) icons
  - Create a new project by double-clicking on fluidbed1.
  - Enter a project name and browse to a location for the new project.
 
  > Note: A new project directory will be created in the location directory, with
  > the name being the project name.
 
-<img alt="create project" src="doc/media/gui_new_project.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_new_project.png" style="width:800;height:600" />
 
- - Click the Start button ![Start button](mfixgui/icons/play.png) to start the MFIX simulation.
+ - Click the Start button ![Start button](../mfixgui/icons/play.png) to start the MFIX simulation.
 
-<img alt="command line" src="doc/media/gui_fluidbed1.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_fluidbed1.png" style="width:800;height:600" />
 
  - Click Ok to use the default mfixsolver installed with MFIX.
 
-<img alt="command line" src="doc/media/gui_run_dialog.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_run_dialog.png" style="width:800;height:600" />
 
  - The simulation runs with output in the Terminal Window.
 
-<img alt="command line" src="doc/media/gui_fluidbed1_running.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_fluidbed1_running.png" style="width:800;height:600" />
 
 # User Interface Reference
 
@@ -229,13 +176,13 @@ the parameter dialog.
 
 | Icon                                              | Description                                                               |
 |---------------------------------------------------|---------------------------------------------------------------------------|
-| ![File menu](mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
-| ![Save button](mfixgui/icons/save.png)            | The save button saves the project file.                                   |
-| ![Start button](mfixgui/icons/play.png)           | The Start button displays the Run dialog, or un-pauses a simulation.      |
-| ![Pause button](mfixgui/icons/pause.png)          | The Pause button pauses a simulation.                                     |
-| ![Stop button](mfixgui/icons/stop.png)            | The Stop button stops a simulation.                                       |
-| ![Rest button](mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
-| ![Parameters button](mfixgui/icons/functions.png) | The Parameters menu allows changing of parameters.                        |
+| ![File menu](../mfixgui/icons/menu.png)              | Shows the  file menu for creating, opening, and saving project files.     |
+| ![Save button](../mfixgui/icons/save.png)            | The save button saves the project file.                                   |
+| ![Start button](../mfixgui/icons/play.png)           | The Start button displays the Run dialog, or un-pauses a simulation.      |
+| ![Pause button](../mfixgui/icons/pause.png)          | The Pause button pauses a simulation.                                     |
+| ![Stop button](../mfixgui/icons/stop.png)            | The Stop button stops a simulation.                                       |
+| ![Rest button](../mfixgui/icons/restore_delete.png)  | The Reset button deletes output data.                                     |
+| ![Parameters button](../mfixgui/icons/functions.png) | The Parameters menu allows changing of parameters.                        |
 
 If no MFIX job is currently running, the Start button will open the run dialog
 where settings for job can be changed. The simulation can be started from this
@@ -268,13 +215,13 @@ To run locally, select the "Run local MFiX executable" tab. Select an executable
 from the dropdown list or click the browse button to specify an executable that
 is not in the list. Usually the default installed solver should be sufficient.
 If running a case with UDFs, you need to first build a case-specific MFIX as
-described in the [setup guide](INSTALL.html#building-custom-mfixsolver). You may
+described in the [setup guide](SETUP_GUIDE.html#building-custom-mfixsolver). You may
 want to build your own solver for other reasons, such as specifying various
 compiler flags to optimize the executable for your specific hardware.
 
 Click "Run" in the Run dialog to start the simulation.
 
-<img alt="command line" src="doc/media/gui_rundialog_local.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_rundialog_local.png" style="width:800;height:600" />
 
 #### Submit to Queue
 
@@ -290,7 +237,7 @@ job to the queue.
 Custom queue scripts are supported. The format for this script is described in the
 [Queue Templates](#queue-templates) section.
 
-<img alt="run dialog queue submission" src="doc/media/gui_rundialog_queue.png" style="width:800;height:600" />
+<img alt="run dialog queue submission" src="media/gui_rundialog_queue.png" style="width:800;height:600" />
 
 ### Reset Dialog
 
@@ -312,7 +259,7 @@ files from the run directory as well because they will be over-written.
 > will be disabled because certain model parameters can not be edited during a
 > resume, or restart state.
 
-<img alt="reset dialog" src="doc/media/gui_reset_dialog.png" style="width:800;height:600" />
+<img alt="reset dialog" src="media/gui_reset_dialog.png" style="width:800;height:600" />
 
 ### Parameter Dialog
 
@@ -323,7 +270,7 @@ change the values of multiple items by changing the value of a single parameter.
 In many respects, this is a similar feature that is present in most commercial
 CAD packages.
 
-<img alt="command line" src="doc/media/gui_parameter_dialog.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_parameter_dialog.png" style="width:800;height:600" />
 
 ## File menu
 
@@ -357,13 +304,13 @@ selecting one or more of the following model types:
 
 | Icon                                      | Description                            |
 |-------------------------------------------|----------------------------------------|
-| ![single](mfixgui/icons/single.png)       | Single phase Model                     |
-| ![tfm](mfixgui/icons/tfm.png)             | Two Fluid Model (TFM)                  |
-| ![pic](mfixgui/icons/pic.png)             | Particle in Cell Model (PIC)           |
-| ![dem](mfixgui/icons/dem.png)             | Discrete Element Model (DEM)           |
-| ![hybrid](mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
-| ![geometry](mfixgui/icons/geometry.png)   | Cartesian cut-cell (complex) geometry  |
-| ![chemistry](mfixgui/icons/chemistry.png) | Chemistry                              |
+| ![single](../mfixgui/icons/single.png)       | Single phase Model                     |
+| ![tfm](../mfixgui/icons/tfm.png)             | Two Fluid Model (TFM)                  |
+| ![pic](../mfixgui/icons/pic.png)             | Particle in Cell Model (PIC)           |
+| ![dem](../mfixgui/icons/dem.png)             | Discrete Element Model (DEM)           |
+| ![hybrid](../mfixgui/icons/hybrid.png)       | Hybrid Model (TFM + DEM)               |
+| ![geometry](../mfixgui/icons/geometry.png)   | Cartesian cut-cell (complex) geometry  |
+| ![chemistry](../mfixgui/icons/chemistry.png) | Chemistry                              |
 
 ### Open
 
@@ -459,14 +406,14 @@ Geometry tool-bar icons:
 
 | Icon                                        | Description                                       |
 |---------------------------------------------|---------------------------------------------------|
-| ![geometry](mfixgui/icons/geometry.png)     | add geometry to model                             |
-| ![filter](mfixgui/icons/filter.png)         | apply a filter to the currently selected geometry |
-| ![wizard](mfixgui/icons/wand.png)           | use a wizard to create or copy geometry           |
-| ![remove](mfixgui/icons/remove.png)         | remove the selected geometry                      |
-| ![copy](mfixgui/icons/copy.png)             | copy the selected geometry                        |
-| ![union](mfixgui/icons/union.png)           | perform a union of the selected geometry          |
-| ![intersect](mfixgui/icons/intersect.png)   | perform a intersection of the selected geometry   |
-| ![difference](mfixgui/icons/difference.png) | perform a difference of the selected geometry     |
+| ![geometry](../mfixgui/icons/geometry.png)     | add geometry to model                             |
+| ![filter](../mfixgui/icons/filter.png)         | apply a filter to the currently selected geometry |
+| ![wizard](../mfixgui/icons/wand.png)           | use a wizard to create or copy geometry           |
+| ![remove](../mfixgui/icons/remove.png)         | remove the selected geometry                      |
+| ![copy](../mfixgui/icons/copy.png)             | copy the selected geometry                        |
+| ![union](../mfixgui/icons/union.png)           | perform a union of the selected geometry          |
+| ![intersect](../mfixgui/icons/intersect.png)   | perform a intersection of the selected geometry   |
+| ![difference](../mfixgui/icons/difference.png) | perform a difference of the selected geometry     |
 
 
 #### Adding Geometry
@@ -482,12 +429,12 @@ In the geometry tree, the geometry object is described with an icon:
 
 | Icon                                        | Geometry Type |
 |---------------------------------------------|---------------|
-| ![geometry](mfixgui/icons/geometry.png)     | polydata      |
-| ![function](mfixgui/icons/function.png)     | implicit      |
-| ![filter](mfixgui/icons/filter.png)         | filter        |
-| ![union](mfixgui/icons/union.png)           | union         |
-| ![intersect](mfixgui/icons/intersect.png)   | intersect     |
-| ![difference](mfixgui/icons/difference.png) | difference    |
+| ![geometry](../mfixgui/icons/geometry.png)     | polydata      |
+| ![function](../mfixgui/icons/function.png)     | implicit      |
+| ![filter](../mfixgui/icons/filter.png)         | filter        |
+| ![union](../mfixgui/icons/union.png)           | union         |
+| ![intersect](../mfixgui/icons/intersect.png)   | intersect     |
+| ![difference](../mfixgui/icons/difference.png) | difference    |
 
 
 The following geometric objects can be added:
@@ -538,7 +485,7 @@ reactors, and hoppers. The distributed wizard can also be used to distribute one
 geometry inside another geometry with random, cubic, or body centered cubic
 positions. Random rotations can also be applied with the wizard.
 
-![cyclone wizard](mfixgui/icons/cyclone_sketch.png) ![hopper wizard](mfixgui/icons/hopper_sketch.png) ![reactor wizard](mfixgui/icons/reactor_sketch.png)
+![cyclone wizard](../mfixgui/icons/cyclone_sketch.png) ![hopper wizard](../mfixgui/icons/hopper_sketch.png) ![reactor wizard](../mfixgui/icons/reactor_sketch.png)
 
 #### Boolean Operations
 
@@ -560,13 +507,13 @@ cut-cell tolerances.
 
 On the Background sub-pane, a uniform mesh can be specified by entering the
 number of cells in the x, y, and z directions. Control points can be added by
-pressing the ![add](mfixgui/icons/add.png) button. Once a control point has been
+pressing the ![add](../mfixgui/icons/add.png) button. Once a control point has been
 added, the position, number of cells, stretch, first and last parameters can be
 changed. A control point can be split evenly by `right-click` on the control
 point to be split and selecting split. This operation will create a new control
 point at the midpoint between the previous control point and the selected
 control point, dividing the cells evenly between the two. Control points can be
-removed by pressing the ![remove](mfixgui/icons/remove.png) button.
+removed by pressing the ![remove](../mfixgui/icons/remove.png) button.
 
 The stretch parameter is a value that will apply a non-uniform grid spacing to
 the cells. The value is defined as ${Last Width} \over {First Width}$. a value
@@ -610,18 +557,18 @@ creating:
 
 | Icon                                              | Description                                       |
 |---------------------------------------------------|---------------------------------------------------|
-| ![add](mfixgui/icons/add.png)                     | create a new region                               |
-| ![remove](mfixgui/icons/remove.png)               | delete the selected region                        |
-| ![copy](mfixgui/icons/copy.png)                   | duplicate the selected region                     |
-| ![all region](mfixgui/icons/all_region.png)       | create a region the encompasses the entire domain |
-| ![left region](mfixgui/icons/left_region.png)     | create a region on the left side of the domain    |
-| ![right region](mfixgui/icons/right_region.png)   | create a region on the right side of the domain   |
-| ![top region](mfixgui/icons/top_region.png)       | create a region on the top side of the domain     |
-| ![bottom region](mfixgui/icons/bottom_region.png) | create a region on the bottom side of the domain  |
-| ![front region](mfixgui/icons/front_region.png)   | create a region on the front side of the domain   |
-| ![back region](mfixgui/icons/back_region.png)     | create a region on the back side of the domain    |
+| ![add](../mfixgui/icons/add.png)                     | create a new region                               |
+| ![remove](../mfixgui/icons/remove.png)               | delete the selected region                        |
+| ![copy](../mfixgui/icons/copy.png)                   | duplicate the selected region                     |
+| ![all region](../mfixgui/icons/all_region.png)       | create a region the encompasses the entire domain |
+| ![left region](../mfixgui/icons/left_region.png)     | create a region on the left side of the domain    |
+| ![right region](../mfixgui/icons/right_region.png)   | create a region on the right side of the domain   |
+| ![top region](../mfixgui/icons/top_region.png)       | create a region on the top side of the domain     |
+| ![bottom region](../mfixgui/icons/bottom_region.png) | create a region on the bottom side of the domain  |
+| ![front region](../mfixgui/icons/front_region.png)   | create a region on the front side of the domain   |
+| ![back region](../mfixgui/icons/back_region.png)     | create a region on the back side of the domain    |
 
-A new region can be created by pressing the ![add](mfixgui/icons/add.png)
+A new region can be created by pressing the ![add](../mfixgui/icons/add.png)
 button. Once the region is created, make sure to give the region a descriptive
 name so that it can be referred to later. You can change the color of the region
 by pressing the color icon. This will change the color in the model setup
@@ -712,9 +659,9 @@ runs.
 
 The visualization window provides a collection 3D views and 2D plots for
 visualizing the model setup and model outputs. New windows, or tabs, can be
-created by pressing the ![add](mfixgui/icons/add.png) button. Once the tab has
+created by pressing the ![add](../mfixgui/icons/add.png) button. Once the tab has
 been added, the type of view can be selected. Tabs can be closed by pressing the
-![close](mfixgui/icons/close.png) button located on the tabs.
+![close](../mfixgui/icons/close.png) button located on the tabs.
 
 ### Model
 
@@ -725,25 +672,25 @@ The scene can be manipulated with the mouse and the tool-bar buttons:
 
 | Icon                                          | Description                                         |
 |-----------------------------------------------|-----------------------------------------------------|
-| ![overscan](mfixgui/icons/overscan.png)       | Reset view, make all items visible                  |
-| ![xy](mfixgui/icons/xy.png)                   | Change to XY view                                   |
-| ![xz](mfixgui/icons/xz.png)                   | Change to XZ view                                   |
-| ![yz](mfixgui/icons/yz.png)                   | Change to YZ View                                   |
-| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
-| ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                   |
-| ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors      |
+| ![overscan](../mfixgui/icons/overscan.png)       | Reset view, make all items visible                  |
+| ![xy](../mfixgui/icons/xy.png)                   | Change to XY view                                   |
+| ![xz](../mfixgui/icons/xz.png)                   | Change to XZ view                                   |
+| ![yz](../mfixgui/icons/yz.png)                   | Change to YZ View                                   |
+| ![perspective](../mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections |
+| ![camera](../mfixgui/icons/camera.png)           | Save an image of the current view                   |
+| ![visibility](../mfixgui/icons/visibility.png)   | Change the visibility and properties of actors      |
 
 The visibility menu allows for the manipulation of how the objects in the scene
 represented including:
 
-- changing the visibility with the ![visibility](mfixgui/icons/visibility.png)
+- changing the visibility with the ![visibility](../mfixgui/icons/visibility.png)
 button
 - changing the representation (wire, solids, edges, and points)
 - changing the color
 - changing the transparency of the objects
 
 
-<img alt="command line" src="doc/media/gui_model_visible_menu.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_model_visible_menu.png" style="width:800;height:600" />
 
 ### Plot Tab(s)
 
@@ -757,7 +704,7 @@ the data to a text file.
 > Note: plotting requires the optinal `pyqtgraph` dependency and a connection to
 > the pymfixsolver
 
-<img alt="command line" src="doc/media/gui_plot_dt.png" style="width:800;height:600" />
+<img alt="command line" src="media/gui_plot_dt.png" style="width:800;height:600" />
 
 ### VTK Tab(s)
 
@@ -769,26 +716,26 @@ files.
 
 > Note: The directory is automatically searched every second for \*.pvd files.
 > If a \*.pvd file is found, the GUI will read and show the new VTK file if the
-> ![play](mfixgui/icons/play.png) button is pressed.
+> ![play](../mfixgui/icons/play.png) button is pressed.
 
 Simulation results can be "played" as well as manipulated using the following
 tool-bar:
 
 | Icon                                          | Description                                                        |
 |-----------------------------------------------|--------------------------------------------------------------------|
-| ![overscan](mfixgui/icons/overscan.png)       | Reset view, make all items visible                                 |
-| ![xy](mfixgui/icons/xy.png)                   | Change to XY view                                                  |
-| ![xz](mfixgui/icons/xz.png)                   | Change to XZ view                                                  |
-| ![yz](mfixgui/icons/yz.png)                   | Change to YZ View                                                  |
-| ![perspective](mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections                |
-| ![camera](mfixgui/icons/camera.png)           | Save an image of the current view                                  |
-| ![visibility](mfixgui/icons/visibility.png)   | Change the visibility and properties of actors                     |
-| ![first](mfixgui/icons/first.png)             | Go to the first frame                                              |
-| ![back](mfixgui/icons/back.png)               | Go back one frame                                                  |
-| ![play](mfixgui/icons/play.png)               | Play available frames, starting at the current frame               |
-| ![next](mfixgui/icons/next.png)               | Go to the next frame                                               |
-| ![last](mfixgui/icons/last.png)               | Go to the last frame                                               |
-| ![speed](mfixgui/icons/speed.png)             | Change the playback speed, or the amount of time in between frames |
+| ![overscan](../mfixgui/icons/overscan.png)       | Reset view, make all items visible                                 |
+| ![xy](../mfixgui/icons/xy.png)                   | Change to XY view                                                  |
+| ![xz](../mfixgui/icons/xz.png)                   | Change to XZ view                                                  |
+| ![yz](../mfixgui/icons/yz.png)                   | Change to YZ View                                                  |
+| ![perspective](../mfixgui/icons/perspective.png) | Toggle between perspective and parallel projections                |
+| ![camera](../mfixgui/icons/camera.png)           | Save an image of the current view                                  |
+| ![visibility](../mfixgui/icons/visibility.png)   | Change the visibility and properties of actors                     |
+| ![first](../mfixgui/icons/first.png)             | Go to the first frame                                              |
+| ![back](../mfixgui/icons/back.png)               | Go back one frame                                                  |
+| ![play](../mfixgui/icons/play.png)               | Play available frames, starting at the current frame               |
+| ![next](../mfixgui/icons/next.png)               | Go to the next frame                                               |
+| ![last](../mfixgui/icons/last.png)               | Go to the last frame                                               |
+| ![speed](../mfixgui/icons/speed.png)             | Change the playback speed, or the amount of time in between frames |
 
 The visibility menu allows for the manipulation of how the objects in the scene
 represented including:
@@ -799,7 +746,7 @@ represented including:
 - transparency
 
 Further options for the points can be adjusted by clicking the
-![more](mfixgui/icons/right.png) button next to the label including:
+![more](../mfixgui/icons/right.png) button next to the label including:
 
 - Maximum number of particles to be displayed
 - The mapper (sprites requires VTK version 7.0+)

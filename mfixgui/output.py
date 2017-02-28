@@ -494,12 +494,25 @@ class Output(object):
             #    self.warn("vtk output %s: invalid extents %s" %
             #               (vtk.ind, extent))
             #    continue
+
+            output_type = d.get('vtk_data') # Returns a keyword object or None, not a value
+            if output_type is None:
+                output_type = 'C' # Default
+
+            else:
+                output_type = output_type.value # get value from keyword object
+                if output_type not in ('C', 'P'):
+                    self.error("Invalid type %s for VTK output %s" % (output_type, vtk.ind))
+                    continue
+
             for (region_name, data) in self.output_region_dict.items():
                 ext2 = [0 if x is None else x for x in
                         (data.get('from',[]) + data.get('to',[]))]
                 if ext2 == extent: # Don't need to check 'available' here since
                             # Regions can define multiple VTK regions.
-                    self.output_add_regions_1([region_name], indices=[vtk.ind], autoselect=False)
+                    self.output_add_regions_1([region_name], indices=[vtk.ind],
+                                              output_type=output_type,
+                                              autoselect=False)
                     break
             else:
                 self.warn("vtk output %s: could not match defined region %s" %
@@ -1909,7 +1922,7 @@ class Output(object):
 
 
     def output_set_region_keys(self, name, idx, data, output_type=None):
-        # Update the keys which define the region the PS applies to
+        # Update the keys which define the region the vtk output applies to
         if output_type is not None:
             self.update_keyword('vtk_data', output_type, args=[idx])
 

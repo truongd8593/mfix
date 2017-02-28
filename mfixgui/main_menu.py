@@ -1,10 +1,13 @@
 """the main (file menu) bar."""
 import json
 import os
-import subprocess
 import sys
 
 import qtpy
+from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
+                                   get_pixmap, get_separator)
+from mfixgui.version import get_git_revision_short_hash, get_version
+from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 from qtpy import API_NAME, QtCore, QtGui, QtWidgets
 
 try:
@@ -12,10 +15,6 @@ try:
 except ImportError:
     QT_VERSION = 'Unknown'
 
-from mfixgui.tools.general import (get_icon, SCRIPT_DIRECTORY, get_mfix_home, get_pixmap,
-                                   get_separator)
-from mfixgui.version import __version__
-from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 try:
     import numpy as np
@@ -44,15 +43,7 @@ except ImportError:
 def path2url(path):
     """Convert path to url."""
     return urlparse.urljoin(
-      'file:', urllib.pathname2url(path))
-
-def get_git_revision_short_hash():
-    """Try to get the current git hash"""
-    try:
-        git_hash = subprocess.check_output(['git', 'describe', '--always']).strip()
-    except:
-        git_hash = None
-    return git_hash
+        'file:', urllib.pathname2url(path))
 
 class MainMenu(object):
     """Main menu mixin for the gui."""
@@ -169,7 +160,7 @@ class MainMenu(object):
         ow_layout.addWidget(lw_f, 2, 0, 1, -1)
 
         tb = QtWidgets.QToolButton()
-        tb.setIcon(get_icon('close.png'))
+        tb.setText('Clear Recent')
         tb.setToolTip('Clear list of recent projects')
         tb.setAutoRaise(True)
         tb.pressed.connect(self.handle_clear_recent)
@@ -440,20 +431,21 @@ class MainMenu(object):
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
         # link only works after running: python setup.py build_doc
-        help_info = QtWidgets.QLabel('''
-        See <a href="%s">User Guide</a> for documentation on using the GUI;
-        See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers
-        ''' % (path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
-               path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'INSTALL.html'))))
-        help_info.setStyleSheet('background-color: white;')
-        help_info.setWordWrap(True)
-        hw_layout.addWidget(help_info, 2, 0, 1, -1)
-
         def open_user_guide(linkStr):
             QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
-        help_info.linkActivated.connect(open_user_guide)
-        help_info.setOpenExternalLinks(True)
+        for i, help_text in enumerate([
+            'See <a href="%s">User Guide</a> for documentation on using the GUI' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
+            'See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'SETUP_GUIDE.html')),
+            'See <a href="%s">Tutorials</a> text based model setup tutorials' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'TUTORIALS.html')),
+            ]):
+
+            help_info = QtWidgets.QLabel(help_text)
+            help_info.setStyleSheet('background-color: white;')
+            help_info.setWordWrap(True)
+            help_info.linkActivated.connect(open_user_guide)
+            help_info.setOpenExternalLinks(True)
+            hw_layout.addWidget(help_info, 10+i, 0, 1, -1)
 
         hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
 
@@ -486,25 +478,39 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
 
-        git_des = get_git_revision_short_hash()
-        labels = [QtWidgets.QLabel('<b>MFiX GUI version:</b> {}'.format(__version__)),
-                  QtWidgets.QLabel('<b>Git description:</b> {}'.format(git_des)) if git_des is not None else None,
-                  QtWidgets.QLabel('<b>Python version:</b> {}'.format(sys.version)),
-                  QtWidgets.QLabel('<b>Qt Wrapper:</b> {}'.format(API_NAME)),
-                  QtWidgets.QLabel('<b>Qt Version:</b> {}'.format(QT_VERSION)),
-                  QtWidgets.QLabel('<b>qtpy Version:</b> {}'.format(qtpy.__version__)),
-                  QtWidgets.QLabel('<b>Numpy Version:</b> {}'.format(numpy_version)),
-                  QtWidgets.QLabel('<b>VTK Version:</b> {}'.format(vtkVersion)),
-                  ]
+        git_des = None
+        if int(self.settings.value('developer_mode', 0)):
+            git_des = get_git_revision_short_hash()
 
-        for i, label in enumerate(labels):
+        self.version_labels = [
+            '<b>MFiX GUI version:</b> {}'.format(get_version()),
+            '<b>Git description:</b> {}'.format(git_des) if git_des is not None else None,
+            '<b>Python version:</b> {}'.format(sys.version),
+            '<b>Qt Wrapper:</b> {}'.format(API_NAME),
+            '<b>Qt Version:</b> {}'.format(QT_VERSION),
+            '<b>qtpy Version:</b> {}'.format(qtpy.__version__),
+            '<b>Numpy Version:</b> {}'.format(numpy_version),
+            '<b>VTK Version:</b> {}'.format(vtkVersion),
+            ]
+
+        for i, label in enumerate(self.version_labels):
             if label is None:
                 continue
-            label.setStyleSheet('background-color: white;')
-            label.setWordWrap(True)
-            aw_layout.addWidget(label, 10+i, 0, 1, -1)
+            ql = QtWidgets.QLabel(label)
+            ql.setStyleSheet('background-color: white;')
+            ql.setWordWrap(True)
+            aw_layout.addWidget(ql, 10+i, 0, 1, -1)
 
-        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+        # copy to clipboard btn
+        def copy_version_info():
+            cp = self.app.clipboard()
+            cp.setText('\n'.join(str(v).replace('<b>', '').replace('</b>', '') for v in self.version_labels))
+        copy_btn = QtWidgets.QToolButton()
+        copy_btn.setText('Copy Version Info')
+        copy_btn.clicked.connect(copy_version_info)
+        aw_layout.addWidget(copy_btn, 100, 0, 1, 2)
+
+        aw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1000, 0)
 
     def handle_main_menu_open_project(self, item):
         """Open the project of the selected item"""
@@ -607,6 +613,9 @@ class MainMenu(object):
         self.ui.main_menu_return.setMinimumWidth(tw)
         self.ui.main_menu_return.setMinimumHeight(th)
 
+        # hide the current widget, issue #291, VTK widget overlay issues
+        self.ui.tabWidgetGraphics.currentWidget().hide()
+
         # animate
         w, h = self.width(), self.height()
         self.main_menu.setGeometry(-w/2, 0, w, h)
@@ -664,7 +673,6 @@ class MainMenu(object):
         animation.setDuration(self.main_menu_animation_speed)
         animation.setStartValue(QtCore.QPoint(x_start, y_start))
         animation.setEndValue(QtCore.QPoint(x_end,y_end))
-
         return animation
 
     def handle_main_menu_hide(self):
@@ -676,12 +684,16 @@ class MainMenu(object):
         ani.start()
 
     def main_menu_animation_finished(self):
+        """callback when the show animation is finished"""
         w, h = self.width(), self.height()
         self.main_menu.setGeometry(0, 0, w, h)
         self.main_menu.show()
         self.main_menu.raise_()
 
     def main_menu_animation_finished_hide(self):
+        """callback when the hide animation is finished"""
+        # show the current widget, issue #291, VTK widget overlay issues
+        self.ui.tabWidgetGraphics.currentWidget().show()
         self.main_menu.hide()
 
     def disable_main_menu_items(self, items, except_items=[]):
@@ -734,7 +746,7 @@ class MainMenu(object):
 
         # read info about the template files
         temp_info = {}
-        temp_info_file = os.path.join(mfx_dir, 'mfixgui', 'tools', 'template_data.json')
+        temp_info_file = os.path.join(SCRIPT_DIRECTORY, 'tools', 'template_data.json')
         if os.path.exists(temp_info_file):
             with open(temp_info_file) as f:
                 temp_info = json.load(f)
