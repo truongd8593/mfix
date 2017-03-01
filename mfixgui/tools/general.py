@@ -51,7 +51,7 @@ def get_mfix_home():
         # we are in an installed package, search PYPATH for directory named "mfix"
         for pypath in sys.path:
             mfix_path = os.path.join(pypath, 'mfix')
-            if os.path.isdir(mfix_path):
+            if os.path.isfile(os.path.join(mfix_path, 'configure_mfix')):
                 return mfix_path
         raise Exception("Unable to find MFIX_HOME")
 
