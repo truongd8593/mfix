@@ -38,6 +38,8 @@ using the two fluid model. The model setup is:
 - On the `Geometry` pane select the `2 Dimensional` checkbox
 - Enter "10/100" meters for the maximum x value
 - Enter "30/100" meters for the maximum y value
+> Note: We could have entered 0.1 and 0.3 to define the domain extents, 
+> but this example shows that simple mathematical expressions are allowed.
 
 <img alt="create project" src="media/gui_tfm_2d_geometry.png" style="width:800;height:600" />
 
@@ -50,26 +52,28 @@ using the two fluid model. The model setup is:
 
 #### Step 5. Create regions for initial and boundary condition specification
 
-- Select the `Regions` pane
+- Select the `Regions` pane. By default, a region that covers the entire domain is already defined.
+This is typically used to initialize the flow field and vizualize the results.
 - click the ![new](../mfixgui/icons/add.png) button to create a new region to be used for the bed initial condition.
-  - Enter a name for the region in the `Name` field
+  - Enter a name for the region in the `Name` field ("bed")
   - Change the color by pressing the `Color` button
   - Enter "xmin" or "min" in the `From X` field
   - Enter "xmax" or "max" in the `To X` field
   - Enter "ymin" or "min" in the `From Y` field
-  - Enter "ymax/2" or "max" in the `To Y` feild
+  - Enter "ymax/2" or "max" in the `To Y` field
   - Enter "zmin" or "min" in the `From Z` field
-  - Enter "zmax" or "max" in the `To Z` feild
+  - Enter "zmax" or "max" in the `To Z` field
+> Note: Here we could have entered numerical values for the coordinates, but it is recommended to use paramaters (xmin, xmax etc.) when possible.
 
 <img alt="create project" src="media/gui_tfm_2d_region1.png" style="width:800;height:600" />
 
 - Click the ![new](../mfixgui/icons/bottom_region.png) button to create a new region with the `From` and `To` fields already filled out for a region at the bottom of the domain, to be used by the gas inlet boundary condition. `From Y` should equal `To Y`, defining an XZ-plane.
-  - Enter a name for the region in the `Name` field
+  - Enter a name for the region in the `Name` field ("inlet")
 
 <img alt="create project" src="media/gui_tfm_2d_region2.png" style="width:800;height:600" />
 
 - Click the ![new](../mfixgui/icons/top_region.png) button to create a new region with the `From` and `To` fields already filled out for a region at the top of the domain, to be used by the pressure outlet boundary condition. `From Y` should equal `To Y`, defining an XZ-plane.
-  - Enter a name for the region in the `Name` field
+  - Enter a name for the region in the `Name` field ("outlet")
 
 <img alt="create project" src="media/gui_tfm_2d_region3.png" style="width:800;height:600" />
 
@@ -77,7 +81,8 @@ using the two fluid model. The model setup is:
 
 - Select the `Solids` pane
 - Click the ![new](../mfixgui/icons/add.png) button to create a new solid
-- Enter a descriptive name in the `Name` field
+- Enter a descriptive name in the `Name` field ("glass beads")
+- Keep the model as "Two-Fluid Model (MFiX-TFM)")
 - Enter the particle diameter of "200e-6" m in the `Diameter` field
 - Enter the particle density of "2500" kg/m2 in the `Density` field
 
@@ -86,17 +91,17 @@ using the two fluid model. The model setup is:
 #### Step 7. Create Initial Conditions
 
 - Select the `Initial Conditions` pane
-- Select the already populated "Background IC" from the region list
+- Select the already populated "Background IC" from the region list. This will initilaize the entire flow field with air.
 - Enter "101325" Pa in the `Pressure (optional)` field
 
 <img alt="create project" src="media/gui_tfm_2d_ics1.png" style="width:800;height:600" />
 
 - Create a new Initial Condition by pressing the ![new](../mfixgui/icons/add.png) button
-- Select the region created previously for the bed Initial Condition and click the `OK` button
+- Select the region created previously for the bed Initial Condition ("bed" region) and click the `OK` button. 
 
 <img alt="create project" src="media/gui_tfm_2d_newic.png" style="width:800;height:600" />
 
-- Select the solid (named previously) sub-pane and enter a volume fraction of "0.4" in the `Volume Fraction` field.
+- Select the solid (named previously as "glass beads") sub-pane and enter a volume fraction of "0.4" in the `Volume Fraction` field. This will fill the bottom half with glass beads.
 
 <img alt="create project" src="media/gui_tfm_2d_ics2.png" style="width:800;height:600" />
 
@@ -121,6 +126,8 @@ using the two fluid model. The model setup is:
 > made to the outlet boundary condition.
 
 <img alt="create project" src="media/gui_tfm_2d_newbc2.png" style="width:800;height:600" />
+
+> Note: By default, boundaries that are left undefined (here the left and right planes) will behave as No-SLip walls.
 
 #### Step 9. Select output options
 
