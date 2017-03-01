@@ -655,7 +655,8 @@ class MainMenu(object):
                     clean = line.lower().split('#')[0].split('!')[0].strip()
                     if 'description' in clean:
                         toks = [tok.strip() for tok in line.split('=')]
-                        des_ind = toks.index('description')
+                        toks_lower = [tok.lower() for tok in toks]
+                        des_ind = toks_lower.index('description')
                         description = toks[des_ind + 1].replace('"', '').replace("'", '')
                         break
 
