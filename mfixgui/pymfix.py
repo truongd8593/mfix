@@ -23,11 +23,7 @@ import traceback
 
 from flask import Flask, jsonify, make_response, request
 
-try:
-    from mfixgui.version import get_version
-except:
-    def get_version():
-        return 'Unknown'
+from mfixgui.version import get_version
 
 pidfilename = None
 

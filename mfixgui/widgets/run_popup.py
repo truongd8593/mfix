@@ -261,20 +261,16 @@ class RunPopup(QDialog):
         """ Enable or disable options based on self.solver features,
         local or remote settings """
         ui = self.ui
+
+        # Enable/disable widgets
         enable = self.mfix_available and self.solver is not None
         ui.combobox_solver_local.setEnabled(enable)
         ui.combobox_solver_queue.setEnabled(enable)
         ui.button_local_run.setEnabled(enable)
         ui.button_queue_submit.setEnabled(enable)
         ui.label_mfix_exe_warning.setVisible(not enable)
+        ui.groupbox_run_options.setEnabled(enable)
 
-        if not enable:
-            self.parent.print_internal("Warning: no MFiX executables available")
-
-        ui.groupbox_run_options.setEnabled(self.mfix_available)
-        cfg = self.get_exe_flags(self.solver)
-        dmp = 'dmp' in cfg['flags'] if cfg else False # why not use dmp_enabled
-        smp = 'smp' in cfg['flags'] if cfg else False
         dmp = self.dmp_enabled()
         smp = self.smp_enabled()
         ui.spinbox_nodesi.setEnabled(dmp)
@@ -573,7 +569,7 @@ class RunPopup(QDialog):
         extension = os.path.splitext(self.solver)[1]
         if extension == '.so' or extension == '.pyd':
             pymfix = ['pymfix', '--solver']
-            pymfix = [os.path.join(get_mfix_home(), 'mfixgui', 'pymfix.py'), '--solver']
+            #pymfix = [os.path.join(get_mfix_home(), 'mfixgui', 'pymfix.py'), '--solver']
         else:
             pymfix = []
 

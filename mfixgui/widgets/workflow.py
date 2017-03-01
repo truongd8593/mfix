@@ -181,6 +181,7 @@ class WorkflowRunPopup(RunPopup):
     def __init__(self, mfix_exe, parent):
         RunPopup.__init__(self, mfix_exe, parent)
         self.submit_queue = False
+        self.cancel = False
 
     # over-rides
     def handle_run(self):
@@ -190,6 +191,10 @@ class WorkflowRunPopup(RunPopup):
     def handle_submit(self):
         self.submit_queue = True
         self.finish_with_dialog()
+
+    def handle_abort(self):
+        self.cancel = True
+        RunPopup.handle_abort(self)
 
 class FakeJob(object):
     job=None
@@ -416,10 +421,10 @@ class WorkflowWidget(QtWidgets.QWidget):
         parent.project = self.project
         parent.settings = self.mfixgui.settings
         run_dialog = WorkflowRunPopup(None, parent)
-        ok = run_dialog.exec_()
+        run_dialog.exec_()
 
         # Check for cancel
-        if not ok == QtWidgets.QDialog.Accepted:
+        if run_dialog.cancel:
             return False
 
         self.queue = run_dialog.submit_queue
@@ -528,7 +533,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         proc = subprocess.Popen(submit_cmd, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                cwd=project_dir)
+                                cwd=project_dir,
+                                env=dict(os.environ, LD_PRELOAD=""))
         out, err = proc.communicate()
         if job_id_regex is not None and out:
             job_id = re.findall(job_id_regex, str(out))

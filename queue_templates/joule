@@ -32,7 +32,7 @@ help: The number of cores to request.
 widget: combobox
 label: Queue
 value: general
-items: dev|general|short|serial
+items: dev|general|short|serial|mgn|pgh|alb|mic|long
 help: The Queue to submit to.
 
 [JOB_TYPE]
@@ -45,7 +45,8 @@ help: The parallel environment to use.
 [MODULES]
 widget: combobox
 label: Modules
-items: anaconda/2.7|
+items: mfix/17.1|
+       anaconda/2.7|
        gnu/4.6.4 openmpi/1.5.5_gnu4.6 anaconda/2.7|
        intel/2013.5.192 intelmpi/4.1.1.036 anaconda/2.7|
        --- others ---|
