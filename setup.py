@@ -6,23 +6,23 @@ http://mfix.netl.doe.gov/
 """
 
 import codecs
-import distutils.cygwinccompiler
 import errno
 import platform
 import shutil
 import subprocess
-import sys
 import tempfile
 import zipfile
 from glob import glob
 from os import makedirs, path, walk
 
-# must import setuptools before numpy.distutils
+# must import setuptools and cygwinccompiler before numpy.distutils
 import setuptools
+import distutils.cygwinccompiler
 
-from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 from numpy.distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension, setup
+
+from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
 exec(codecs.open('mfixgui/version.py').read())
 
@@ -34,11 +34,11 @@ with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 F90_TMP = tempfile.mkdtemp()
-CONFIGURE_ARGS = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
 def get_data_files():
+    """ walks subdirectories to generate a list of all files that get packaged as data_files """
     data_files = []
 
     for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
@@ -56,6 +56,7 @@ def get_data_files():
     return data_files
 
 def get_pymfix_src():
+    """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
         'param_mod.f',
         'param1_mod.f',
@@ -88,8 +89,15 @@ def cleanup_tmp():
             raise
 
 
+DEFAULT_CC = 'gcc'
+DEFAULT_FC = 'gfortran'
+DEFAULT_CFLAGS = '-O2 -fPIC'
+DEFAULT_FCFLAGS = '-O2 -fPIC'
+
+
 def make_mfixsolver():
-    build_dir = path.join('build', CONFIGURE_ARGS.replace(' ', '_').replace('=', '_'))
+    configure_args = get_configure_args(DEFAULT_CC, DEFAULT_FC, DEFAULT_CFLAGS, DEFAULT_FCFLAGS)
+    build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_')).replace('"', '_').replace('__', '_')
 
     return Extension(name='mfixsolver',
                      sources=get_pymfix_src(),
@@ -133,7 +141,7 @@ def build_doc():
             doc.write(data)
 
         # fix links to images in packaged docs
-        data = data.replace('mfixgui/icons', '../icons').replace('doc/media', 'media')
+        data = data.replace('../mfixgui/icons', '../icons')
 
         with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
@@ -171,21 +179,37 @@ class BuildDocCommand(setuptools.Command):
         build_doc()
 
 
+def get_configure_args(cc, fc, cflags, fcflags):
+    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s"' % (cc, fc, cflags, fcflags)
+
+
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
     description = "build mfix (Fortran code)"
-    user_options = []
+    user_options = [
+        # The Format is (long option, short option, description)
+        ('cc=', None, 'C compiler'),
+        ('fc=', None, 'Fortran 90 compiler'),
+        ('fcflags=', None, 'flags for Fortran 90 compiler'),
+        ('cflags=', None, 'flags for C compiler'),
+    ]
 
     def initialize_options(self):
-        pass
+        self.cc = DEFAULT_CC
+        self.fc = DEFAULT_FC
+        self.fcflags = DEFAULT_FCFLAGS
+        self.cflags = DEFAULT_CFLAGS
 
     def finalize_options(self):
-        pass
+        if '-fPIC' not in self.fcflags:
+            self.fcflags += ' -fPIC'
+        if '-fPIC' not in self.cflags:
+            self.cflags += ' -fPIC'
 
     def run(self):
 
         # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = 'bash ./configure_mfix %s' % CONFIGURE_ARGS
+        cmd = 'bash ./configure_mfix %s' % get_configure_args(self.cc, self.fc, self.cflags, self.fcflags)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
@@ -214,7 +238,6 @@ def mfix_prereq(command_subclass):
 class BuildExtCommand(build_ext):
     pass
 
-
 setup(
     name=NAME,
 
@@ -227,7 +250,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=__version__,
+    version=get_git_revision_short_hash(),
 
     description='A GUI for the MFiX computational fluid dynamics solver',
     long_description=LONG_DESCRIPTION,

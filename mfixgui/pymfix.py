@@ -23,7 +23,7 @@ import traceback
 
 from flask import Flask, jsonify, make_response, request
 
-from mfixgui.version import __version__
+from mfixgui.version import get_version
 
 pidfilename = None
 
@@ -123,6 +123,8 @@ def import_mfixsolver(solver=None):
 def main():
     """The main function starts MFiX on a separate thread, then
        start the Flask server. """
+
+    os.environ['GFORTRAN_CONVERT_UNIT'] = 'BIG_ENDIAN'
 
     mfix_dat, solver, paused, port, keyword_args = parse_command_line_arguments()
 
@@ -722,7 +724,7 @@ def parse_command_line_arguments():
                         help='specify a filename for the mfixsolver Python extension (mfixsolver.so or mfixsolver.pyd)')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=__version__)
+    parser.add_argument('-v', '--version', action='version', version=get_version)
 
     args = parser.parse_args()
 
