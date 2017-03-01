@@ -34,7 +34,6 @@ with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 F90_TMP = tempfile.mkdtemp()
-CONFIGURE_ARGS = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
@@ -90,8 +89,15 @@ def cleanup_tmp():
             raise
 
 
+DEFAULT_CC = 'gcc'
+DEFAULT_FC = 'gfortran'
+DEFAULT_CFLAGS = '-O2 -fPIC'
+DEFAULT_FCFLAGS = '-O2 -fPIC'
+
+
 def make_mfixsolver():
-    build_dir = path.join('build', CONFIGURE_ARGS.replace(' ', '_').replace('=', '_'))
+    configure_args = get_configure_args(DEFAULT_CC, DEFAULT_FC, DEFAULT_CFLAGS, DEFAULT_FCFLAGS)
+    build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_')).replace('"', '_').replace('__', '_')
 
     return Extension(name='mfixsolver',
                      sources=get_pymfix_src(),
@@ -173,21 +179,37 @@ class BuildDocCommand(setuptools.Command):
         build_doc()
 
 
+def get_configure_args(cc, fc, cflags, fcflags):
+    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s"' % (cc, fc, cflags, fcflags)
+
+
 class BuildMfixCommand(setuptools.Command):
     """ builds libmfix (Python version agnostic) """
     description = "build mfix (Fortran code)"
-    user_options = []
+    user_options = [
+        # The Format is (long option, short option, description)
+        ('cc=', None, 'C compiler'),
+        ('fc=', None, 'Fortran 90 compiler'),
+        ('fcflags=', None, 'flags for Fortran 90 compiler'),
+        ('cflags=', None, 'flags for C compiler'),
+    ]
 
     def initialize_options(self):
-        pass
+        self.cc = DEFAULT_CC
+        self.fc = DEFAULT_FC
+        self.fcflags = DEFAULT_FCFLAGS
+        self.cflags = DEFAULT_CFLAGS
 
     def finalize_options(self):
-        pass
+        if '-fPIC' not in self.fcflags:
+            self.fcflags += ' -fPIC'
+        if '-fPIC' not in self.cflags:
+            self.cflags += ' -fPIC'
 
     def run(self):
 
         # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = 'bash ./configure_mfix %s' % CONFIGURE_ARGS
+        cmd = 'bash ./configure_mfix %s' % get_configure_args(self.cc, self.fc, self.cflags, self.fcflags)
         returncode = subprocess.call(cmd, shell=True)
         if returncode != 0:
             raise EnvironmentError("Failed to configure_mfix correctly")
