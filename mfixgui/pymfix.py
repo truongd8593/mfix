@@ -23,6 +23,14 @@ import traceback
 
 from flask import Flask, jsonify, make_response, request
 
+if sys.version_info.major == 3:
+    from io import BytesIO # HTTP deals in bytes, see PEP 3333
+elif sys.version_info.major == 2:
+    from cStringIO import StringIO as BytesIO # bytes=str in Py2
+else:
+    print("Unsupported Python version %s" % sys.version_info)
+    sys.exit(-1)
+
 from mfixgui.version import get_version
 
 pidfilename = None
@@ -53,13 +61,12 @@ class WSGICopyBody(object):
         self.application = application
 
     def __call__(self, environ, start_response):
-        from cStringIO import StringIO
         length = environ.get('CONTENT_LENGTH', '0')
         length = 0 if length == '' else int(length)
         body = environ['wsgi.input'].read(length)
         meta = "WSGI INPUT\nLENGTH\t%s\nBODY\n%s" % (length, body)
         environ['wsgi_req_copy'] = meta
-        environ['wsgi.input'] = StringIO(body)
+        environ['wsgi.input'] = BytesIO(body)
         # Call the wrapped application
         app_iter = self.application(environ,
                                     self._sr_callback(start_response))
