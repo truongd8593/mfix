@@ -146,10 +146,31 @@ class MainMenu(object):
         browse.setIcon(get_icon('openfolder.png'))
         browse.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
         browse.clicked.connect(self.handle_open)
-        ow_layout.addWidget(browse, 1, 0)
+        ow_layout.addWidget(browse, 1, 0, 2, 1)
 
         spacer_exp = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
         ow_layout.addItem(spacer_exp, 1, 1)
+
+        tb = QtWidgets.QToolButton()
+        tb.setText('Clear Recent')
+        tb.setToolTip('Clear list of recent projects')
+        tb.setAutoRaise(True)
+        tb.pressed.connect(self.handle_clear_recent)
+        ow_layout.addWidget(tb, 2, 2)
+
+        tb_list = QtWidgets.QToolButton()
+        tb_list.setIcon(get_icon('list.png'))
+        tb_list.setToolTip('View projects as list')
+        tb_list.setAutoRaise(True)
+        tb_list.setCheckable(True)
+        ow_layout.addWidget(tb_list, 2, 3)
+
+        tb_tile = QtWidgets.QToolButton()
+        tb_tile.setIcon(get_icon('tile.png'))
+        tb_tile.setToolTip('View projects as grid')
+        tb_tile.setAutoRaise(True)
+        tb_tile.setCheckable(True)
+        ow_layout.addWidget(tb_tile, 2, 4)
 
         lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
         lw_f.setFrameStyle(lw_f.NoFrame)
@@ -157,28 +178,7 @@ class MainMenu(object):
         lw_f.setUniformItemSizes(True)
         lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 2, 0, 1, -1)
-
-        tb = QtWidgets.QToolButton()
-        tb.setText('Clear Recent')
-        tb.setToolTip('Clear list of recent projects')
-        tb.setAutoRaise(True)
-        tb.pressed.connect(self.handle_clear_recent)
-        ow_layout.addWidget(tb, 1, 2)
-
-        tb_list = QtWidgets.QToolButton()
-        tb_list.setIcon(get_icon('list.png'))
-        tb_list.setToolTip('View projects as list')
-        tb_list.setAutoRaise(True)
-        tb_list.setCheckable(True)
-        ow_layout.addWidget(tb_list, 1, 3)
-
-        tb_tile = QtWidgets.QToolButton()
-        tb_tile.setIcon(get_icon('tile.png'))
-        tb_tile.setToolTip('View projects as grid')
-        tb_tile.setAutoRaise(True)
-        tb_tile.setCheckable(True)
-        ow_layout.addWidget(tb_tile, 1, 4)
+        ow_layout.addWidget(lw_f, 3, 0, 1, -1)
 
         # apply previous state
         if self.settings.value('open_list_mode', 'icon') == 'icon':
