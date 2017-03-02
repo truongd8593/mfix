@@ -156,7 +156,7 @@ def main():
         os.makedirs(customsolver_path)
 
     sys.argv[1:] = ['install',
-                    '--prefix', os.getcwd(),
+                    '--prefix', os.path.join(os.getcwd(), '.build'),
                    ]
 
     with open(os.path.join(os.getcwd(), 'mfixsolver'), 'w') as wrapper:
