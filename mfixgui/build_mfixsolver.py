@@ -35,7 +35,7 @@ def get_configure_args(cc=DEFAULT_CC,
                        fc=DEFAULT_FC,
                        cflags=DEFAULT_CFLAGS,
                        fcflags=DEFAULT_FCFLAGS):
-    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s"' % (cc, fc, cflags, fcflags)
+    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s" FFLAGS="%s"' % (cc, fc, cflags, fcflags, fcflags)
 
 
 def make_mfixsolver():
