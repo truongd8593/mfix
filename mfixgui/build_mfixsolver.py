@@ -162,7 +162,7 @@ def main():
     with open(os.path.join(os.getcwd(), 'mfixsolver'), 'w') as wrapper:
         wrapper.write('#!/bin/sh\n')
         wrapper.write('\n')
-        wrapper.write('env PYTHONPATH=%s pymfix "$@"\n' % customsolver_path)
+        wrapper.write('env PYTHONPATH=%s %s -m pymfix "$@"\n' % (customsolver_path, sys.executable))
 
     setup(
         name='customer_mfixsolver',

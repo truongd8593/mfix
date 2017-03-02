@@ -34,7 +34,7 @@ except: # 3
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
-MFIXSOLVER_GLOB_NAMES = ['mfixsolver*.so', 'mfixsolver*.pyd', 'mfixsolver', 'mfixsolver.exe']
+MFIXSOLVER_GLOB_NAMES = ['mfixsolver', 'mfixsolver.exe']
 
 class RunPopup(QDialog):
 
@@ -128,7 +128,7 @@ class RunPopup(QDialog):
             self.parent.message(
                 icon='warning',
                 text='MFiX not found. Please browse for an executable.',
-                buttons=['ok','cancel'],
+                buttons=['ok', 'cancel'],
                 default='ok')
 
         self.update_dialog_options()
@@ -164,21 +164,22 @@ class RunPopup(QDialog):
     def save_template(self):
         '''Save the current template data'''
         self.collect_template_values()
-        tp =  self.ui.combobox_template.currentText()
-        self.template_values['template'] = tp
+        template_txt = self.ui.combobox_template.currentText()
+        self.template_values['template'] = template_txt
         self.gui_comments['queue_template'] = json.dumps(self.template_values)
 
     def collect_template_values(self):
-        tp =  self.ui.combobox_template.currentText()
-        template = self.templates.get(tp,{})
+        template_txt = self.ui.combobox_template.currentText()
+        template = self.templates.get(template_txt, {})
         replace_dict = {}
         for name, wid in template.items():
-            if not isinstance(wid, dict): continue
+            if not isinstance(wid, dict):
+                continue
 
             if 'widget_obj' in wid:
                 wid_obj = wid['widget_obj']
                 if isinstance(wid_obj, (QSpinBox, QDoubleSpinBox)):
-                    self.template_values[name]  = v = wid_obj.value()
+                    self.template_values[name] = v = wid_obj.value()
                 elif isinstance(wid_obj, QCheckBox):
                     self.template_values[name] = v = wid_obj.value
                     if v:
@@ -565,15 +566,8 @@ class RunPopup(QDialog):
         else:
             smp = []
 
-        # FIXME: code-cleanup; mfix_exe really should be renamed to solver everywhere
-        extension = os.path.splitext(self.solver)[1]
-        if extension == '.so' or extension == '.pyd':
-            pymfix = ['pymfix', '--solver']
-            #pymfix = [os.path.join(get_mfix_home(), 'mfixgui', 'pymfix.py'), '--solver']
-        else:
-            pymfix = []
-
-        run_cmd = smp + dmp + pymfix + [self.solver]
+        # FIXME: code-cleanup; mfix_exe really should be renamed to mfixsolver everywhere
+        run_cmd = smp + dmp + [self.mfix_exe]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
@@ -591,8 +585,8 @@ class RunPopup(QDialog):
 
         cmd = self.get_run_command()
 
-        tp =  self.ui.combobox_template.currentText()
-        template = self.templates[tp]
+        template_txt = self.ui.combobox_template.currentText()
+        template = self.templates[template_txt]
 
         # collect widget values
         replace_dict = self.collect_template_values()
