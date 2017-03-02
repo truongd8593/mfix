@@ -240,7 +240,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mfix=mfixgui.gui:main',
-            'pymfix=mfixgui.pymfix:main',
+            'mfixsolver=mfixgui.pymfix:main',
             'build_mfixsolver=mfixgui.build_mfixsolver:main',
         ],
     },

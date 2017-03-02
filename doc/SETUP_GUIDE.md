@@ -195,7 +195,7 @@ You are now ready to set up and run MFIX simulation!
 ## From the GUI with default interactive solver (preferred for beginers)
 
 This will use the mfixsolver Python library installed with the package. Only the
-location of pymfix needs to be defined in the GUI. You can pause, unpause, stop,
+location of mfixsolver needs to be defined in the GUI. You can pause, unpause, stop,
 or get info from the solver.
 
 The GUI is launched from the prompt with:
@@ -208,7 +208,7 @@ The GUI is launched from the prompt with:
 Here you use a source distribution of MFIX
 to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
 in the project directory. When running `mfix`, in
-the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
+the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver executable you
 have just built. You can pause, unpause, stop, or get info from the solver.
 
 The GUI is launched from the prompt with:
