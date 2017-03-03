@@ -220,7 +220,7 @@ using the Discrete Element Model. The model setup is:
 
 | Property       | Value                    |
 |----------------|--------------------------|
-| geometry       | 5 cm x 10 cm x 2 cm      |
+| geometry       | 5 cm x 10 cm x 0.2 cm    |
 | mesh           | 20 x 40 x 1              |
 | solid diameter | 1000 microns (1000e-6 m) |
 | solid density  | 2500 kg/m2               |
@@ -240,15 +240,15 @@ button
 - On the `Model` pane, enter a descriptive text in the `Description` field
 - Select "Discrete Element Model (MFiX-DEM)" in the `Solver` combo-box.
 
-<img alt="create project" src="media/gui_tfm_2d_model.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_model.png" style="width:800;height:600" />
 
 #### Step 3. Enter the geometry
 - Select the `Geometry` pane
 - Enter "5/100" meters for the maximum x value
 - Enter "10/100" meters for the maximum y value
-- Enter "2/100" meters for the maximum z value
+- Enter "2/1000" meters for the maximum z value
 
-<img alt="create project" src="media/gui_tfm_2d_geometry.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_geometry.png" style="width:800;height:600" />
 
 #### Step 4. Enter the mesh
 - On the `Mesh` pane, `Background` sub-pane
@@ -259,7 +259,7 @@ button
 > Note: Since there is only one cell in the Z direction, this model is
 > effectively as 2D simulation.
 
-<img alt="create project" src="media/gui_tfm_2d_mesh.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_mesh.png" style="width:800;height:600" />
 
 #### Step 5. Create regions for initial and boundary condition specification
 
@@ -275,18 +275,24 @@ region to be used by the gas inlet boundary condition.
 region to be used by pressure outlet boundary condition.
   - Enter a name for the region in the `Name` field ("outlet")
 
-<img alt="create project" src="media/gui_tfm_2d_region1.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_tfm_2d_region3.png" style="width:800;height:600" />
 
 #### Step 6. Create a solid
 
-- Select the `Solids` pane
+- Select the `Solids` pane, `Materials` sub-pane
 - Click the ![new](../mfixgui/icons/add.png) button to create a new solid
 - Enter a descriptive name in the `Name` field ("solids")
 - Change the solids model to "Discrete Element Model (MFiX-DEM)")
-- Enter the particle diameter of "1000e-6" m in the `Diameter` field
+- Enter the particle diameter of "0.001" m in the `Diameter` field
 - Enter the particle density of "2500" kg/m2 in the `Density` field
 
-<img alt="create project" src="media/gui_tfm_2d_solids.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_solids.png" style="width:800;height:600" />
+
+- Select the `Solids` pane, `DEM` sub-pane
+- Check the `Enable automatic particle generation` checkbox, so that the bed
+Initial Condition, defined later, will be filled with solids
+
+<img alt="create project" src="media/gui_dem_2d_solids2.png" style="width:800;height:600" />
 
 #### Step 7. Create Initial Conditions
 
@@ -297,7 +303,6 @@ initialize the entire flow field with air.
 
 <img alt="create project" src="media/gui_tfm_2d_ics1.png" style="width:800;height:600" />
 
-
 - Create a new Initial Condition by pressing the
 ![new](../mfixgui/icons/add.png) button
 - Select the region created previously for the bed Initial Condition ("bed"
@@ -305,11 +310,11 @@ region) and click the `OK` button.
 
 <img alt="create project" src="media/gui_tfm_2d_newic.png" style="width:800;height:600" />
 
-- Select the solid (named previously as "glass beads") sub-pane and enter a
+- Select the solid (named previously as "solid") sub-pane and enter a
 volume fraction of "0.4" in the `Volume Fraction` field. This will fill the
 bottom half of the domain with solids.
 
-<img alt="create project" src="media/gui_tfm_2d_ics2.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_ics2.png" style="width:800;height:600" />
 
 #### Step 8. Create Boundary Conditions
 
@@ -325,7 +330,7 @@ combo-box
 - On the "Fluid" sub-pane, enter a velocity in the `Y-axial velocity` field of
 "3" m/s
 
-<img alt="create project" src="media/gui_tfm_2d_bcs1.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_bcs1.png" style="width:800;height:600" />
 
 - Create another Boundary condition by clicking the
 ![new](../mfixgui/icons/add.png) button
@@ -354,13 +359,13 @@ combo-box
 - Select the "Background IC" region from the list to save all the particle data
 - Click `OK` to create the output
 
-<img alt="create project" src="media/gui_tfm_2d_newoutput.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_newoutput.png" style="width:800;height:600" />
 
-- Enter a base name for the `*.vtu` files in the `Filename base` field
+- Enter a base name for the `*.vtu` files in the `Filename base` field ("particles")
 - Change the `Write interval` to "0.1" seconds
 - Select the `Diameter` and `Translational Velocity` check-boxes
 
-<img alt="create project" src="media/gui_tfm_2d_output_vtk.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_dem_2d_output_vtk.png" style="width:800;height:600" />
 
 #### Step 10. Run the project
 
@@ -370,30 +375,3 @@ combo-box
 - Click the `Run` button to actually start the simulation
 
 <img alt="create project" src="media/gui_rundialog_local.png" style="width:800;height:600" />
-
-#### Step 11. View results
-
-Results can be viewed, and plotted, while the simulation is running.
-
-- Create a new visualization tab by pressing the
-![add](../mfixgui/icons/add.png) in the upper right hand corner.
-- Select an item to view, such as plotting the time step (dt) or click the `VTK`
-button to view the vtk output files.
-
-<img alt="create project" src="media/gui_tfm_2d_new_output.png" style="width:800;height:600" />
-
-- On the `VTK` results tab, the visibility and representation of the `*.vtk`
-files can be controlled with the `Visibility` menu.
-- For more options with point data, click the
-![next](../mfixgui/icons/next.png) button.
-
-<img alt="create project" src="media/gui_vtk_visible_dialog.png" style="width:800;height:600" />
-
-- Change frames with the ![new](../mfixgui/icons/first.png),
-![new](../mfixgui/icons/back.png), ![new](../mfixgui/icons/next.png), and
-![new](../mfixgui/icons/last.png) buttons
-- Click the ![new](../mfixgui/icons/play.png) button to play the available vtk
-files.
-- Change the playback speed with the ![new](../mfixgui/icons/speed.png) button
-
-<img alt="create project" src="media/gui_tfm_2d_vtk_view.png" style="width:800;height:600" />

@@ -230,9 +230,9 @@ class MainMenu(object):
         nw_layout.addWidget(f_label, 10, 0)
 
         self.main_menu_new_enable_list = [True]*7
-        for i, f in enumerate(['Single', 'TFM', 'PIC', 'DEM', 'Hybrid', 'Cartesian', 'Chemistry']):
+        for i, f in enumerate(['Single', 'TFM', 'PIC', 'DEM', 'Hybrid', 'Cut-cell', 'Chemistry']):
             cb = QtWidgets.QCheckBox(f)
-            cb.setIcon(get_icon('geometry.png' if f == 'Cartesian' else f.lower()+'.png'))
+            cb.setIcon(get_icon('geometry.png' if f == 'Cut-cell' else f.lower()+'.png'))
             cb.setChecked(True)
             cb.setToolTip(f)
             cb.toggled.connect(lambda checked, idx=i: self.main_menu_filter_new(idx, checked))
