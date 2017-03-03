@@ -181,6 +181,7 @@ class WorkflowRunPopup(RunPopup):
     def __init__(self, mfix_exe, parent):
         RunPopup.__init__(self, mfix_exe, parent)
         self.submit_queue = False
+        self.cancel = False
 
     # over-rides
     def handle_run(self):
@@ -190,6 +191,10 @@ class WorkflowRunPopup(RunPopup):
     def handle_submit(self):
         self.submit_queue = True
         self.finish_with_dialog()
+
+    def handle_abort(self):
+        self.cancel = True
+        RunPopup.handle_abort(self)
 
 class FakeJob(object):
     job=None
@@ -345,13 +350,16 @@ class WorkflowWidget(QtWidgets.QWidget):
         if not self.file_timer.isActive():
             self.file_timer.start(1000)
 
-    def export_project(self, path=None, param_dict={}, keyword_dict={}):
+    def export_project(self, path=None, param_dict={}, keyword_dict={},
+                       restart=None, copy_project=None):
         """
         export a mfix project
 
         :path: directory to export the project to
         :param_dict: dictionary of parameters and values to use {'x':1.3}
         :keyword_dict: dictionary of keywords and values {'BC_V_g,1': 5.0}
+        :restart: must be one of None, 'restart_1', or 'restart_2'
+        :copy_project: directory to copy *.RES, *.SP?, and *.pvd files from
         """
         # copy parameters
         param_copy = copy.deepcopy(PARAMETER_DICT)
@@ -361,7 +369,17 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # copy files
         proj_dir = self.mfixgui.get_project_dir()
-        files_to_copy = glob.glob(os.path.join(proj_dir, '*.stl'))
+        f_patterns = ['*.stl', 'particle_input.dat', 'poly.dat']
+        if restart == 'restart_1':
+            f_patterns += ['*.RES', '*.SP?', '*.pvd']
+        elif restart == 'restart_2':
+            f_patterns += ['*.RES']
+        files_to_copy = []
+        for f_pattern in f_patterns:
+            src = proj_dir
+            if copy_project is not None and f_pattern in ['*.RES', '*.SP?', '*.pvd']:
+                src = copy_project
+            files_to_copy += glob.glob(os.path.join(src, f_pattern))
         for f in files_to_copy:
             shutil.copyfile(f, os.path.join(path, os.path.basename(f)))
 
@@ -405,12 +423,18 @@ class WorkflowWidget(QtWidgets.QWidget):
         run_dialog = WorkflowRunPopup(None, parent)
         run_dialog.exec_()
 
+        # Check for cancel
+        if run_dialog.cancel:
+            return False
+
         self.queue = run_dialog.submit_queue
         if self.queue:
             self.submit_cmd = run_dialog.get_submit_command()
         else:
             self.submit_cmd = None
         self.run_cmd = run_dialog.get_run_command()
+        print(self.run_cmd)
+        return True
 
     def run_project(self, mfx_file):
         """
@@ -482,7 +506,8 @@ class WorkflowWidget(QtWidgets.QWidget):
             job_id = self.submit_to_queue(proj_dir)
         # local
         else:
-            msg = 'Running: %s' % ' '.join(self.run_cmd)
+            print(self.run_cmd)
+            msg = 'Running: %s' % ''.join(self.run_cmd)
             run_dialog.start_command(self.run_cmd, proj_dir, os.environ)
 
         self.watch_dir_paths.append(proj_dir)
@@ -508,7 +533,8 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         proc = subprocess.Popen(submit_cmd, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                cwd=project_dir)
+                                cwd=project_dir,
+                                env=dict(os.environ, LD_PRELOAD=""))
         out, err = proc.communicate()
         if job_id_regex is not None and out:
             job_id = re.findall(job_id_regex, str(out))
@@ -671,7 +697,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         projs = self.get_selected_projects()
 
         btn = self.mfixgui.message(
-            text='The selectect directories will be delete.\nContinue?',
+            text='The selected directories will be delete.\nContinue?',
             buttons=['yes', 'no'],
             default='no',)
 
@@ -682,7 +708,9 @@ class WorkflowWidget(QtWidgets.QWidget):
         for proj in projs:
 
             # make sure the job is stopped
-            job = self.job_dict[proj]
+            job = self.job_dict.get(proj, None)
+            if job is None:
+                continue
             if not isinstance(job, FakeJob):
                 job.stop_mfix()
                 data[proj]['status'] = 'stopped'

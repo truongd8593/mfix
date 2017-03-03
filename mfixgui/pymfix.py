@@ -23,7 +23,15 @@ import traceback
 
 from flask import Flask, jsonify, make_response, request
 
-from mfixgui.version import __version__
+if sys.version_info.major == 3:
+    from io import BytesIO # HTTP deals in bytes, see PEP 3333
+elif sys.version_info.major == 2:
+    from cStringIO import StringIO as BytesIO # bytes=str in Py2
+else:
+    print("Unsupported Python version %s" % sys.version_info)
+    sys.exit(-1)
+
+from mfixgui.version import get_version
 
 pidfilename = None
 
@@ -53,13 +61,12 @@ class WSGICopyBody(object):
         self.application = application
 
     def __call__(self, environ, start_response):
-        from cStringIO import StringIO
         length = environ.get('CONTENT_LENGTH', '0')
         length = 0 if length == '' else int(length)
         body = environ['wsgi.input'].read(length)
         meta = "WSGI INPUT\nLENGTH\t%s\nBODY\n%s" % (length, body)
         environ['wsgi_req_copy'] = meta
-        environ['wsgi.input'] = StringIO(body)
+        environ['wsgi.input'] = BytesIO(body)
         # Call the wrapped application
         app_iter = self.application(environ,
                                     self._sr_callback(start_response))
@@ -123,6 +130,8 @@ def import_mfixsolver(solver=None):
 def main():
     """The main function starts MFiX on a separate thread, then
        start the Flask server. """
+
+    os.environ['GFORTRAN_CONVERT_UNIT'] = 'BIG_ENDIAN'
 
     mfix_dat, solver, paused, port, keyword_args = parse_command_line_arguments()
 
@@ -722,7 +731,7 @@ def parse_command_line_arguments():
                         help='specify a filename for the mfixsolver Python extension (mfixsolver.so or mfixsolver.pyd)')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=__version__)
+    parser.add_argument('-v', '--version', action='version', version=get_version)
 
     args = parser.parse_args()
 

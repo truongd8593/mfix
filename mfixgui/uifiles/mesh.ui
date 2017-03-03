@@ -148,59 +148,96 @@ QPushButton:checked {
           <property name="margin">
            <number>0</number>
           </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Cells</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="LineEdit" name="lineedit_keyword_imax">
             <property name="text">
              <string>10</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="LineEdit" name="lineedit_keyword_jmax">
-            <property name="text">
-             <string>10</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="LineEdit" name="lineedit_keyword_kmax">
-            <property name="text">
-             <string>10</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Cell Size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="lineedit_mesh_cells_size_x">
             <property name="readOnly">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="2" column="3">
+           <widget class="QLineEdit" name="lineedit_mesh_cells_size_z">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
            <widget class="QLineEdit" name="lineedit_mesh_cells_size_y">
             <property name="readOnly">
              <bool>true</bool>
             </property>
            </widget>
           </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>Z</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Y</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Cells</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Cell Size</string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="3">
-           <widget class="QLineEdit" name="lineedit_mesh_cells_size_z">
-            <property name="readOnly">
-             <bool>true</bool>
+           <widget class="LineEdit" name="lineedit_keyword_kmax">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="LineEdit" name="lineedit_keyword_jmax">
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>X</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>m</string>
             </property>
            </widget>
           </item>
@@ -805,13 +842,13 @@ QPushButton:checked {
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>
-   <class>CheckBox</class>
-   <extends>QCheckBox</extends>
+   <class>LineEdit</class>
+   <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
   </customwidget>
   <customwidget>

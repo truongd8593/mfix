@@ -59,7 +59,7 @@ from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.species_popup import SpeciesPopup
 
-from .version import __version__
+from .version import get_version
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
@@ -940,7 +940,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % __version__,
+        self.print_internal("MFiX-GUI version %s" % get_version,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1818,16 +1818,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
-        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
         self.run_dialog.popup()
-
-    def handle_exe_changed(self):
-        """callback from run dialog when combobox is changed"""
-        self.mfix_exe = self.run_dialog.mfix_exe
-        self.settings.setValue('mfix_exe', self.mfix_exe)
-        log.debug('exe changed signal recieved: %s' % self.mfix_exe)
-        self.signal_update_runbuttons.emit('')
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
@@ -1920,7 +1912,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = __version__
+        self.project.mfix_gui_comments['gui_version'] = get_version
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2740,7 +2732,7 @@ def main():
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
         help="Create thumbnails in test mode.")
-    ARG('-v', '--version', action='version', version=__version__)
+    ARG('-v', '--version', action='version', version=get_version())
 
     args = parser.parse_args()
 
@@ -2773,6 +2765,34 @@ def main():
         print("%s: is not a file " % project_file)
         parser.print_help()
         sys.exit()
+
+    # Set exception handler early, so we catch any errors in initialization
+    def excepthook(etype, exc, tb):
+        if args.developer:
+            traceback.print_exception(etype, exc, tb)
+
+        msg =  ['Please report this error to MFiX-GUI developers\n',
+                'You may continue running, but the application may\n',
+                ' become unstable.  Consider saving your work now.\n',
+                'Please include the following in your bug report:\n']
+        try:
+            msg.append("Error: %s\n" % exc)
+        except: # unlikely
+            msg.append("Error: %s\n" % etype)
+        msg.extend(traceback.format_tb(tb))
+
+        for line in msg:
+            log.error(line.strip())
+
+        try:
+            gui.message("Internal error", text=''.join(msg))
+        except Exception as e:
+            print("Internal error")
+            print(''.join(msg))
+            print("Error displaying popup: %s" % e)
+
+    if not args.test:
+        sys.excepthook = excepthook
 
     # create the QApplication
     qapp = QtWidgets.QApplication([]) # TODO pass args to qt
@@ -2865,32 +2885,7 @@ def main():
     # This makes it too easy to skip the exit confirmation dialog.  Should we allow it?
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    def excepthook(etype, exc, tb):
-        if args.developer:
-            traceback.print_exception(etype, exc, tb)
-
-        msg =  ['Please report this error to MFiX-GUI developers\n',
-                'You may continue running, but the application may\n',
-                ' become unstable.  Consider saving your work now.\n',
-                'Please include the following in your bug report:\n']
-        try:
-            msg.append("Error: %s\n" % exc)
-        except: # unlikely
-            msg.append("Error: %s\n" % etype)
-        msg.extend(traceback.format_tb(tb))
-
-        for line in msg:
-            log.error(line.strip())
-
-        try:
-            gui.message("Internal error", text=''.join(msg))
-        except Exception as e:
-            print("Internal error")
-            print(''.join(msg))
-            print("Error displaying popup: %s" % e)
-
     if not args.test:
-        sys.excepthook = excepthook
         qapp.exec_()
 
     else:  # Run internal test suite
