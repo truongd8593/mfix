@@ -1818,16 +1818,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
-        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
         self.run_dialog.popup()
-
-    def handle_exe_changed(self):
-        """callback from run dialog when combobox is changed"""
-        self.mfix_exe = self.run_dialog.mfix_exe
-        self.settings.setValue('mfix_exe', self.mfix_exe)
-        log.debug('exe changed signal recieved: %s' % self.mfix_exe)
-        self.signal_update_runbuttons.emit('')
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
