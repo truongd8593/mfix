@@ -180,7 +180,7 @@ class BuildDocCommand(setuptools.Command):
 
 
 def get_configure_args(cc, fc, cflags, fcflags):
-    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s"' % (cc, fc, cflags, fcflags)
+    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s" FFLAGS="%s"' % (cc, fc, cflags, fcflags, fcflags)
 
 
 class BuildMfixCommand(setuptools.Command):

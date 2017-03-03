@@ -1,32 +1,8 @@
 """the main (file menu) bar."""
+
 import json
 import os
 import sys
-
-import qtpy
-from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
-                                   get_pixmap, get_separator)
-from mfixgui.version import get_git_revision_short_hash, get_version
-from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
-from qtpy import API_NAME, QtCore, QtGui, QtWidgets
-
-try:
-    from qtpy import QT_VERSION
-except ImportError:
-    QT_VERSION = 'Unknown'
-
-
-try:
-    import numpy as np
-    numpy_version = np.__version__
-except ImportError:
-    numpy_version = 'Import Failed'
-
-try:
-    from vtk import vtkVersion
-    vtkVersion = vtkVersion.GetVTKVersion()
-except ImportError:
-    vtkVersion = 'Import Failed'
 
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
@@ -39,16 +15,45 @@ except ImportError:
     import urlparse
     import urllib
 
+import qtpy
+from qtpy import API_NAME, QtCore, QtGui, QtWidgets
+
+try:
+    from qtpy import QT_VERSION
+except ImportError:
+    QT_VERSION = 'Unknown'
+
+
+try:
+    import numpy as np
+    NUMPY_VERSION = np.__version__
+except ImportError:
+    NUMPY_VERSION = 'Import Failed'
+
+try:
+    from vtk import vtkVersion
+    VTK_VERSION = vtkVersion.GetVTKVersion()
+except ImportError:
+    VTK_VERSION = 'Import Failed'
+
+
+from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
+                                   get_pixmap, get_separator)
+from mfixgui.version import get_version
+from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
+
 
 def path2url(path):
     """Convert path to url."""
     return urlparse.urljoin(
         'file:', urllib.pathname2url(path))
 
+
 class MainMenu(object):
     """Main menu mixin for the gui."""
 
     main_menu_animation_speed = 150
+
     def init_main_menu(self):
         """Build the main menu."""
 
@@ -87,10 +92,14 @@ class MainMenu(object):
         names = ['Project Info', 'New', 'Open', 'Save', 'Save As', 'Export Project', 'sep', 'Settings', 'Help', 'About', 'Quit']
         icons = ['infooutline', 'newfolder', 'openfolder', 'save', 'save', 'open_in_new', '', 'settings', 'help', 'infooutline', 'close']
         if PYQTNODE_AVAILABLE:
-            for n, i in reversed([('Export Workflow', 'open_in_new'), ('Import Workflow', 'import'),
-                         ('sep', '')]):
-                names.insert(7, n)
-                icons.insert(7, i)
+            pyqtnode_items = [
+                ('Export Workflow', 'open_in_new'),
+                ('Import Workflow', 'import'),
+                ('sep', ''),
+            ]
+            for name, icon in reversed(pyqtnode_items):
+                names.insert(7, name)
+                icons.insert(7, icon)
 
         for name, icon in zip(names, icons):
             if name == 'sep':
@@ -148,8 +157,18 @@ class MainMenu(object):
         browse.clicked.connect(self.handle_open)
         ow_layout.addWidget(browse, 1, 0, 2, 1)
 
-        spacer_exp = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
+        spacer_exp = QtWidgets.QSpacerItem(100, 10,
+                                           QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Maximum,)
         ow_layout.addItem(spacer_exp, 1, 1)
+
+        lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
+        lw_f.setFrameStyle(lw_f.NoFrame)
+        lw_f.setIconSize(QtCore.QSize(128, 128))
+        lw_f.setUniformItemSizes(True)
+        lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
+        lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
+        ow_layout.addWidget(lw_f, 10, 0, 1, -1)
 
         tb = QtWidgets.QToolButton()
         tb.setText('Clear Recent')
@@ -465,11 +484,11 @@ class MainMenu(object):
 
         for image, tutorial in [
                 ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-two-fluid-model-tfm'),
-                ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-discrete-element-model-dem')]:
+                ('gui_dem_2d_thumbnail.png', 'two-dimensional-fluid-bed-discrete-element-model-dem')]:
             thumb = os.path.join(SCRIPT_DIRECTORY, 'doc', 'media', image)
             if not os.path.exists(thumb):
                 continue
-            icon = QtGui.QIcon()
+            icon = QtGui.QIcon(thumb)
             text = tutorial.replace('-', ' ').title()
             text = '<b>%s</b><p><a href="%s">Text</a> | Video</p>' % (
                 text, path2url(os.path.join(SCRIPT_DIRECTORY, 'doc',
@@ -511,19 +530,14 @@ class MainMenu(object):
 
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
 
-        git_des = None
-        if int(self.settings.value('developer_mode', 0)):
-            git_des = get_git_revision_short_hash()
-
         self.version_labels = [
             '<b>MFiX GUI version:</b> {}'.format(get_version()),
-            '<b>Git description:</b> {}'.format(git_des) if git_des is not None else None,
             '<b>Python version:</b> {}'.format(sys.version),
             '<b>Qt Wrapper:</b> {}'.format(API_NAME),
             '<b>Qt Version:</b> {}'.format(QT_VERSION),
             '<b>qtpy Version:</b> {}'.format(qtpy.__version__),
-            '<b>Numpy Version:</b> {}'.format(numpy_version),
-            '<b>VTK Version:</b> {}'.format(vtkVersion),
+            '<b>Numpy Version:</b> {}'.format(NUMPY_VERSION),
+            '<b>VTK Version:</b> {}'.format(VTK_VERSION),
             ]
 
         for i, label in enumerate(self.version_labels):
@@ -688,7 +702,8 @@ class MainMenu(object):
                     clean = line.lower().split('#')[0].split('!')[0].strip()
                     if 'description' in clean:
                         toks = [tok.strip() for tok in line.split('=')]
-                        des_ind = toks.index('description')
+                        toks_lower = [tok.lower() for tok in toks]
+                        des_ind = toks_lower.index('description')
                         description = toks[des_ind + 1].replace('"', '').replace("'", '')
                         break
 

@@ -375,3 +375,25 @@ combo-box
 - Click the `Run` button to actually start the simulation
 
 <img alt="create project" src="media/gui_rundialog_local.png" style="width:800;height:600" />
+
+#### Step 11. View results
+
+Results can be viewed, and plotted, while the simulation is running.
+
+- Create a new visualization tab by pressing the
+![new](../mfixgui/icons/add.png) in the upper right hand corner.
+- Select an item to view, such as plotting the time step (dt) or click the `VTK`
+button to view the vtk output files.
+- On the `VTK` results tab, the visibility and representation of the `*.vtk`
+files can be controlled with the `Visibility` menu.
+
+<img alt="create project" src="media/gui_vtk_visible_dialog.png" style="width:800;height:600" />
+
+- Change frames with the ![new](../mfixgui/icons/first.png),
+![new](../mfixgui/icons/back.png), ![new](../mfixgui/icons/next.png), and
+![new](../mfixgui/icons/last.png) buttons
+- Click the ![new](../mfixgui/icons/play.png) button to play the available vtk
+files.
+- Change the playback speed with the ![new](../mfixgui/icons/speed.png) button
+
+<img alt="create project" src="media/gui_dem_2d_vtk_view.png" style="width:800;height:600" />
