@@ -466,7 +466,10 @@ class MainMenu(object):
         for image, tutorial in [
                 ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-two-fluid-model-tfm'),
                 ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-discrete-element-model-dem')]:
-            icon = QtGui.QIcon(os.path.join(SCRIPT_DIRECTORY, 'doc', 'media', image))
+            thumb = os.path.join(SCRIPT_DIRECTORY, 'doc', 'media', image)
+            if not os.path.exists(thumb):
+                continue
+            icon = QtGui.QIcon()
             text = tutorial.replace('-', ' ').title()
             text = '<b>%s</b><p><a href="%s">Text</a> | Video</p>' % (
                 text, path2url(os.path.join(SCRIPT_DIRECTORY, 'doc',
