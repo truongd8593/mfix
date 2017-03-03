@@ -1,4 +1,6 @@
-""" A setuptools based module building the MFiX Solver """
+""" This module builds the mfixsolver as a Python extension library. It is used
+by setup.py when building the mfix distribution package, and is run as a
+standalone command to build the custom mfixsolvers. """
 
 import atexit
 import os
@@ -111,10 +113,10 @@ class BuildMfixCommand(setuptools.Command):
             self.cflags += ' -fPIC'
 
     def run(self):
+        """ configure and build mfix; requires bash to be in PATH """
 
         configure_mfix = os.path.join(get_mfix_home(), 'configure_mfix')
 
-        # should work Linux/Mac/Windows as long as bash is in PATH
         args = get_configure_args(self.cc, self.fc, self.cflags, self.fcflags)
         cmd = 'bash %s --buildrundir %s' % (configure_mfix, args)
 
@@ -143,29 +145,29 @@ class BuildExtCommand(build_ext):
 
 
 def main():
-    # Custom installation: set --prefix to RUNDIR
-    # https://docs.python.org/3/install/#custom-installation
+    """ Custom installation: set --prefix to RUNDIR
+     https://docs.python.org/3/install/#custom-installation """
 
-    customsolver_path = os.path.join(os.getcwd(),
-                                     '.build',
-                                     'lib',
-                                     'python%d.%d' % sys.version_info[:2],
-                                     'site-packages')
-    os.environ['PYTHONPATH'] = customsolver_path
-    if not os.path.isdir(customsolver_path):
-        os.makedirs(customsolver_path)
+    rundir = os.getcwd()
+    builddir = os.path.join(rundir, '.build')
 
-    sys.argv[1:] = ['install',
-                    '--prefix', os.path.join(os.getcwd(), '.build'),
+    pypath = os.path.join(rundir,
+                          'lib',
+                          'python%d.%d' % sys.version_info[:2],
+                          'site-packages')
+    os.environ['PYTHONPATH'] = pypath
+    for dirname in (builddir, pypath):
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
+
+    sys.argv[1:] = ['install_lib',
+                    '--install-dir', pypath,
                    ]
 
-    with open(os.path.join(os.getcwd(), 'mfixsolver'), 'w') as wrapper:
-        wrapper.write('#!/bin/sh\n')
-        wrapper.write('\n')
-        wrapper.write('env PYTHONPATH=%s %s -m pymfix "$@"\n' % (customsolver_path, sys.executable))
+    os.chdir(builddir)
 
     setup(
-        name='customer_mfixsolver',
+        name='custom_mfixsolver',
 
         cmdclass={
             'build_ext': BuildExtCommand,
@@ -181,7 +183,19 @@ def main():
         ],
 
         ext_modules=[make_mfixsolver(),],
+        entry_points={},
+        scripts={},
     )
+
+    mfixsolver = os.path.join(rundir, 'mfixsolver')
+    with open(mfixsolver, 'w') as wrapper:
+        wrapper.write('#!/bin/sh\n')
+        wrapper.write('\n')
+        wrapper.write('env PYTHONPATH=%s %s -m mfixgui.pymfix "$@"\n' % (pypath, sys.executable))
+
+    # make executable
+    permissions = os.stat(mfixsolver)
+    os.chmod(mfixsolver, permissions.st_mode | 0o111)
 
 if __name__ == '__main__':
     main()
