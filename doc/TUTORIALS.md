@@ -1,8 +1,6 @@
-# Tutorials
+# Basic Tutorials
 
-## Basic Tutorials
-
-### 2 Dimensional Fluid Bed, Two Fluid Model (TFM)
+## Two Dimensional Fluid Bed, Two Fluid Model (TFM)
 
 This tutorial shows how to create a two dimensional fluidized bed simulation
 using the two fluid model. The model setup is:
@@ -27,7 +25,7 @@ button
 > Note: A new project directory will be created in the location directory, with
 > the name being the project name.
 
-<img alt="create project" src="media/gui_new_project.png" style="width:800;height:600" />
+<img alt="create project" src="media/gui_new_project.png" style="width:300;height:300" />
 
 #### Step 2. Select model parameters
 - On the `Model` pane, enter a descriptive text in the `Description` field
@@ -215,7 +213,7 @@ files.
 <img alt="create project" src="media/gui_tfm_2d_vtk_view.png" style="width:800;height:600" />
 
 
-### 2 Dimensional Fluid Bed, Discrete Element Model (DEM)
+## Two Dimensional Fluid Bed, Discrete Element Model (DEM)
 
 This tutorial shows how to create a two dimensional fluidized bed simulation
 using the Discrete Element Model. The model setup is:

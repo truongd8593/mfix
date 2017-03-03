@@ -217,20 +217,26 @@ class MainMenu(object):
         nw_layout.addWidget(l, 0, 0, 1, -1)
 
         fw = QtWidgets.QWidget()
+        fw.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         nw_layout.addWidget(fw, 1, 0, 1, -1)
         fw_layout = QtWidgets.QHBoxLayout(fw)
         fw_layout.setContentsMargins(0, 0, 0, 0)
 
+        hspacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Maximum,)
+        fw_layout.addSpacerItem(hspacer)
+
+        f_label = QtWidgets.QLabel('Filter By')
+        f_label.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        nw_layout.addWidget(f_label, 10, 0)
+
         self.main_menu_new_enable_list = [True]*7
         for i, f in enumerate(['Single', 'TFM', 'PIC', 'DEM', 'Hybrid', 'Cartesian', 'Chemistry']):
-            cb = QtWidgets.QCheckBox()
+            cb = QtWidgets.QCheckBox(f)
             cb.setIcon(get_icon('geometry.png' if f == 'Cartesian' else f.lower()+'.png'))
             cb.setChecked(True)
             cb.setToolTip(f)
             cb.toggled.connect(lambda checked, idx=i: self.main_menu_filter_new(idx, checked))
-            fw_layout.addWidget(cb)
-        hspacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Maximum,)
-        fw_layout.addSpacerItem(hspacer)
+            nw_layout.addWidget(cb, 11+i, 0)
 
         lw = self.ui.main_menu_new_list = QtWidgets.QListWidget()
         lw.setFrameStyle(lw.NoFrame)
@@ -238,7 +244,7 @@ class MainMenu(object):
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
-        nw_layout.addWidget(lw, 2, 0, 1, -1)
+        nw_layout.addWidget(lw, 10, 1, 10, 1)
 
         tb_l = QtWidgets.QToolButton()
         tb_l.setIcon(get_icon('list.png'))
@@ -428,7 +434,6 @@ class MainMenu(object):
         l.setSizePolicy(label_policy)
         hw_layout.addWidget(l, 0, 0, 1, -1)
 
-        hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 1, 0)
 
         # link only works after running: python setup.py build_doc
         def open_user_guide(linkStr):
@@ -437,7 +442,6 @@ class MainMenu(object):
         for i, help_text in enumerate([
             'See <a href="%s">User Guide</a> for documentation on using the GUI' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'USER_GUIDE.html')),
             'See <a href="%s">Setup Guide</a> for documentation on building custom mfixsolvers' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'SETUP_GUIDE.html')),
-            'See <a href="%s">Tutorials</a> text based model setup tutorials' % path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'TUTORIALS.html')),
             ]):
 
             help_info = QtWidgets.QLabel(help_text)
@@ -447,7 +451,33 @@ class MainMenu(object):
             help_info.setOpenExternalLinks(True)
             hw_layout.addWidget(help_info, 10+i, 0, 1, -1)
 
-        hw_layout.addItem(QtWidgets.QSpacerItem(100, 100, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.MinimumExpanding,), 100, 0)
+        # tutorial icons
+        hw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum,), 100, 0)
+
+        hw_layout.addWidget(QtWidgets.QLabel('<b>Tutorials</b>'), 101, 0)
+
+        tut_lw = QtWidgets.QListWidget()
+        tut_lw.setFrameStyle(tut_lw.NoFrame)
+        tut_lw.setIconSize(QtCore.QSize(128, 128))
+        tut_lw.setUniformItemSizes(True)
+        tut_lw.setResizeMode(QtWidgets.QListWidget.Adjust)
+        hw_layout.addWidget(tut_lw, 120, 0, 1, -1)
+
+        for image, tutorial in [
+                ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-two-fluid-model-tfm'),
+                ('gui_tfm_2d_thumbnail.png', 'two-dimensional-fluid-bed-discrete-element-model-dem')]:
+            icon = QtGui.QIcon(os.path.join(SCRIPT_DIRECTORY, 'doc', 'media', image))
+            text = tutorial.replace('-', ' ').title()
+            text = '<b>%s</b><p><a href="%s">Text</a> | Video</p>' % (
+                text, path2url(os.path.join(SCRIPT_DIRECTORY, 'doc',
+                                            'TUTORIALS.html')) + '#' + tutorial)
+            label = QtWidgets.QLabel(text)
+            label.linkActivated.connect(open_user_guide)
+            item = QtWidgets.QListWidgetItem()
+            item.setIcon(icon)
+            item.setFlags(QtCore.Qt.ItemIsEnabled)
+            tut_lw.addItem(item)
+            tut_lw.setItemWidget(item, label)
 
         # --- build about ---
         aw = self.ui.main_menu_about_widget = QtWidgets.QWidget()
