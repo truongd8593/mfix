@@ -25,6 +25,7 @@ NAME = 'mfix'
 
 MODEL_DIR = os.path.join(HERE, 'model')
 CONFIGURE_ARGS = []
+MAKE_ARGS = []
 
 
 def make_mfixsolver():
@@ -108,8 +109,8 @@ class BuildMfixCommand(setuptools.Command):
         cmd = 'bash %s --buildrundir %s' % (configure_mfix, ' '.join(CONFIGURE_ARGS))
         subprocess.check_call(cmd, shell=True)
 
-        cmd = 'bash make libmfix %s' % ' '.join(MAKE_ARGS)
-        subprocess.check_call(["make", "libmfix"], shell=True)
+        cmd = 'make libmfix %s' % ' '.join(MAKE_ARGS)
+        subprocess.check_call(cmd, shell=True)
 
 
 def mfix_prereq(command_subclass):
