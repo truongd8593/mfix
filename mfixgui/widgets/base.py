@@ -27,8 +27,6 @@ try:
 except ImportError:
     from qtpy.QtCore import QItemSelectionModel
 
-from mfixgui.tools.general import get_selected_row
-
 import logging
 log = logging.getLogger(__name__)
 
@@ -66,18 +64,16 @@ class RangeError(ValueError):
 
 class BaseWidget(QtCore.QObject):
     value_updated = QtCore.Signal(object, object, object)
-
-    def __init__(self):
-        self.key = None
-        self.default_value = None
-        self.saved_value = None
-        self.args = None
-        self.min = None
-        self.max = None
-        self.required = None
-        self.help_text = 'No help avaliable.'
-        self.context_menu = None
-        self.allow_parameters = False
+    key = None
+    default_value = None
+    saved_value = None
+    args = None
+    min = None
+    max = None
+    required = None
+    help_text = 'No help avaliable.'
+    context_menu = None
+    allow_parameters = False
 
     def extend_context_menu(self):
         menu = self.context_menu()
@@ -181,13 +177,11 @@ class BaseWidget(QtCore.QObject):
 
         return self.default_value
 
-
 class LineEdit(QtWidgets.QLineEdit, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QLineEdit.__init__(self, parent)
-        BaseWidget.__init__(self)
         self.textChanged.connect(self.mark_changed)
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
@@ -424,11 +418,9 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         self._completer.popup().setCurrentIndex(
                 self._completer.completionModel().index(0, 0))
 
-
 class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
     def __init__(self, parent=None):
         QtWidgets.QCheckBox.__init__(self, parent)
-        BaseWidget.__init__(self)
 
         self.context_menu = self.createStandardContextMenu
 
@@ -470,7 +462,6 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
 
     def __init__(self, parent=None):
         QtWidgets.QCheckBox.__init__(self, parent)
-        BaseWidget.__init__(self)
         # stateChanged:  called on both user interaction and programmatic change
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
@@ -518,13 +509,22 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
         if BaseWidget.default(self, val) is None:
             self.setChecked(False) #?
 
+class GroupBox(QtWidgets.QGroupBox, CheckBox):
+    value_updated = QtCore.Signal(object, object, object)
+
+    def __init__(self, parent=None):
+        QtWidgets.QGroupBox.__init__(self, parent)
+        self.clicked.connect(self.emitUpdatedValue)
+        self.context_menu = QtWidgets.QMenu
+        self.dtype = bool
+        self.true_value = None
+        self.false_value = None
 
 class ComboBox(QtWidgets.QComboBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QComboBox.__init__(self, parent)
-        BaseWidget.__init__(self)
         # activated: only on user setttings, not programmatic change
         self.activated.connect(self.emitUpdatedValue)
         #self.currentIndexChanged.connect(self.emitUpdatedValue)
@@ -564,13 +564,11 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
         if BaseWidget.default(self,val) is None:
             self.setCurrentIndex(0) # ?
 
-
 class SpinBox(QtWidgets.QSpinBox, BaseWidget):
     value_updated = QtCore.Signal(object, object, object)
 
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
-        BaseWidget.__init__(self)
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
@@ -599,7 +597,6 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
 
     def __init__(self, parent=None):
         QtWidgets.QDoubleSpinBox.__init__(self, parent)
-        BaseWidget.__init__(self)
         # Distinguish user input from programmatic setting
         #self.valueChanged.connect(self.emitUpdatedValue)
         self.editingFinished.connect(self.emitUpdatedValue)
@@ -627,7 +624,6 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
     def default(self, val=None):
         if BaseWidget.default(self,val) is None:
             self.setValue(0.0) #?
-
 
 # --- Table ---
 class Table(QtWidgets.QTableView, BaseWidget):
@@ -678,7 +674,6 @@ class Table(QtWidgets.QTableView, BaseWidget):
                  multi_selection=False):
 
         QtWidgets.QTableView.__init__(self, parent)
-        BaseWidget.__init__(self)
 
         self.dtype = dtype
         self.columns = columns
@@ -853,15 +848,6 @@ class Table(QtWidgets.QTableView, BaseWidget):
     def save_selection(self):
         self.selection = self.selectionModel().selection().indexes()
 
-#    def hideRows(self):
-#        data = self.model().datatable
-#        if data:
-#            for i in range(1, max(data.keys())+1):
-#                if i not in data:
-#                    self.setRowHidden(i-1, True)
-#                else:
-#                    self.setRowHidden(i-1, False)
-
     def contextMenuEvent(self, event):
         """Qt context menu over-ride"""
         self.mouse_pos = QtGui.QCursor.pos()
@@ -901,7 +887,6 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.model().update(copy.deepcopy(self.default_value))
         else:
             self.clear()
-
 
 class CustomDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, column_dict={}, row_dict={}, column_color_dict={},
@@ -1007,7 +992,6 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
                 QtWidgets.QStyle.CE_ProgressBar, progressbar, painter)
         else:
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-
 
 class DictTableModel(QtCore.QAbstractTableModel):
     """Table model that handles dict(dict()).
@@ -1145,7 +1129,6 @@ class DictTableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
-
 class ArrayTableModel(QtCore.QAbstractTableModel):
     """Table model that handles the following data types:
         - list()
@@ -1262,7 +1245,6 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
-
 
 # --- custom popup ---
 class CustomPopUp(QtWidgets.QWidget):
