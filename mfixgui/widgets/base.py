@@ -1316,6 +1316,7 @@ BASE_WIDGETS = {
     'lineedit': LineEdit,
     'combobox': ComboBox,
     'checkbox': CheckBox,
+    'groupbox': GroupBox,
     'spinbox': SpinBox,
     'doublespinbox': DoubleSpinBox,
     'plaintextedit': PlainTextEdit,
