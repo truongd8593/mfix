@@ -195,7 +195,7 @@ You are now ready to set up and run MFIX simulation!
 ## From the GUI with default interactive solver (preferred for beginers)
 
 This will use the mfixsolver Python library installed with the package. Only the
-location of pymfix needs to be defined in the GUI. You can pause, unpause, stop,
+location of mfixsolver needs to be defined in the GUI. You can pause, unpause, stop,
 or get info from the solver.
 
 The GUI is launched from the prompt with:
@@ -208,7 +208,7 @@ The GUI is launched from the prompt with:
 Here you use a source distribution of MFIX
 to [build a custom interactive mfixsolver](#building-custom-mfixsolver) located
 in the project directory. When running `mfix`, in
-the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you
+the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver executable you
 have just built. You can pause, unpause, stop, or get info from the solver.
 
 The GUI is launched from the prompt with:
@@ -246,10 +246,6 @@ For some cases, you may want to use a custom mfixsolver. For instance, when
 running cases with User Defined Files (UDFs), it is necessary to build a
 separate mfixsolver extension module for that case.
 
-This requires downloading a source distribution of MFIX ([Building MFIX](#building-mfix)).
-
-Assume the source distribution tarball is extracted to `MFIX_HOME`.
-
 On Linux and Mac, there will be a default system python command
 `/usr/bin/python`. Make sure you are NOT using this Python by explicitly specifying
 which python distribution you are installing it with using PYTHON_BIN.
@@ -258,259 +254,18 @@ which python distribution you are installing it with using PYTHON_BIN.
 > cd my_example_case
 > ls *.f
 usr0.f   write_usr0.f
-> $MFIX_HOME/configure_mfix --python PYTHON_BIN=$HOME/miniconda3/python3.6 CC=gcc
-> make mfixsolver.so
-> ls *.so
-mfixsolver.so
+> build_mfixsolver
+> ls -a *
+usr0.f
+write_usr0.f
+mfixsolver
+.build
 ```
 
-<!-- FIXME: mention mfixsolver.so vs mfixsolver.pyd -->
+The `build_mfixsolver` command creates a wrapper script `mfixsolver`, that runs the case-specific MFIX solver (which is installed in the `.build` directory).
 
-When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver.so file you have just built.
+When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver file you have just built.
 
-
-# Building mfixsolver
-
-This option is currently limited to Linux environment.
-
-If you are using the MFIX GUI, this section is not needed. However, you may want
-to use the command-line version of MFIX (same as in previous versions) if you do
-not have a Python distribution installed, or if you are using any of the
-following features:
-
--	SMP/OpenMP
--	DMP/MPI
--	Compilers other than GCC
-
-## Prerequisites
-
-MFIX is built using GNU Autoconf, which is a general tool for producing
-configure scripts for building and installing software on different computer
-systems. First, run the shell script configure_mfix to create a Makefile, then
-run GNU Make to build the MFIX executable. A step-by-step tutorial is presented
-at the end of this section.
-
-To build MFIX, the following must be installed on your system. Contact your system administrator for assistance if necessary.
-
--	Fortran compiler. Commonly available compilers include:
--	GCC (gfortran) version 4.3 and above
--	Intel (ifort) version 11.1 and above
-
-GNU Autoconf version 2.69 or greater is required when building from source code
-obtained from the MFIX git repository. This does not apply to the source code
-tarball on the MFIX website.
-
-## Extracting the MFIX directory
-
-MFIX is distributed as a compressed source tar ball named mfix-17.1.tar.gz. To
-decompress and extract the tar file:
-
-```shell
-> tar xzf mfix-17.1.tar.gz
-```
-
-Here it is assumed that you are in the directory containing the tar ball.
-Extracting the tar ball creates a directory named mfix-17.1 containing the
-MFIX and POSTMFIX source codes, tests and tutorials, as well as some additional
-documentation and utilities.
-
-## Configuring with configure_mfix
-
-### Passing arguments to the build script
-
-Arguments may be passed to the build script to specify various options:
-compiler, optimization flags, SMP/DMP support, and other options. All
-configuration options can be displayed with:
-
-```shell
-> ~/mfix-17.1/configure_mfix --help
-```
-
-The most common arguments are given in the following table.
-
-| Argument          | Description                                    |
-| --------          | -----------                                    |
-| FC=NAME           | Specify the Fortran compiler command           |
-| F77=NAME          | Specify the Fortran 77 compiler command        |
-| `FCFLAGS='FLAGS'` | Specify compiler flags                         |
-| --dmp             | Enable distributed memory support (MPI)        |
-| --smp             | Enable shared memory parallel support (OpenMP) |
-
-##	Building mfix with GNU make
-
-If the configure script successfully created a Makefile (see above), then the
-next step is to build MFIX by running GNU make command.
-
-```shell
-> make
-```
-
-The -j option may be used build in parallel which may decrease compile time.
-```shell
-> make -j
-```
-
-Note that on some systems parallel builds may fail due to file dependencies
-(e.g., file1 depends of file2 which has not been compiled yet). Typically,
-running the make command again will overcome these errors. If compiling and
-linking are successful, an executable named mfixsolver along with a few intermediate
-build files will be in the current directory.
-
-## Building custom solver for DMP (MPI)
-
-DMP support is only tested on Linux.
-
-DMP support `--dmp` can be combined with interactive support `--python`, but has
-only been tested for GCC.
-
-### Prerequisites
-
-```shell
-> apt-get install libopenmpi-dev openmpi-bin
-```
-
-### Building solver with MPI support
-
-
-```shell
-> configure_mfix --dmp
-> make
-```
-
-## Building custom solver with non-GCC compilers
-
-MFIX can be built with other compilers, but interactive features `--python` are not supported at this time.
-
-```shell
-> configure_mfix --dmp
-> make
-```
-
-Specifying the Fortran compiler (optional but recommended)
-
-The Fortran compiler is specified by passing the FC argument to
-`configure_mfix`. If the FC argument is not specified, the script will search
-the environment for a Fortran compiler (usually gfortran). The `configure_mfix`
-script will test the Fortran compiler with any specified flags (covered next).
-If the compiler is not found or if the compiler gives an error, the Makefile
-will not be generated and detailed error messages will be in config.log. When
-seeking help on the mailing list for build issues, include the config.log file
-for assistance.
-
-The Fortran 77 compiler is specified by the F77 argument to the configure_mfix
-script. By default, F77 is set to the same compiler specified by the FC
-argument. However, on some systems F77 may need to be defined separately.
-
-Common compilers are given in the following table.
-
-| Compiler | Description                                        |
-| -------- | -----------                                        |
-| gfortran | GNU Fortran compiler (serial/smp)                  |
-| ifort    | Intel Fortran compiler (serial/smp)                |
-| mpif90   | Generic MPI Fortran wrapper (dmp/combined smp-dmp) |
-| mpifort  | Generic MPI Fortran wrapper (dmp/combined smp-dmp) |
-| mpiifort | Intel MPI Fortran wrapper (dmp/combined smp-dmp)   |
-
-Older versions commonly use the mpif90 command.
-
-
-## Specifying custom compiler flags
-
-Compiler flags are specified by passing the FCFLAGS argument to
-`configure_mfix`. If the FCFLAGS argument is not specified, the compiler
-defaults are used in building the executable. The `configure_mfix` script will
-test the compiler with the specified flags. If the compiler is not found or if
-the compiler gives an error with the given flags, the Makefile will not be
-generated and detailed error messages will be in config.log. When seeking help
-on the mailing list for build issues, include the config.log file for
-assistance.
-
-Common compiler flags for GNU Fortran are given in the following table.
-
- GNU  Fortran
-
-| Option                      | Description                                                                                                                                  |
-| --------                    | -----------                                                                                                                                  |
-| -g                          | Produce debugging information                                                                                                                |
-| -O0, -O1, -O2, -O3          | Optimization level (refer to the compiler manual for specific information about each optimization level). Typically, the following are used: |
-| -O0	debugging             |                                                                                                                                              |
-| -O2	production executables|                                                                                                                                              |
-| -fcheck=all                 | Generates runtime checks useful for debugging.                                                                                               |
-| -fbacktrace                 | Proved a full backtrace when a runtime error is encountered for debugging.                                                                   |
-
-Common compiler flags for Intel Fortran are given in the following table.
-
- Intel  Fortran
-
-| Option             | Description                                                                                                                                  |
-| --------           | -----------                                                                                                                                  |
-| -g                 | Produce debugging information                                                                                                                |
-| -O0, -O1, -O2, -O3 | Optimization level (refer to the compiler manual for specific information about each optimization level). Typically, the following are used: |
-| -O0                | debugging                                                                                                                                    |
-| -O2                | production executables                                                                                                                       |
-| -check all         | Generates runtime checks useful for debugging.                                                                                               |
-| -debug             | Generates complete debugging information                                                                                                     |
-
-
-## Building MFIX: A step-by-step tutorial
-
-The following example shows how to build and run the fluidbed1 tutorial. This
-example assumes you have the GNU Fortran compiler (gfortran) installed.
-
-To begin, go to the fluidbed1 tutorial directory and list its contents:
-
-```shell
-> cd ~/mfix-17.1/tutorials/fluidbed1
-> ls
-mfix.dat
-```
-
-As shown this folder contains the input file, mfix.dat, which specifies the
-simulation setup. This file is only needed to compile MFIX when user-defined
-reaction files are present (e.g., usr_rates.f). However, the mfix.dat file must
-be present when running MFIX, the last step of this tutorial.
-
-The directory where MFIX will be run is called the run directory (RUNDIR). Here
-the run directory is fluidbed1, and it currently contains only the mfix.dat
-file.
-
-Running the `configure_mfix` script and specifying the compiler and optimization flags:
-
-```shell
-> ../../configure_mfix FC=gfortran FCFLAGS='-g -O2'
-```
-
-The above commands run `configure_mfix` by specifying the relative path (two
-levels up). Alternatively, we could specify the absolute path:
-
-```shell
-> ~/mfix-17.1/configure_mfix FC=gfortran FCFLAGS='-g -O2'
-```
-
-or use the alias created in section 4.3.1:
-
-```shell
-> configure_mfix FC=gfortran FCFLAGS='-g -O2'
-```
-
-If the configure script successfully created a Makefile, build MFIX by running
-make.
-
-```shell
-> make
-```
-
-The build may take several minutes to complete. If the build is successful, the
-executable will be in the run directory.
-
-```shell
-> ls
-mfix.dat    mfix
-Finally, the simulation is started by entering:
-
-```shell
-> ./mfixsolver
-```
 
 # Appendix - Building MFIX
 

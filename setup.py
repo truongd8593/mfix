@@ -6,11 +6,9 @@ http://mfix.netl.doe.gov/
 """
 
 import codecs
-import errno
 import platform
 import shutil
 import subprocess
-import tempfile
 import zipfile
 from glob import glob
 from os import makedirs, path, walk
@@ -19,12 +17,12 @@ from os import makedirs, path, walk
 import setuptools
 import distutils.cygwinccompiler
 
-from numpy.distutils.command.build_ext import build_ext
-from numpy.distutils.core import Extension, setup
-
+from numpy.distutils.core import setup
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
 exec(codecs.open('mfixgui/version.py').read())
+
+from mfixgui.build_mfixsolver import BuildExtCommand, BuildMfixCommand, make_mfixsolver
 
 HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
@@ -33,7 +31,6 @@ NAME = 'mfix'
 with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
-F90_TMP = tempfile.mkdtemp()
 MODEL_DIR = path.join(HERE, 'model')
 writeFiles(buildKeywordDoc(MODEL_DIR))
 
@@ -41,7 +38,19 @@ def get_data_files():
     """ walks subdirectories to generate a list of all files that get packaged as data_files """
     data_files = []
 
-    for subdir in ['defaults', 'model', 'tutorials', 'benchmarks', 'tests', 'queue_templates']:
+    data_files.append((NAME, ['configure_mfix']))
+
+    subdirs = [
+        'build-aux',
+        'defaults',
+        'model',
+        'tutorials',
+        'benchmarks',
+        'tests',
+        'queue_templates',
+    ]
+
+    for subdir in subdirs:
         for root, dirs, files in walk(subdir):
             dir_files = []
             for f in files:
@@ -54,60 +63,6 @@ def get_data_files():
         fortran_dlls.extractall()
 
     return data_files
-
-def get_pymfix_src():
-    """ copies those Fortran sources to be built with Python to .f90 extension """
-    pymfix_src = [
-        'param_mod.f',
-        'param1_mod.f',
-        'dmp_modules/compar_mod.f',
-        'dmp_modules/debug_mod.f',
-        'dmp_modules/parallel_mpi_mod.f',
-        'fldvar_mod.f',
-        'des/discretelement_mod.f',
-        'des/des_time_march.f',
-        'iterate.f',
-        'residual_mod.f',
-        'time_step.f',
-        'main.f',
-        'run_mod.f',
-    ]
-
-    makedirs(path.join(F90_TMP, 'dmp_modules'))
-    makedirs(path.join(F90_TMP, 'des'))
-    for src in pymfix_src:
-        shutil.copyfile(path.join('model', src), path.join(F90_TMP, src)+'90')
-
-    return [path.join(F90_TMP, s)+'90' for s in pymfix_src]
-
-def cleanup_tmp():
-    # clean tempdir
-    try:
-        shutil.rmtree(F90_TMP)
-    except OSError as ex:
-        if ex.errno != errno.ENOENT:
-            raise
-
-
-DEFAULT_CC = 'gcc'
-DEFAULT_FC = 'gfortran'
-DEFAULT_CFLAGS = '-O2 -fPIC'
-DEFAULT_FCFLAGS = '-O2 -fPIC'
-
-
-def make_mfixsolver():
-    configure_args = get_configure_args(DEFAULT_CC, DEFAULT_FC, DEFAULT_CFLAGS, DEFAULT_FCFLAGS)
-    build_dir = path.join('build', configure_args.replace(' ', '_').replace('=', '_')).replace('"', '_').replace('__', '_')
-
-    return Extension(name='mfixsolver',
-                     sources=get_pymfix_src(),
-                     extra_f90_compile_args=['-cpp'],
-                     module_dirs=[path.join(build_dir, 'model')],
-                     extra_objects=[
-                         '.build/read_database.o',
-                         '.build/read_namelist.o',
-                         path.join(build_dir, 'build-aux/libmfix.a'),
-                     ])
 
 
 def build_doc():
@@ -178,65 +133,6 @@ class BuildDocCommand(setuptools.Command):
     def run(self):
         build_doc()
 
-
-def get_configure_args(cc, fc, cflags, fcflags):
-    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s" FFLAGS="%s"' % (cc, fc, cflags, fcflags, fcflags)
-
-
-class BuildMfixCommand(setuptools.Command):
-    """ builds libmfix (Python version agnostic) """
-    description = "build mfix (Fortran code)"
-    user_options = [
-        # The Format is (long option, short option, description)
-        ('cc=', None, 'C compiler'),
-        ('fc=', None, 'Fortran 90 compiler'),
-        ('fcflags=', None, 'flags for Fortran 90 compiler'),
-        ('cflags=', None, 'flags for C compiler'),
-    ]
-
-    def initialize_options(self):
-        self.cc = DEFAULT_CC
-        self.fc = DEFAULT_FC
-        self.fcflags = DEFAULT_FCFLAGS
-        self.cflags = DEFAULT_CFLAGS
-
-    def finalize_options(self):
-        if '-fPIC' not in self.fcflags:
-            self.fcflags += ' -fPIC'
-        if '-fPIC' not in self.cflags:
-            self.cflags += ' -fPIC'
-
-    def run(self):
-
-        # should work Linux/Mac/Windows as long as bash is in PATH
-        cmd = 'bash ./configure_mfix %s' % get_configure_args(self.cc, self.fc, self.cflags, self.fcflags)
-        returncode = subprocess.call(cmd, shell=True)
-        if returncode != 0:
-            raise EnvironmentError("Failed to configure_mfix correctly")
-
-        returncode = subprocess.call("make", shell=True)
-        if returncode != 0:
-            raise EnvironmentError("Failed to build mfix correctly")
-
-
-
-def mfix_prereq(command_subclass):
-    """A decorator for classes subclassing one of the setuptools commands.
-
-    It modifies the run() method to run build_mfix before build_ext
-    """
-    orig_run = command_subclass.run
-
-    def modified_run(self):
-        self.run_command('build_mfix')
-        orig_run(self)
-
-    command_subclass.run = modified_run
-    return command_subclass
-
-@mfix_prereq
-class BuildExtCommand(build_ext):
-    pass
 
 setup(
     name=NAME,
@@ -344,9 +240,8 @@ setup(
     entry_points={
         'console_scripts': [
             'mfix=mfixgui.gui:main',
-            'pymfix=mfixgui.pymfix:main',
+            'mfixsolver=mfixgui.pymfix:main',
+            'build_mfixsolver=mfixgui.build_mfixsolver:main',
         ],
     },
 )
-
-cleanup_tmp()
