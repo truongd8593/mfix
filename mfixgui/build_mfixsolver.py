@@ -23,25 +23,16 @@ from mfixgui.version import get_version
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = 'mfix'
 
-CONFIGURE_ARGS = 'CC=gcc FC=gfortran FCFLAGS=-fPIC FFLAGS=-fPIC '
 MODEL_DIR = os.path.join(HERE, 'model')
-
-
-DEFAULT_CC = 'gcc'
-DEFAULT_FC = 'gfortran'
-DEFAULT_CFLAGS = '-O2 -fPIC'
-DEFAULT_FCFLAGS = '-O2 -fPIC'
-
-
-def get_configure_args(cc=DEFAULT_CC,
-                       fc=DEFAULT_FC,
-                       cflags=DEFAULT_CFLAGS,
-                       fcflags=DEFAULT_FCFLAGS):
-    return 'CC="%s" FC="%s" CFLAGS="%s" FCFLAGS="%s" FFLAGS="%s"' % (cc, fc, cflags, fcflags, fcflags)
+CONFIGURE_ARGS = []
 
 
 def make_mfixsolver():
-    configure_args_dirname = get_configure_args()
+    configure_args_dirname = ' '.join(CONFIGURE_ARGS)
+    configure_args_dirname = configure_args_dirname.replace('--dmp', '--enable-dmp')
+    configure_args_dirname = configure_args_dirname.replace('--smp', '--enable-smp')
+    configure_args_dirname = configure_args_dirname.replace('--python', '--enable-python')
+    configure_args_dirname = configure_args_dirname.replace('--buildrundir', '')
     configure_args_dirname = configure_args_dirname.replace(' ', '_')
     configure_args_dirname = configure_args_dirname.replace('=', '_')
     configure_args_dirname = configure_args_dirname.replace('"', '_')
@@ -101,27 +92,24 @@ class BuildMfixCommand(setuptools.Command):
     ]
 
     def initialize_options(self):
-        self.cc = DEFAULT_CC
-        self.fc = DEFAULT_FC
-        self.fcflags = DEFAULT_FCFLAGS
-        self.cflags = DEFAULT_CFLAGS
+        pass
 
     def finalize_options(self):
-        if '-fPIC' not in self.fcflags:
-            self.fcflags += ' -fPIC'
-        if '-fPIC' not in self.cflags:
-            self.cflags += ' -fPIC'
+        pass
 
     def run(self):
         """ configure and build mfix; requires bash to be in PATH """
 
         configure_mfix = os.path.join(get_mfix_home(), 'configure_mfix')
 
-        args = get_configure_args(self.cc, self.fc, self.cflags, self.fcflags)
-        cmd = 'bash %s --buildrundir %s' % (configure_mfix, args)
+        global CONFIGURE_ARGS
+        global MAKE_ARGS
 
+        cmd = 'bash %s --buildrundir %s' % (configure_mfix, ' '.join(CONFIGURE_ARGS))
         subprocess.check_call(cmd, shell=True)
-        subprocess.check_call("make", shell=True)
+
+        cmd = 'bash make libmfix %s' % ' '.join(MAKE_ARGS)
+        subprocess.check_call(["make", "libmfix"], shell=True)
 
 
 def mfix_prereq(command_subclass):
@@ -160,9 +148,23 @@ def main():
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
 
-    sys.argv[1:] = ['install_lib',
-                    '--install-dir', pypath,
-                   ]
+
+    # copy sys.argv to BUILD_ARGS, route arguments to either configure_mfix or make
+    BUILD_ARGS = list(sys.argv[1:])
+    valid_make_args = ['-k', '-j']
+
+    global CONFIGURE_ARGS
+    CONFIGURE_ARGS = [arg for arg in BUILD_ARGS if arg not in valid_make_args]
+    if '--python' not in CONFIGURE_ARGS:
+        CONFIGURE_ARGS.append('--python')
+
+    global MAKE_ARGS
+    MAKE_ARGS = [arg for arg in BUILD_ARGS if arg in valid_make_args]
+
+    sys.argv[1:] = [
+        'install_lib',
+        '--install-dir', pypath,
+    ]
 
     os.chdir(builddir)
 
