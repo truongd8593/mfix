@@ -156,8 +156,6 @@ def main():
 
     global CONFIGURE_ARGS
     CONFIGURE_ARGS = [arg for arg in BUILD_ARGS if arg not in valid_make_args]
-    if '--python' not in CONFIGURE_ARGS:
-        CONFIGURE_ARGS.append('--python')
 
     global MAKE_ARGS
     MAKE_ARGS = [arg for arg in BUILD_ARGS if arg in valid_make_args]
