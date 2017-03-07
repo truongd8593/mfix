@@ -53,6 +53,8 @@
       use mfix_pic, only: MPPIC
 ! packing limit      
       use constant, only: ep_star
+! Undefined
+      USE param1, only: undefined
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -81,7 +83,12 @@
 ! larger than EP_STAR. However, the value should be large enough so
 ! that it is rarely used. This was added as a crude work around for
 ! poor initial conditions that start cells overpacked.
-      PACKED_EPS = merge(0.9d0, ONE-EP_STAR, MPPIC)
+      PACKED_EPS = ONE
+      IF(MPPIC) THEN
+         PACKED_EPS = 0.9D0
+      ELSEIF(EP_STAR/=UNDEFINED) THEN
+         PACKED_EPS = ONE - EP_STAR
+      ENDIF
 
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//
