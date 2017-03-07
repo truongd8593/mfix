@@ -243,7 +243,7 @@ If you ever want to uninstall MFIX:
 # Building custom mfixsolver
 
 For some cases, you may want to use a custom mfixsolver. For instance, when
-running cases with User Defined Files (UDFs), it is necessary to build a
+running cases with User Defined Functions (UDFs), it is necessary to build a
 separate mfixsolver extension module for that case.
 
 On Linux and Mac, there will be a default system python command
