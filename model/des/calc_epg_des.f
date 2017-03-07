@@ -51,6 +51,8 @@
       use mpi_utility, only: GLOBAL_ALL_SUM
 ! Flag for PIC simulation
       use mfix_pic, only: MPPIC
+! packing limit      
+      use constant, only: ep_star
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -79,7 +81,7 @@
 ! larger than EP_STAR. However, the value should be large enough so
 ! that it is rarely used. This was added as a crude work around for
 ! poor initial conditions that start cells overpacked.
-      PACKED_EPS = merge(0.9d0, ONE, MPPIC)
+      PACKED_EPS = merge(0.9d0, ONE-EP_STAR, MPPIC)
 
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//

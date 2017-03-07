@@ -17,14 +17,13 @@ from subprocess import Popen, PIPE
 from glob import glob
 
 from qtpy import PYQT5, uic
-from qtpy.QtCore import Signal, QProcess, QProcessEnvironment, QTimer
+from qtpy.QtCore import Signal, QProcess, QProcessEnvironment
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
-                            QDialogButtonBox, QLabel, QComboBox, QSpinBox,
+                            QLabel, QComboBox, QSpinBox,
                             QDoubleSpinBox, QCheckBox)
 
 from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
 from mfixgui.widgets.base import BASE_WIDGETS
-from mfixgui.constants import RESTART_FILES, SPX_FILES, VTK_FILES, OTHER_FILES
 
 try: #2.7
     import ConfigParser as configparser
@@ -42,15 +41,13 @@ class RunPopup(QDialog):
     signal_run = Signal()
     signal_submit = Signal()
     signal_cancel = Signal()
-    set_run_mfix_exe = Signal()
 
-    def __init__(self, mfix_exe, parent):
+    def __init__(self, solver, parent):
         super(RunPopup, self).__init__(parent)
-        self.commandline_option_exe = mfix_exe if mfix_exe else None
+        self.commandline_option_exe = solver if solver else None
         self.mfix_available = False
-        self.mfix_exe = None
         self.mfix_exe_cache = {}
-        self.mfix_exe_list = []
+        self.solver_list = []
         self.template_values = {}
         self.cmdline = None
         self.parent = parent
@@ -64,7 +61,8 @@ class RunPopup(QDialog):
         self.ui = ui = uic.loadUi(os.path.join(uidir, 'run_popup.ui'), self)
         ui.button_browse_exe.clicked.connect(self.handle_browse_exe)
         ui.button_browse_exe_2.clicked.connect(self.handle_browse_exe)
-        ui.combobox_mfix_exe.currentIndexChanged.connect(self.handle_exe_change)
+        ui.combobox_solver_local.currentIndexChanged.connect(self.handle_exe_change)
+        ui.combobox_solver_queue.currentIndexChanged.connect(self.handle_exe_change)
 
         if bool(self.parent.monitor.get_res_files()):
             self.title = 'Resume'
@@ -85,14 +83,29 @@ class RunPopup(QDialog):
         self.initialize_ui()
         self.init_templates()
 
-    # UI update functions
+    @property
+    def solver(self):
+        """The currently selected solver, depends on current tab (queue/local)"""
+        idx = self.ui.tabWidget.currentIndex()
+        # local
+        if idx == 1:
+            solver = self.ui.combobox_solver_local.currentText()
+        # queue
+        else:
+            solver = self.ui.combobox_solver_queue.currentText()
 
+        if not solver:
+            solver = None
+
+        return solver
+
+    # UI update functions
     def initialize_ui(self):
 
         ui = self.ui
         self.setWindowTitle(self.title)
         # create initial executable list
-        self.mfix_exe_list = self.get_exe_list()
+        self.solver_list = self.get_solver_list()
 
         # set OMP_NUM_THREADS
         project_threads = self.gui_comments.get('OMP_NUM_THREADS', None)
@@ -107,13 +120,11 @@ class RunPopup(QDialog):
         # local/queue
         self.ui.tabWidget.setCurrentIndex(int(self.gui_comments.get('run_location', 1)))
 
-        if self.mfix_exe_list:
+        if self.solver_list:
             self.mfix_available = True
-            self.mfix_exe = self.mfix_exe_list[0]
-            self.populate_combobox_mfix_exe()
+            self.populate_combobox_solver()
         else:
             self.mfix_available = False
-            self.mfix_exe = None
             self.parent.message(
                 icon='warning',
                 text='MFiX not found. Please browse for an executable.',
@@ -124,7 +135,7 @@ class RunPopup(QDialog):
 
     def init_templates(self):
 
-        # look for templates in mfixgui/queue_templates
+        # look for templates in MFIX_HOME/queue_templates
         search_p = os.path.join(get_mfix_home(), 'queue_templates')
         self.templates = {}
         for root, dirs, files in os.walk(search_p):
@@ -239,52 +250,41 @@ class RunPopup(QDialog):
             l.addWidget(widget, i, 1)
             wd['widget_obj'] = widget
 
-    def populate_combobox_mfix_exe(self):
-        """ Add items from self.mfix_exe_list to combobox,
+    def populate_combobox_solver(self):
+        """ Add items from self.solver_list to combobox,
         select the first item """
-        self.ui.combobox_mfix_exe.clear()
-        self.ui.combobox_mfix_exe_2.clear()
-        self.ui.combobox_mfix_exe.addItems(self.mfix_exe_list)
-        self.ui.combobox_mfix_exe_2.addItems(self.mfix_exe_list)
+        ui = self.ui
+        for combo in [ui.combobox_solver_local, ui.combobox_solver_queue]:
+            combo.clear()
+            combo.addItems(self.solver_list)
 
     def update_dialog_options(self):
-        """ Enable or disable options based on self.mfix_exe features,
+        """ Enable or disable options based on self.solver features,
         local or remote settings """
+        ui = self.ui
 
-        self.ui.combobox_mfix_exe.setEnabled(self.mfix_available)
-        self.ui.button_local_run.setEnabled(self.mfix_available)
-        self.ui.button_queue_submit.setEnabled(self.mfix_available)
+        # Enable/disable widgets
+        enable = self.mfix_available and self.solver is not None
+        ui.combobox_solver_local.setEnabled(enable)
+        ui.combobox_solver_queue.setEnabled(enable)
+        ui.button_local_run.setEnabled(enable)
+        ui.button_queue_submit.setEnabled(enable)
+        ui.label_mfix_exe_warning.setVisible(not enable)
+        ui.groupbox_run_options.setEnabled(enable)
 
-        self.update_no_mfix_warning()
-
-        self.ui.groupbox_run_options.setEnabled(self.mfix_available)
-        cfg = self.get_exe_flags(self.mfix_exe)
-        dmp = 'dmp' in cfg['flags'] if cfg else False # why not use dmp_enabled
-        smp = 'smp' in cfg['flags'] if cfg else False
         dmp = self.dmp_enabled()
         smp = self.smp_enabled()
-        self.ui.spinbox_nodesi.setEnabled(dmp)
-        self.ui.spinbox_nodesj.setEnabled(dmp)
-        self.ui.spinbox_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
-        self.ui.spinbox_threads.setEnabled(smp)
-
-    def update_no_mfix_warning(self):
-        ok = bool(self.mfix_exe)
-        self.ui.label_mfix_exe_warning.setVisible(not ok)
-        self.ui.combobox_mfix_exe.setEnabled(ok)
-        self.ui.button_local_run.setEnabled(ok)
-        self.ui.button_queue_submit.setEnabled(ok)
-        if not ok:
-            self.parent.print_internal("Warning: no MFiX executables available")
+        ui.spinbox_nodesi.setEnabled(dmp)
+        ui.spinbox_nodesj.setEnabled(dmp)
+        ui.spinbox_nodesk.setEnabled(dmp and not self.parent.project.get_value('no_k'))
+        ui.spinbox_threads.setEnabled(smp)
 
     def popup(self):
         self.show()
         self.raise_()
         self.activateWindow()
 
-
     # event handlers
-
     def handle_abort(self):
         self.signal_cancel.emit()
 
@@ -297,10 +297,8 @@ class RunPopup(QDialog):
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
         self.gui_comments['run_location'] = self.ui.tabWidget.currentIndex()
 
-        self.save_selected_exe(self.mfix_exe)
+        self.save_selected_exe()
         self.save_template()
-        self.set_run_mfix_exe.emit() # possible duplication, but needed
-                                     # in case signal has not yet been fired
 
         if self.title == 'Run':
             self.parent.update_keyword('run_type', 'new')
@@ -356,11 +354,9 @@ class RunPopup(QDialog):
         self._start_mfix(False)
 
     def handle_exe_change(self):
-        """ emit signals when exe combobox changes """
-        self.mfix_exe = new_exe = self.ui.combobox_mfix_exe.currentText()
-        log.debug('selected new exe %s' % new_exe)
+        """emit signals when exe combobox changes"""
+        log.debug('selected new solver %s' % self.solver)
         self.update_dialog_options()
-        self.set_run_mfix_exe.emit()
 
     def handle_browse_exe(self):
         """ Handle file open dialog for user specified exe """
@@ -372,13 +368,11 @@ class RunPopup(QDialog):
             return
         if PYQT5:
             new_exe = new_exe[0]
-        self.set_run_mfix_exe.emit()
 
-        self.save_selected_exe(new_exe)
+        self.save_selected_exe()
         self.mfix_available = True
-        self.mfix_exe = new_exe
-        self.mfix_exe_list = self.get_exe_list()
-        self.populate_combobox_mfix_exe()
+        self.solver_list = self.get_solver_list()
+        self.populate_combobox_solver()
         log.debug('selected new exe %s', new_exe)
 
     def handle_browse_template(self):
@@ -403,25 +397,25 @@ class RunPopup(QDialog):
         self.settings.setValue('queue_templates', '|'.join(list(set(good_paths))[:RECENT_EXE_LIMIT]))
 
     # utils
-
-    def save_selected_exe(self, new_exe):
+    def save_selected_exe(self):
         """ add new executable to recent list, save in project file and config,
         send signal(s) """
-        self.settings.setValue('mfix_exe', new_exe)
-        self.gui_comments['mfix_exe'] = new_exe
+        new_solver = self.solver
+        self.settings.setValue('mfix_exe', new_solver)
+        self.gui_comments['mfix_exe'] = new_solver
         recent_list = self.settings.value('recent_executables')
         if recent_list:
             recent_list = recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT]
         else:
             recent_list = []
-        if new_exe in recent_list:
-            recent_list.pop(recent_list.index(new_exe))
-        recent_list.insert(0, new_exe)
+        if new_solver in recent_list:
+            recent_list.pop(recent_list.index(new_solver))
+        recent_list.insert(0, new_solver)
         self.settings.setValue(
                         'recent_executables',
                         str(os.pathsep).join(recent_list))
 
-    def get_exe_list(self):
+    def get_solver_list(self):
         """ assemble list of executables from:
         - command line
         - project file 'mfix_exe'
@@ -510,49 +504,49 @@ class RunPopup(QDialog):
 
         return list(od.keys())
 
-    def get_exe_flags(self, mfix_exe):
+    def get_exe_flags(self, solver):
         """ get and cache (and update) executable features """
 
         # let non-exe solvers through
-        if mfix_exe and os.path.splitext(mfix_exe)[1] in ['.so', '.pyd']:
+        if solver and os.path.splitext(solver)[1] in ['.so', '.pyd']:
             return {'flags': 'python'}
 
-        if mfix_exe is None:
+        if solver is None:
             return None
         try:
-            stat = os.stat(mfix_exe)
+            stat = os.stat(solver)
         except OSError as e:
             log.debug(str(e))
             return None
 
         # stat will have changed if the exe has been modified since last check
-        if (stat, mfix_exe) in self.mfix_exe_cache:
-            _, flags = self.mfix_exe_cache[(stat, mfix_exe)]
+        if (stat, solver) in self.mfix_exe_cache:
+            _, flags = self.mfix_exe_cache[(stat, solver)]
             return flags
         try:
-            log.debug('Feature testing MFiX %s' % mfix_exe)
-            exe_dir = os.path.dirname(mfix_exe)
-            popen = Popen(mfix_exe + " --print-flags",
+            log.debug('Feature testing MFiX %s' % solver)
+            exe_dir = os.path.dirname(solver)
+            popen = Popen(solver + " --print-flags",
                         cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
             if err:
                 log.error('MFiX %s' % str(err))
         except:
-            log.error("could not run %s --print-flags", mfix_exe)
+            log.error("could not run %s --print-flags", solver)
             return None
 
         flags = str(out.strip())
         mfix_exe_flags = {'flags': flags}
-        self.mfix_exe_cache[(stat, mfix_exe)] = stat, mfix_exe_flags
+        self.mfix_exe_cache[(stat, solver)] = stat, mfix_exe_flags
         return mfix_exe_flags
 
     def dmp_enabled(self):
-        config = self.get_exe_flags(self.mfix_exe)
+        config = self.get_exe_flags(self.solver)
         flags = config['flags'] if config else ''
         return 'dmp' in flags
 
     def smp_enabled(self):
-        config = self.get_exe_flags(self.mfix_exe)
+        config = self.get_exe_flags(self.solver)
         flags = config['flags'] if config else ''
         return 'smp' in flags
 
@@ -693,7 +687,7 @@ if __name__ == '__main__':
 
     args = sys.argv
     app = QApplication(args)
-    run_popup = Run_Popup(QDialog())
+    run_popup = RunPopup(QDialog())
     run_popup.show()
     # exit with Ctrl-C at the terminal
     signal.signal(signal.SIGINT, signal.SIG_DFL)

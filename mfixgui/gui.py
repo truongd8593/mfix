@@ -940,7 +940,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % get_version,
+        self.print_internal("MFiX-GUI version %s" % get_version(),
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1818,16 +1818,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 return
 
         self.run_dialog = RunPopup(self.commandline_option_exe, self)
-        self.run_dialog.set_run_mfix_exe.connect(self.handle_exe_changed)
         self.run_dialog.setModal(True)
         self.run_dialog.popup()
-
-    def handle_exe_changed(self):
-        """callback from run dialog when combobox is changed"""
-        self.mfix_exe = self.run_dialog.mfix_exe
-        self.settings.setValue('mfix_exe', self.mfix_exe)
-        log.debug('exe changed signal recieved: %s' % self.mfix_exe)
-        self.signal_update_runbuttons.emit('')
 
     def export_project(self):
         """Copy project files to new directory, but do not switch to new project"""
@@ -1920,7 +1912,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = get_version
+        self.project.mfix_gui_comments['gui_version'] = get_version()
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 

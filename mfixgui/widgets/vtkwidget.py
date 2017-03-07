@@ -1536,8 +1536,9 @@ class VtkWidget(BaseVtkWidget):
         for select in current_selection:
             toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
             item = self.geometrytree.takeTopLevelItem(toplevelindex)
-            item.setCheckState(0, QtCore.Qt.Unchecked)
-            toplevel.addChild(item)
+            if item:
+                item.setCheckState(0, QtCore.Qt.Unchecked)
+                toplevel.addChild(item)
 
         self.geometrytree.addTopLevelItem(toplevel)
         self.geometrytree.setCurrentItem(toplevel)

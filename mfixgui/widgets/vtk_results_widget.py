@@ -679,12 +679,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
         pvd_files = glob.glob(os.path.join(self.project_dir, '*.pvd'))
         for pvd in pvd_files:
             base_name = os.path.basename(pvd).replace('.pvd', '')
-            files = parse_pvd_file(pvd)
-            if base_name in self.pvd_files and files:
-                self.pvd_files[base_name]['files'].update(files)
-            elif files:
-                t = 'vtp' if files[0].endswith('vtp') else'vtu'
-                self.pvd_files[base_name] = {'files':files, 'type':t}
+            files = parse_pvd_file(pvd) # returns OrderedDict keyed by time
+            if files:
+                if base_name in self.pvd_files:
+                    self.pvd_files[base_name]['files'].update(files)
+                else:
+                    key = list(files.keys())[0] # files is nonempty
+                    filename = files[key]
+                    t = 'vtp' if filename and filename.endswith('vtp') else 'vtu'
+                    self.pvd_files[base_name] = {'files':files, 'type':t}
 
         # update the combo_boxes
         vtp = []

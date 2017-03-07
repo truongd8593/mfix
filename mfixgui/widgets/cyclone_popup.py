@@ -74,7 +74,7 @@ class CyclonePopUp(QtWidgets.QDialog):
 
         union = self.vtk_widget.boolean_operation(booltype='union', children=[b_name, c_name])
 
-        # create soldis outlet
+        # create solids outlet
         so = copy.deepcopy(DEFAULT_PRIMITIVE_PARAMS)
         so['radius'] = v['e']/2.0
         so['height'] = v['e']*2
@@ -82,7 +82,7 @@ class CyclonePopUp(QtWidgets.QDialog):
         so['resolution'] = 30
         so['centery'] = -v['e'] - v['c']/2.0 - v['b']
         so_name = self.vtk_widget.add_primitive(
-            name=get_unique_string('soilds_outlet', self.vtk_widget.geometrydict.keys()),
+            name=get_unique_string('soilds', self.vtk_widget.geometrydict.keys()),
             data=so)
 
         union = self.vtk_widget.boolean_operation(booltype='union', children=[union, so_name])
