@@ -1,0 +1,278 @@
+! Run-control section
+
+  run_name = 'VORTEX_SHEDDING'
+
+  description = 'Vortex Shedding , Re = 200'
+  run_type = 'new'
+  units = 'SI'
+  time = 0.0    !start time
+  tstop = 300.0
+  dt = 0.25    !time step
+  energy_eq = .False.    !do not solve energy eq
+  species_eq(0) = .False.    !do not solve species eq
+  species_eq(1) = .False.    !do not solve species eq
+
+  dt_fac = 1.0
+  detect_stall = .False.
+
+  discretize(1) = 2
+  discretize(3) = 2
+  discretize(4) = 2
+  def_cor = .True.
+  fpfoi = .False.
+
+  tol_resid = 1.0000e-04
+
+  norm_g = 0.0
+
+  momentum_x_eq(1) = .False.
+  momentum_y_eq(1) = .False.
+
+!===============================================================================
+! Cartesian Grid - Quadric definition:
+! Quadric surface Normal form :
+! f(x,y,z) = lambda_x * x^2 + lambda_y * y^2 + lambda_z * z^2 + d = 0
+! Regions where f(x,y,z) < 0 are part of the computational domain.
+! Regions where f(x,y,z) > 0 are excluded from the computational domain.
+!
+! Predefined quadrics: set QUADRIC_FORM to one of the following:
+! Plane:                    'PLANE'
+! Cylinder (internal flow): 'X_CYL_INT' or 'Y_CYL_INT' or 'Z_CYL_INT'
+! Cylinder (external flow): 'X_CYL_EXT' or 'Y_CYL_EXT' or 'Z_CYL_EXT'
+! Cone     (internal flow): 'X_CONE'    or 'Y_CONE'    or 'Z_CONE'
+!===============================================================================
+
+  cartesian_grid = .True.
+
+  n_quadric = 1
+
+  quadric_form(1) = 'Z_CYL_EXT'
+  radius(1) = 0.05
+
+  t_x(1) = 2.0
+  t_y(1) = 2.0
+
+  bc_id_q(1) = 12
+
+  print_progress_bar = .False.
+  write_dashboard = .True.
+
+!===============================================================================
+! VTK file options
+!===============================================================================
+  write_vtk_files = .True.
+  time_dependent_filename = .True.
+  vtk_dt(1) = 0.5
+
+! Available flags for VTK_VAR are :
+!  1 : Void fraction (EP_g)
+!  2 : Gas pressure, solids pressure (P_g, P_star)
+!  3 : Gas velocity (U_g, V_g, W_g)
+!  4 : Solids velocity (U_s, V_s, W_s)
+!  5 : Solids density (ROP_s)
+!  6 : Gas and solids temperature (T_g, T_s1, T_s2)
+!  7 : Gas and solids mass fractions (X_g, X_s)
+!  8 : Granular temperature (G)
+! 11 : Turbulence quantities (k and ε)
+! 12 : Gas Vorticity magnitude and Lambda_2 (VORTICITY, LAMBDA_2)
+!100 : Processor assigned to scalar cell (Partition)
+!101 : Boundary condition flag for scalar cell (BC_ID)
+
+! Geometry Section
+
+  coordinates = 'cartesian'
+
+  imax = 120    ! cells in i direction
+  jmax = 80    ! cells in j direction
+
+  no_k = .True.
+
+! Using Control points to define grid spacing
+
+  cpx(0) = 1.9
+  cpx(1) = 2.1
+  cpx(2) = 6.0
+  ncx(1) = 20
+  ncx(2) = 40
+  ncx(3) = 60
+
+  last_dx(1) = 0.0    ! Match Last  DX from segment 1 with First DX of segment 2
+  first_dx(3) = -1.0    ! Match First DX from segment 3 with Last  DX of segment 2
+
+  cpy(0) = 1.9
+  cpy(1) = 2.1
+  cpy(2) = 4.0
+  ncy(1) = 20
+  ncy(2) = 40
+  ncy(3) = 20
+
+  last_dy(1) = 0.0    ! Match Last  DY from segment 1 with First DY of segment 2
+  first_dy(3) = 0.0    ! Match First DY from segment 3 with Last  DY of segment 2
+
+! Gas-phase Section
+
+! Gas-phase Section
+  mu_g0 = 1.8000e-05    !constant gas viscosity
+  ro_g0 = 1.2    !constant gas density
+
+! Solids-phase Section
+
+  mmax = 0
+
+! Initial Conditions Section
+
+  ic_x_w(1) = 0
+  ic_x_e(1) = 6.0
+  ic_y_s(1) = 0
+  ic_y_n(1) = 4.0
+
+  ic_ep_g(1) = 1.0
+  ic_u_g(1) = 0.0
+  ic_v_g(1) = 0.0
+
+! Boundary Conditions Section
+! Inlet
+  bc_x_w(1) = 0
+  bc_x_e(1) = 0.0
+  bc_y_s(1) = 0
+  bc_y_n(1) = 4.0
+  bc_type(1) = 'MI'
+  bc_ep_g(1) = 1.0
+  bc_u_g(1) = 0.03
+  bc_v_g(1) = 0.0
+  bc_p_g(1) = 0.0
+
+! Outlet
+
+  bc_x_w(2) = 6.0
+  bc_x_e(2) = 6.0
+  bc_y_s(2) = 0.0
+  bc_y_n(2) = 4.0
+  bc_type(2) = 'PO'
+  bc_p_g(2) = 0.0
+
+! Top wall
+  bc_x_w(3) = 0.0
+  bc_x_e(3) = 6.0
+  bc_y_s(3) = 4.0
+  bc_y_n(3) = 4.0
+
+  bc_type(3) = 'FSW'
+
+! Bottom wall
+  bc_x_w(4) = 0
+  bc_x_e(4) = 6.0
+  bc_y_s(4) = 0
+  bc_y_n(4) = 0.0
+
+  bc_type(4) = 'FSW'
+
+! cut-cell boundary condition
+  bc_type(12) = 'CG_NSW'
+
+!
+!  Output Control
+!
+  out_dt = 1000.0    !write text file CYL.OUT
+!  every 10 s
+  res_dt = 10.0    !write binary restart file
+!  CYl.RES every 100.0 s
+  nlog = 25    !write logfile CYL.LOG
+!every 25 time steps
+  full_log = .True.    !display residuals on screen
+
+  resid_string(1) = 'P0'
+  resid_string(2) = 'U0'
+  resid_string(3) = 'V0'
+
+!
+! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+!      P_star    V_g  V_s            T_s  X_s     Theta   Scalar
+!                W_g  W_s
+
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+
+!  Sweep Direction
+
+  leq_sweep(1) = 'ISIS'
+  leq_sweep(2) = 'ISIS'
+  leq_sweep(3) = 'ISIS'
+  leq_sweep(4) = 'ISIS'
+  leq_sweep(5) = 'ISIS'
+  leq_sweep(6) = 'ISIS'
+  leq_sweep(7) = 'ISIS'
+  leq_sweep(8) = 'ISIS'
+  leq_sweep(9) = 'ISIS'
+
+! # Maximum iterations for linear solve
+
+  vtk_x_w(1) = 0
+  vtk_y_s(1) = 0
+  vtk_x_e(1) = 6.0
+  vtk_y_n(1) = 4.0
+  vtk_filebase(1) = 'VORTEX_SHEDDING'
+  vtk_nxs(1) = 0
+  vtk_nys(1) = 0
+  vtk_nzs(1) = 0
+  vtk_p_g(1) = .True.
+  vtk_p_star(1) = .True.
+  vtk_vorticity(1) = .True.
+  vtk_lambda_2(1) = .True.
+  y_max = 4.0
+  y_min = 0
+  gravity_x = 0.0
+  gravity_z = 0.0
+  gravity_y = -0.0
+  x_min = 0
+  x_max = 6.0
+  vtk_data(1) = 'C'
+  erx(1) = 0.02
+  erx(3) = 50.0
+  ery(1) = 0.02
+  ery(3) = 50.0
+  ic_t_g(1) = 293.15
+  ic_w_g(1) = 0.0
+  vtk_vel_g(1) = .True.
+
+  bc_w_g(1) = 0.0
+  bc_t_g(1) = 293.15
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI geometry = {"tree": {"z_cyl_ext_1": []}, "geometry_dict":
+#!MFIX-GUI   {"z_cyl_ext_1": {"rotationx": 90, "bounds": [1.9500000476837158,
+#!MFIX-GUI   2.049999952316284, 1.9500000476837158, 2.049999952316284, -0.5,
+#!MFIX-GUI   0.5], "radius": 0.05, "centerx": 2.0, "centery": 2.0, "geo_type":
+#!MFIX-GUI   "implicit", "type": "cylinder"}}}
+#!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
+#!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
+#!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
+#!MFIX-GUI   "#707070", "opacity": 0.5}, "mesh": {"color": "#f44328", "visible":
+#!MFIX-GUI   true, "rep": "wire", "edge": "#7a2114", "opacity": 1},
+#!MFIX-GUI   "background_mesh": {"color": "#64b6f7", "visible": true, "rep":
+#!MFIX-GUI   "wire", "edge": "#325b7b", "opacity": 1.0}}
+#!MFIX-GUI regions_dict = {"regions": {"BC_4": {"color": "#e0c0dc", "to": [6.0,
+#!MFIX-GUI   0.0, 0.0], "type": "XZ-plane"}, "BC_1": {"color": "#b47cb4", "to":
+#!MFIX-GUI   [0.0, 4.0, 0.0], "type": "YZ-plane"}, "BC_2": {"color": "#92ac90",
+#!MFIX-GUI   "to": [6.0, 4.0, 0.0], "from": [6.0, 0.0, 0.0], "type":
+#!MFIX-GUI   "YZ-plane"}, "BC_3": {"color": "#df7571", "to": [6.0, 4.0, 0.0],
+#!MFIX-GUI   "from": [0.0, 4.0, 0.0], "type": "XZ-plane"}, "IC_1": {"color":
+#!MFIX-GUI   "#be89ba", "to": [6.0, 4.0, 0.0], "type": "XY-plane"}, "BC_12":
+#!MFIX-GUI   {"color": "#a4dab5", "type": "STL"}}, "order": ["IC_1", "BC_1",
+#!MFIX-GUI   "BC_2", "BC_3", "BC_4", "BC_12"]}
+#!MFIX-GUI bc_regions = [[[1], ["BC_1"]], [[2], ["BC_2"]], [[3], ["BC_3"]],
+#!MFIX-GUI   [[4], ["BC_4"]], [[12], ["BC_12"]]]
+#!MFIX-GUI ic_regions = [[[1], ["IC_1"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
+#!MFIX-GUI vtk_regions = [[[1], ["IC_1"]]]
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin": 0,
+#!MFIX-GUI   "xmax": 6.0, "ymin": 0, "ymax": 4.0, "zmin": 0.0, "zmax": 0.0}}
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI run_location = 1
+#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
+#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
+#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
+#!MFIX-GUI project_version = 1
+#!MFIX-GUI gui_version = <function get_version at 0x2af743157ed8>
+#!MFIX-GUI project_notes = ""
