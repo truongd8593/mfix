@@ -188,15 +188,34 @@ def main():
         scripts={},
     )
 
-    mfixsolver = os.path.join(rundir, 'mfixsolver')
-    with open(mfixsolver, 'w') as wrapper:
-        wrapper.write('#!/bin/sh\n')
-        wrapper.write('\n')
-        wrapper.write('env PYTHONPATH=%s %s -m mfixgui.pymfix "$@"\n' % (pypath, sys.executable))
+    if platform.system() == 'Windows':
+        mfixsolver = os.path.join(rundir, 'mfixsolver.bat')
+        template = BAT_TEMPLATE
+    else:
+        mfixsolver = os.path.join(rundir, 'mfixsolver')
+        template = SH_TEMPLATE
 
-    # make executable
+    wrapper_contents = template.replace('{PYPATH}', pypath).replace('{PYEXE}', sys.executable)
+
+    with open(mfixsolver, 'wt') as wrapper:
+        wrapper.write(wrapper_contents)
+
+    # set executable permission for wrapper
     permissions = os.stat(mfixsolver)
     os.chmod(mfixsolver, permissions.st_mode | 0o111)
+
+SH_TEMPLATE = \
+r"""#!/bin/sh
+
+env PYTHONPATH={PYPATH} {PYEXE} -m mfixgui.pymfix "$@"
+"""
+
+BAT_TEMPLATE = \
+r"""@echo on
+
+set PYTHONPATH={PYPATH}
+call "{PYEXE}" -m mfixgui.pymfix %*
+"""
 
 if __name__ == '__main__':
     main()
