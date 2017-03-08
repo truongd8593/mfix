@@ -1,0 +1,445 @@
+########################################################################
+# Tutorial: Example of VTK regions                                     #
+#                                                                      #
+# Author: Jeff Dietiker                                                #
+# Date: January 21, 2015                                               #
+#                                                                      #
+#                                                                      #
+########################################################################
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  run_name = 'FB3D'
+  description = '3D SQUARE BUBBLING BED'
+  run_type = 'new'
+  units = 'SI'
+  time = 0.0    ! (sec)
+  tstop = 1.0    ! (sec)
+  dt = 1.0000e-03    ! (sec)
+  dt_max = 1.0000e-02    ! (sec)
+  dt_min = 1.0000e-06    ! (sec)
+
+  energy_eq = .False.
+  species_eq(0) = .False.
+  species_eq(1) = .False.
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+! Normalize residuals:
+
+  norm_g = 0.0
+  norm_s = 0.0
+
+  max_inlet_vel_fac = 1000.0
+
+  leq_pc(1) = 'NONE'    ! No preconditioner
+  leq_pc(2) = 'NONE'    ! No preconditioner
+  leq_pc(3) = 'NONE'    ! No preconditioner
+  leq_pc(4) = 'NONE'    ! No preconditioner
+  leq_pc(5) = 'NONE'    ! No preconditioner
+  leq_pc(6) = 'NONE'    ! No preconditioner
+  leq_pc(7) = 'NONE'    ! No preconditioner
+  leq_pc(8) = 'NONE'    ! No preconditioner
+  leq_pc(9) = 'NONE'    ! No preconditioner
+
+  discretize(1) = 0    ! FOUP
+  discretize(2) = 0    ! FOUP
+  discretize(3) = 0    ! FOUP
+  discretize(4) = 0    ! FOUP
+  discretize(5) = 0    ! FOUP
+  discretize(6) = 0    ! FOUP
+  discretize(7) = 0    ! FOUP
+  discretize(8) = 0    ! FOUP
+  discretize(9) = 0    ! FOUP
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  coordinates = 'CARTESIAN'
+  imax = 20
+  jmax = 100
+  kmax = 20
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! Gas Section
+!---------------------------------------------------------------------//
+
+  mw_avg = 29.0    ! (kg/kmol)
+
+! Particle Section
+!---------------------------------------------------------------------//
+
+  ep_star = 0.42    ! void fraction at maximum packing (-)
+  e = 0.9    ! part-part restitution coefficient (-)
+  e_w = 0.9    ! part-wall restitution coefficient (-)
+  phi = 30.0    ! angle of internal friction (degrees)
+  phi_w = 11.31    ! particle-wall angle of internal friction (degrees)
+
+  mmax = 1
+
+! Solids phase 1:
+!---------------------------------------------------------------------//
+  ro_s0(1) = 2000.0    ! (kg/m3)                 !solids density
+  d_p0(1) = 2.5000e-04    ! (m)                     !particle diameter
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+! Entire domain initialized as stagnant air
+!---------------------------------------------------------------------//
+
+  ic_x_w(1) = 0    ! (m)
+  ic_x_e(1) = 0.2    ! (m)
+  ic_y_s(1) = 0    ! (m)
+  ic_y_n(1) = 1.0    ! (m)
+  ic_z_b(1) = 0    ! (m)
+  ic_z_t(1) = 0.2    ! (m)
+
+! Gas phase:
+!----------------------------------------/
+  ic_ep_g(1) = 1.0    ! (-)
+
+  ic_t_g(1) = 298.15    ! (K)
+  ic_p_g(1) = 1.0132e+05    ! (Pa)
+
+  ic_u_g(1) = 0.0    ! (m/sec)
+  ic_v_g(1) = 0.0    ! (m/sec)
+  ic_w_g(1) = 0.0    ! (m/sec)
+
+! Solids phase:
+!----------------------------------------/
+  ic_ep_s(1,1) = 0.0    ! (-)
+
+  ic_t_s(1,1) = 298.15    ! (K)
+
+  ic_u_s(1,1) = 0.0    ! (m/sec)
+  ic_v_s(1,1) = 0.0    ! (m/sec)
+  ic_w_s(1,1) = 0.0    ! (m/sec)
+
+! Bed:
+!---------------------------------------------------------------------//
+  ic_x_w(2) = 0    ! (m)
+  ic_x_e(2) = 0.2    ! (m)
+  ic_y_s(2) = 0    ! (m)
+  ic_y_n(2) = 0.5    ! (m)
+  ic_z_b(2) = 0    ! (m)
+  ic_z_t(2) = 0.2    ! (m)
+
+! Gas phase:
+!----------------------------------------/
+  ic_ep_g(2) = 0.45    ! (-)
+
+  ic_t_g(2) = 298.15    ! (K)
+  ic_p_g(2) = 1.0132e+05    ! (Pa)
+
+  ic_u_g(2) = 0.0    ! (m/sec)
+  ic_v_g(2) = 0.2    ! (m/sec)
+  ic_w_g(2) = 0.0    ! (m/sec)
+
+! Solids phase:
+!----------------------------------------/
+  ic_ep_s(2,1) = 0.55    ! (-)
+
+  ic_t_s(2,1) = 298.15    ! (K)
+
+  ic_u_s(2,1) = 0.0    ! (m/sec)
+  ic_v_s(2,1) = 0.2    ! (m/sec)
+  ic_w_s(2,1) = 0.0    ! (m/sec)
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! Uniform fluidization
+!---------------------------------------------------------------------//
+
+  bc_x_w(1) = 0    ! (m)
+  bc_x_e(1) = 0.2    ! (m)
+  bc_y_s(1) = 0    ! (m)
+  bc_y_n(1) = 0.0    ! (m)
+  bc_z_b(1) = 0    ! (m)
+  bc_z_t(1) = 0.2    ! (m)
+
+  bc_type(1) = 'MI'
+
+! Gas Phase:
+
+  bc_ep_g(1) = 1.0    ! (-)
+
+  bc_u_g(1) = 0.0    ! (m/s)
+  bc_v_g(1) = 0.25    ! (m/s)
+  bc_w_g(1) = 0.0    ! (m/s)
+
+  bc_p_g(1) = 1.0132e+05    ! (Pa)
+  bc_t_g(1) = 298.15    ! (K)
+
+! Pressure Outlet
+!---------------------------------------------------------------------//
+  bc_x_w(2) = 0.0    ! (m)
+  bc_x_e(2) = 0.2    ! (m)
+  bc_y_s(2) = 1.0    ! (m)
+  bc_y_n(2) = 1.0    ! (m)
+  bc_z_b(2) = 0.0    ! (m)
+  bc_z_t(2) = 0.2    ! (m)
+
+  bc_type(2) = 'PO'
+
+  bc_p_g(2) = 1.0132e+05    ! (Pa)
+  bc_t_g(2) = 298.15    ! (K)
+
+! Vessel walls + internal obstacle
+!---------------------------------------------------------------------//
+  bc_x_w(3) = 0    ! (m)
+  bc_x_w(4) = 0.2    ! (m)
+  bc_x_w(5) = 0    ! (m)
+  bc_x_w(6) = 0.0    ! (m)
+  bc_x_w(7) = 0.05    ! (m)
+  bc_x_e(3) = 0.0    ! (m)
+  bc_x_e(4) = 0.2    ! (m)
+  bc_x_e(5) = 0.2    ! (m)
+  bc_x_e(6) = 0.2    ! (m)
+  bc_x_e(7) = 0.15    ! (m)
+  bc_y_s(3) = 0    ! (m)
+  bc_y_s(4) = 0.0    ! (m)
+  bc_y_s(5) = 0    ! (m)
+  bc_y_s(6) = 0.0    ! (m)
+  bc_y_s(7) = 0.15    ! (m)
+  bc_y_n(3) = 1.0    ! (m)
+  bc_y_n(4) = 1.0    ! (m)
+  bc_y_n(5) = 1.0    ! (m)
+  bc_y_n(6) = 1.0    ! (m)
+  bc_y_n(7) = 0.25    ! (m)
+  bc_z_b(3) = 0    ! (m)
+  bc_z_b(4) = 0.0    ! (m)
+  bc_z_b(5) = 0    ! (m)
+  bc_z_b(6) = 0.2    ! (m)
+  bc_z_b(7) = 0.05    ! (m)
+  bc_z_t(3) = 0.2    ! (m)
+  bc_z_t(4) = 0.2    ! (m)
+  bc_z_t(5) = 0.0    ! (m)
+  bc_z_t(6) = 0.2    ! (m)
+  bc_z_t(7) = 0.15    ! (m)
+
+  bc_type(3) = 'NSW'
+  bc_type(4) = 'NSW'
+  bc_type(5) = 'NSW'
+  bc_type(6) = 'NSW'
+  bc_type(7) = 'NSW'
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+! RES and SPX files
+!---------------------------------------------------------------------//
+  res_dt = 0.1
+
+! The SPX files are not saved (since TSTOP = 1.0 sec)
+
+  spx_dt(1) = 100.0    ! EP_g
+  spx_dt(2) = 100.0    ! P_g, P_star
+  spx_dt(3) = 100.0    ! U_g, V_g, W_g
+  spx_dt(4) = 100.0    ! U_s, V_s, W_s
+  spx_dt(5) = 100.0    ! ROP_s
+  spx_dt(6) = 100.0    ! T_g, T_s
+  spx_dt(7) = 100.0    ! X_g, X_s
+  spx_dt(8) = 100.0    ! theta
+  spx_dt(9) = 100.0    ! Scalar
+  spx_dt(10) = 100.0    ! Reaction Rates
+
+! VTK files
+!---------------------------------------------------------------------//
+  write_vtk_files = .True.
+!  TIME_DEPENDENT_FILENAME = .TRUE.
+  vtu_dir = 'VTU'
+
+! First VTK region is the entire geometry, saved every 0.25 sec.
+! The variables are specified by a variable list (1=EP_G, 2=P_G and P_S, 3=Gas velocity, 4=Solids Velocity)
+
+  vtk_dt(1) = 0.25
+  vtk_filebase(1) = 'BUB3D'
+  vtk_x_w(1) = 0
+  vtk_x_e(1) = 0.2
+  vtk_y_s(1) = 0
+  vtk_y_n(1) = 1.0
+  vtk_z_b(1) = 0
+  vtk_z_t(1) = 0.2
+
+! Second VTK region is a vertical slice, saved every 0.10 sec.
+! The variables are specified by a variable list (1=EP_G, 2=P_G and P_S, 3=Gas velocity, 4=Solids Velocity)
+  vtk_dt(2) = 0.1
+  vtk_filebase(2) = 'VSLICE'
+  vtk_x_w(2) = 0.0
+  vtk_x_e(2) = 0.2
+  vtk_y_s(2) = 0.0
+  vtk_y_n(2) = 1.0
+  vtk_z_b(2) = 0.1
+  vtk_z_t(2) = 0.1
+
+! Third VTK region is a collection of 11 horizontal slices, saved every 0.10 sec.
+! The variables are specified by a variable list (1=EP_G, 2=P_G and P_S, 3=Gas velocity, 4=Solids Velocity)
+  vtk_dt(3) = 0.1
+  vtk_filebase(3) = 'HSLICES'
+  vtk_x_w(3) = 0
+  vtk_x_e(3) = 0.2
+  vtk_y_s(3) = 0
+  vtk_y_n(3) = 1.0
+  vtk_z_b(3) = 0
+  vtk_z_t(3) = 0.2
+  vtk_nys(3) = 11
+
+! Fourth VTK region is a single cell probe, saved every 0.01 sec.
+! The variables are specified explicitly for each variable.
+  vtk_dt(4) = 0.01
+  vtk_filebase(4) = 'PROBE1'
+  vtk_x_w(4) = 0.05
+  vtk_x_e(4) = 0.05
+  vtk_y_s(4) = 0.3
+  vtk_y_n(4) = 0.3
+  vtk_z_b(4) = 0.1
+  vtk_z_t(4) = 0.1
+  vtk_ep_g(4) = .True.
+  vtk_p_g(4) = .True.
+  vtk_vel_g(4) = .True.
+  vtk_vel_s(4,1) = .True.
+
+! Fifth VTK region is an 8-cell probe, saved every 0.01 sec.
+! The variable saved are specified explicitly for each variable.
+  vtk_dt(5) = 0.01
+  vtk_filebase(5) = 'PROBE2'
+  vtk_x_w(5) = 0.175
+  vtk_x_e(5) = 0.185
+  vtk_y_s(5) = 0.195
+  vtk_y_n(5) = 0.205
+  vtk_z_b(5) = 0.095
+  vtk_z_t(5) = 0.105
+  vtk_ep_g(5) = .True.
+  vtk_p_g(5) = .True.
+
+! Available flags for VTK_VAR are :
+
+! 1 : Void fraction (EP_g)'
+! 2 : Gas pressure, solids pressure (P_g, P_star)'
+! 3 : Gas velocity (U_g, V_g, W_g)'
+! 4 : Solids velocity (U_s, V_s, W_s)'
+! 5 : Solids density (ROP_s)'
+! 6 : Gas and solids temperature (T_g, T_s)'
+! 7 : Gas and solids mass fractions (X_g, X_s)'
+! 8 : Granular temperature (Theta_m)
+! 9 : User defined scalars'
+!10 : Reaction Rates'
+!11 : Turbulence quantities (k and ε)'
+!12 : Gas Vorticity magnitude and Lambda_2 (VORTICITY, LAMBDA_2)'
+!100: Processor assigned to scalar cell (Partition)'
+!101: Boundary condition flag for scalar cell (BC_ID)'
+
+  resid_string(1) = 'P0'
+  resid_string(2) = 'U0'
+  resid_string(3) = 'V0,W0'
+  resid_string(4) = 'U1'
+  resid_string(5) = 'V1,W1'
+  group_resid = .True.
+
+  nlog = 50
+  full_log = .True.
+  write_dashboard = .True.
+  f_dashboard = 1
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  enable_dmp_log = .False.
+
+  drag_c1 = 0.8
+  drag_d1 = 2.65
+  solids_model(1) = 'TFM'
+  bc_ep_s(1,1) = 0.0
+  vtk_ep_g(1) = .True.
+  vtk_p_g(1) = .True.
+  vtk_p_star(1) = .True.
+  vtk_u_g(1) = .True.
+  vtk_v_g(1) = .True.
+  vtk_w_g(1) = .True.
+  vtk_u_s(1,1) = .True.
+  vtk_v_s(1,1) = .True.
+  vtk_w_s(1,1) = .True.
+  vtk_ep_g(2) = .True.
+  vtk_p_g(2) = .True.
+  vtk_p_star(2) = .True.
+  vtk_u_g(2) = .True.
+  vtk_v_g(2) = .True.
+  vtk_w_g(2) = .True.
+  vtk_u_s(2,1) = .True.
+  vtk_v_s(2,1) = .True.
+  vtk_w_s(2,1) = .True.
+  vtk_ep_g(3) = .True.
+  vtk_p_g(3) = .True.
+  vtk_p_star(3) = .True.
+  vtk_u_g(3) = .True.
+  vtk_v_g(3) = .True.
+  vtk_w_g(3) = .True.
+  vtk_u_s(3,1) = .True.
+  vtk_v_s(3,1) = .True.
+  vtk_w_s(3,1) = .True.
+  nmax_s(1) = 0
+  y_max = 1.0
+  y_min = 0
+  z_min = 0
+  z_max = 0.2
+  x_min = 0
+  x_max = 0.2
+  vtk_data(1) = 'C'
+  vtk_data(2) = 'C'
+  vtk_data(3) = 'C'
+  vtk_data(4) = 'C'
+  vtk_data(5) = 'C'
+  cartesian_grid = .False.
+  use_stl = .False.
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin": 0,
+#!MFIX-GUI   "xmax": 0.2, "ymin": 0, "ymax": 1.0, "zmin": 0, "zmax": 0.2}}
+#!MFIX-GUI project_version = 4
+#!MFIX-GUI gui_version = <function get_version at 0x2b8782ab0ed8>
+#!MFIX-GUI project_notes = ""
+#!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
+#!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
+#!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
+#!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
+#!MFIX-GUI   "#707070", "opacity": 0.5}, "mesh": {"color": "#f44328", "visible":
+#!MFIX-GUI   true, "rep": "wire", "edge": "#7a2114", "opacity": 1},
+#!MFIX-GUI   "background_mesh": {"color": "#64b6f7", "visible": true, "rep":
+#!MFIX-GUI   "wire", "edge": "#325b7b", "opacity": 1.0}}
+#!MFIX-GUI regions_dict = {"regions": {"BC_4": {"color": "#b8ba8e", "to": [0.2,
+#!MFIX-GUI   1.0, 0.2], "from": [0.2, 0.0, 0.0], "type": "YZ-plane"}, "BC_5":
+#!MFIX-GUI   {"color": "#966691", "to": [0.2, 1.0, 0.0], "type": "XY-plane"},
+#!MFIX-GUI   "BC_6": {"color": "#cd917e", "to": [0.2, 1.0, 0.2], "from": [0.0,
+#!MFIX-GUI   0.0, 0.2], "type": "XY-plane"}, "BC_7": {"color": "#dd92d8", "to":
+#!MFIX-GUI   [0.15, 0.25, 0.15], "from": [0.05, 0.15, 0.05]}, "BC_1": {"color":
+#!MFIX-GUI   "#6bcf67", "to": [0.2, 0.0, 0.2], "type": "XZ-plane"}, "BC_2":
+#!MFIX-GUI   {"color": "#c7cb66", "to": [0.2, 1.0, 0.2], "from": [0.0, 1.0,
+#!MFIX-GUI   0.0], "type": "XZ-plane"}, "BC_3": {"color": "#7991dc", "to": [0.0,
+#!MFIX-GUI   1.0, 0.2], "type": "YZ-plane"}, "IC_1": {"color": "#8f73ca", "to":
+#!MFIX-GUI   [0.2, 1.0, 0.2]}, "IC_2": {"color": "#7486c2", "to": [0.2, 0.5,
+#!MFIX-GUI   0.2]}, "VTK_2": {"color": "#6a67a9", "to": [0.2, 1.0, 0.1], "from":
+#!MFIX-GUI   [0.0, 0.0, 0.1], "type": "XY-plane"}, "VTK_5": {"color": "#ba9fa6",
+#!MFIX-GUI   "to": [0.185, 0.205, 0.105], "from": [0.175, 0.195, 0.095]},
+#!MFIX-GUI   "VTK_4": {"color": "#6cbb71", "to": [0.05, 0.3, 0.1], "from":
+#!MFIX-GUI   [0.05, 0.3, 0.1], "type": "point"}}, "order": ["IC_1", "IC_2",
+#!MFIX-GUI   "BC_1", "BC_2", "BC_3", "BC_4", "BC_5", "BC_6", "BC_7", "VTK_2",
+#!MFIX-GUI   "VTK_4", "VTK_5"]}
+#!MFIX-GUI bc_regions = [[[1], ["BC_1"]], [[2], ["BC_2"]], [[3], ["BC_3"]],
+#!MFIX-GUI   [[4], ["BC_4"]], [[5], ["BC_5"]], [[6], ["BC_6"]], [[7], ["BC_7"]]]
+#!MFIX-GUI ic_regions = [[[1], ["IC_1"]], [[2], ["IC_2"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
+#!MFIX-GUI vtk_regions = [[[1], ["IC_1"]], [[2], ["VTK_2"]], [[3], ["IC_1"]],
+#!MFIX-GUI   [[4], ["VTK_4"]], [[5], ["VTK_5"]]]
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI run_location = 1
+#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
+#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
+#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
