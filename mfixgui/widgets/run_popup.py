@@ -369,7 +369,7 @@ class RunPopup(QDialog):
         if PYQT5:
             new_exe = new_exe[0]
 
-        self.save_selected_exe()
+        self.save_selected_exe(new_exe) # non-exe get saved
         self.mfix_available = True
         self.solver_list = self.get_solver_list()
         self.populate_combobox_solver()
@@ -397,14 +397,17 @@ class RunPopup(QDialog):
         self.settings.setValue('queue_templates', '|'.join(list(set(good_paths))[:RECENT_EXE_LIMIT]))
 
     # utils
-    def save_selected_exe(self):
+    def save_selected_exe(self, new_solver=None):
         """ add new executable to recent list, save in project file and config,
         send signal(s) """
-        new_solver = self.solver
+        if new_solver is None:
+            new_solver = self.solver
+        if new_solver is None:
+            self.parent.error('No solver selected')
         self.settings.setValue('mfix_exe', new_solver)
         self.gui_comments['mfix_exe'] = new_solver
-        recent_list = self.settings.value('recent_executables')
-        if recent_list:
+        recent_list = self.settings.value('recent_executables', None)
+        if recent_list is not None:
             recent_list = recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT]
         else:
             recent_list = []
@@ -501,6 +504,8 @@ class RunPopup(QDialog):
                 exe_exists = os.path.isfile(exe) and os.access(exe, os.X_OK)
                 if exe_exists and self.get_exe_flags(exe):
                     od[exe] = True
+                else:
+                    self.parent.error('{} is not an executable'.format(exe))
 
         return list(od.keys())
 
