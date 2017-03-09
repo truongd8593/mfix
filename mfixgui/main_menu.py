@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import glob
 
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
@@ -587,8 +588,12 @@ class MainMenu(object):
             if confirm != 'yes':
                 return
             self.clear_unsaved_flag()
-
-        self.open_new_from_template(os.path.join(item.full_path, 'mfix.dat'))
+        mfx_files = glob.glob(os.path.join(item.full_path, '*.mfx'))
+        if not mfx_files:
+            path = os.path.join(item.full_path, 'mfix.dat')
+        else:
+            path = mfx_files[0]
+        self.open_new_from_template(path)
 
     def handle_clear_recent(self):
         self.settings.setValue('recent_projects', '|'.join([]))
