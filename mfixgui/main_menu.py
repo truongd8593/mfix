@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import glob
 
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
@@ -262,7 +263,7 @@ class MainMenu(object):
         lw.setIconSize(QtCore.QSize(128, 128))
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
-        lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
+        lw.itemDoubleClicked.connect(self.handle_main_menu_new_project)
         nw_layout.addWidget(lw, 10, 1, 10, 1)
 
         tb_l = QtWidgets.QToolButton()
@@ -579,7 +580,7 @@ class MainMenu(object):
         else:
             self.message(text="File does not exist: %s" % project_path)
 
-    def handle_main_menu_new_proect(self, item):
+    def handle_main_menu_new_project(self, item):
         if self.unsaved_flag:
             confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
                                    buttons=['yes', 'no'],
@@ -587,8 +588,12 @@ class MainMenu(object):
             if confirm != 'yes':
                 return
             self.clear_unsaved_flag()
-
-        self.open_new_from_template(os.path.join(item.full_path, 'mfix.dat'))
+        mfx_files = glob.glob(os.path.join(item.full_path, '*.mfx'))
+        if not mfx_files:
+            path = os.path.join(item.full_path, 'mfix.dat')
+        else:
+            path = mfx_files[0]
+        self.open_new_from_template(path)
 
     def handle_clear_recent(self):
         self.settings.setValue('recent_projects', '|'.join([]))
