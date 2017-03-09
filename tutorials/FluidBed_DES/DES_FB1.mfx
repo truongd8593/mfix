@@ -1,0 +1,253 @@
+########################################################################
+#  Author: D.Boyalakuntla                           Date:   2004-06-07 #
+#                                                                      #
+#  Purpose: Tutorial of coupled gas-DEM simulation.                    #
+#                                                                      #
+#  REF: Boyalakuntla, D., Simulation of Granular and Gas-Solid Flows   #
+#       using Discrete Element Method. CMU, PhD Thesis 2003.           #
+#                                                                      #
+########################################################################
+
+  run_name = 'DES_FB1'
+  description = 'DEM Tutorial: DEM fluidbed with central jet.'
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  run_type = 'new'
+  units = 'SI'
+
+  time = 0.0
+  tstop = 1.0
+
+  dt = 5.0000e-04
+  dt_max = 1.0000e-03
+
+  energy_eq = .False.
+
+  species_eq(0) = .False.
+  species_eq(1) = .False.
+
+  momentum_x_eq(1) = .False.
+  momentum_y_eq(1) = .False.
+  momentum_z_eq(1) = .False.
+
+  drag_type = 'GIDASPOW'
+
+  des_interp_on = .False.
+  des_interp_scheme = 'NONE'
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+  max_nit = 50
+  tol_resid = 1.0000e-03
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  coordinates = 'CARTESIAN'
+
+  imax = 15
+  jmax = 45
+  no_k = .True.
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! GAS SECTION
+!---------------------------------------------------------------------//
+
+  ro_g0 = 1.205    ! g/cm^3
+  mu_g0 = 1.8000e-05    ! g/(cm.s)
+
+! PARTICLE SECTION
+!---------------------------------------------------------------------//
+  mmax = 1
+
+  particles = 2400    ! Number of particles.
+
+! Particle-particle:
+  kn = 1000.0    ! Normal collision spring constant
+  mew = 0.1    ! Friction coefficient
+
+! Particle-wall
+  kn_w = 1000.0    ! Normal collision spring constant
+  mew_w = 0.1    ! Friction coefficient
+
+! Restitution coefficients
+  des_en_input(1) = 0.9    ! e11
+
+  des_neighbor_search = 4    ! Grid based neighbor search
+  neighbor_search_n = 20    ! Steps between neighbor search
+
+  nfactor = 500    ! DEM settling period in no. of loops
+
+! Solids phase 1
+!---------------------------------------------------------------------//
+  solids_model(1) = 'DEM'
+
+  d_p0(1) = 0.004    ! (cm)
+  ro_s0(1) = 2700.0    ! (g/cm)
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! Central Jet:
+!---------------------------------------------------------------------//
+  bc_x_w(1) = 0.07
+  bc_x_e(1) = 0.08
+  bc_y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  bc_y_n(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+
+  bc_type(1) = 'MI'
+
+  bc_ep_g(1) = 1.0
+
+  bc_p_g(1) = 0.0
+
+  bc_u_g(1) = 0.0    ! (cm/sec)
+  bc_v_g(1) = 42.0    ! (cm/sec)
+
+! Top Pressure Outflow:
+!---------------------------------------------------------------------//
+  bc_x_w(2) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_e(2) = 0.15 #!MFIX-GUI eq{xmax,float}
+  bc_y_s(2) = 0.9 #!MFIX-GUI eq{ymax,float}
+  bc_y_n(2) = 0.9 #!MFIX-GUI eq{ymax,float}
+
+  bc_type(2) = 'PO'
+
+  bc_p_g(2) = 0.0
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  res_dt = 0.1    ! interval write restart (.RES) file
+
+  nlog = 25    ! time steps between updates to (.LOG) file
+  full_log = .True.    ! display residuals on screen
+
+! Interval at which .SPX files are written
+  spx_dt(1) = 0.1    ! EP_g
+  spx_dt(2) = 0.1    ! P_g, P_star
+  spx_dt(3) = 0.1    ! U_g, V_g, W_g
+  spx_dt(4) = 0.1    ! U_s, V_s, W_s
+  spx_dt(5) = 100.0    ! ROP_s
+  spx_dt(6) = 100.0    ! T_g, T_s
+  spx_dt(7) = 100.0    ! X_g, X_s
+  spx_dt(8) = 100.0    ! theta
+  spx_dt(9) = 100.0    ! Scalar
+
+  group_resid = .True.    ! Group residuals by equation
+
+  print_des_data = .False.    ! write DES vtk files
+
+  write_vtk_files = .True.
+
+! Save particle data over a small rectangular region
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  enable_dmp_log = .False.
+  chk_batchq_end = .False.
+  kt_fac = 0.285714285714 #!MFIX-GUI eq{2/7,float}
+  kt_w_fac = 0.285714285714 #!MFIX-GUI eq{2/7,float}
+  des_etat_fac = 0.5
+  des_etat_w_fac = 0.5
+  bc_ep_s(1,1) = 0.0
+  nmax_s(1) = 0
+  y_max = 0.9
+  y_min = 0
+  z_min = 0
+  z_max = 0.004
+  x_min = 0
+  x_max = 0.15
+  des_en_wall_input(1) = 1.0
+  des_interp_mean_fields = .False.
+  cartesian_grid = .False.
+  use_stl = .False.
+
+  time_dependent_filename = .True.
+  spx_dt(10) = 1.0
+  spx_dt(11) = 1.0
+  ic_x_w(2) = 0.0 #!MFIX-GUI eq{xmin,float}
+  ic_y_s(2) = 0.0 #!MFIX-GUI eq{ymin,float}
+  ic_x_e(2) = 0.15 #!MFIX-GUI eq{xmax,float}
+  ic_y_n(2) = 0.9 #!MFIX-GUI eq{ymax,float}
+  ic_ep_g(2) = 1.0
+  ic_t_g(2) = 293.15
+  ic_u_g(2) = 0.0
+  ic_v_g(2) = 2.8
+  ic_w_g(2) = 0.0
+  ic_ep_s(2,1) = 0.0
+  ic_u_s(2,1) = 0.0
+  ic_v_s(2,1) = 0.0
+  ic_w_s(2,1) = 0.0
+  ic_theta_m(2,1) = 0.0
+  ic_des_fit_to_region(2) = .False.
+  bc_w_g(1) = 0.0
+  bc_t_g(1) = 293.15
+  vtk_data(1) = 'P'
+  vtk_x_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  vtk_y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  vtk_x_e(1) = 0.15 #!MFIX-GUI eq{xmax,float}
+  vtk_y_n(1) = 0.9 #!MFIX-GUI eq{ymax,float}
+  vtk_filebase(1) = 'DES_FB1'
+  vtk_dt(1) = 0.005
+  vtk_nxs(1) = 0
+  vtk_nys(1) = 0
+  vtk_nzs(1) = 0
+  vtk_part_diameter(1) = .True.
+  vtk_part_vel(1) = .True.
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin": 0,
+#!MFIX-GUI   "xmax": 0.15, "ymin": 0, "ymax": 0.9, "zmin": 0, "zmax": 0.004}}
+#!MFIX-GUI project_version = 10
+#!MFIX-GUI gui_version = <function get_version at 0x2b3be0abbed8>
+#!MFIX-GUI project_notes = ""
+#!MFIX-GUI modified_by = jdietiker
+#!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
+#!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
+#!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
+#!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
+#!MFIX-GUI   "#707070", "opacity": 0.5}, "mesh": {"color": "#f44328", "visible":
+#!MFIX-GUI   true, "rep": "wire", "edge": "#7a2114", "opacity": 1},
+#!MFIX-GUI   "background_mesh": {"color": "#64b6f7", "visible": true, "rep":
+#!MFIX-GUI   "wire", "edge": "#325b7b", "opacity": 1.0}}
+#!MFIX-GUI regions_dict = {"regions": {"all": {"color": "#ac999d", "to": [{"eq":
+#!MFIX-GUI   "xmax", "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}]}, "BC_1": {"color":
+#!MFIX-GUI   "#6b70c5", "to": [0.08, {"eq": "ymin", "__type__": "equation",
+#!MFIX-GUI   "type": "float"}, {"eq": "zmax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}], "from": [0.07, {"eq": "ymin", "__type__": "equation",
+#!MFIX-GUI   "type": "float"}, {"eq": "zmin", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}], "type": "XZ-plane"}, "BC_2": {"color": "#98c2da", "to":
+#!MFIX-GUI   [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "type": "XZ-plane"}},
+#!MFIX-GUI   "order": ["BC_1", "BC_2", "all"]}
+#!MFIX-GUI bc_regions = [[[1], ["BC_1"]], [[2], ["BC_2"]]]
+#!MFIX-GUI ic_regions = [[[2], ["all"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
+#!MFIX-GUI vtk_regions = [[[1], ["all"]]]
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI run_location = 1
+#!MFIX-GUI mfix_exe = /nfs/home/8/public/mfixgui/lib/python2.7/site-packages/mfixsolver.so
+#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
+#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
+#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
