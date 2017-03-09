@@ -4,6 +4,7 @@ standalone command to build the custom mfixsolvers. """
 
 import atexit
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -134,20 +135,18 @@ class BuildExtCommand(build_ext):
 
 
 def main():
-    """ Custom installation: set --prefix to RUNDIR
+    """ Custom installation: run install_lib command with install-dir==RUNDIR/lib/python/site-packages
      https://docs.python.org/3/install/#custom-installation """
 
     rundir = os.getcwd()
-    builddir = os.path.join(rundir, '.build')
 
     pypath = os.path.join(rundir,
                           'lib',
                           'python%d.%d' % sys.version_info[:2],
                           'site-packages')
     os.environ['PYTHONPATH'] = pypath
-    for dirname in (builddir, pypath):
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+    if not os.path.isdir(pypath):
+        os.makedirs(pypath)
 
 
     # copy sys.argv to BUILD_ARGS, route arguments to either configure_mfix or make
@@ -164,8 +163,6 @@ def main():
         'install_lib',
         '--install-dir', pypath,
     ]
-
-    os.chdir(builddir)
 
     setup(
         name='custom_mfixsolver',
