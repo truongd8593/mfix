@@ -262,7 +262,7 @@ class MainMenu(object):
         lw.setIconSize(QtCore.QSize(128, 128))
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
-        lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
+        lw.itemDoubleClicked.connect(self.handle_main_menu_new_project)
         nw_layout.addWidget(lw, 10, 1, 10, 1)
 
         tb_l = QtWidgets.QToolButton()
@@ -579,7 +579,7 @@ class MainMenu(object):
         else:
             self.message(text="File does not exist: %s" % project_path)
 
-    def handle_main_menu_new_proect(self, item):
+    def handle_main_menu_new_project(self, item):
         if self.unsaved_flag:
             confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
                                    buttons=['yes', 'no'],
