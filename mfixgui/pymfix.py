@@ -702,40 +702,40 @@ class DictAction(argparse.Action):
         setattr(namespace, self.dest, items)
 
 class PrintFlagsAction(argparse.Action):
-        def __call__(self, parser, namespace, values, option_string=None):
-            print("python ", end='')
-            import_mfixsolver()
-            MAIN.print_flags()
-            sys.exit(1)
+    def __call__(self, parser, namespace, values, option_string=None):
+        print("python ", end='')
+        import_mfixsolver()
+        MAIN.print_flags()
+        sys.exit(1)
 
 def check_port(value):
     ivalue = int(value)
-    if ivalue > 1025 or ivalue < 65536:
-         raise argparse.ArgumentTypeError("%s is an invalid port number, must be 1025 < port < 65536 " % value)
+    if ivalue < 1025 or 65536 < ivalue:
+        err_msg = "%s is an invalid port number, must be 1025 < port < 65536 " % value
+        raise argparse.ArgumentTypeError(err_msg)
     return ivalue
 
 def parse_command_line_arguments():
     "handle command line arguments"
     parser = argparse.ArgumentParser(description='Welcome to PYMFiX')
     parser.add_argument('MFIX_KEY=VALUE', action=DictAction, nargs='*',
-                        help='Series of MFIX_KEY=VALUE to over-ride values in the project file. Does not support indices.')
-    parser.add_argument('-f', '--file',  metavar='FILE', action='store',
+                        help='Series of MFIX_KEY=VALUE to override values in the project file. Does not support indices/array keywords.')
+    parser.add_argument('-f', '--file', metavar='FILE', action='store',
                         help='specify an input file (*.mfx or *.dat)',
                         required=True)
     parser.add_argument('-p', '--print-flags', action=PrintFlagsAction, nargs=0,
                         help='return the compile flags and exit')
-    parser.add_argument('-P', '--port', metavar='PORT', action='store', default=random.randint(1025, 65536),
+    parser.add_argument('-P', '--port', metavar='PORT', action='store',
+                        default=random.randint(1025, 65536),
                         type=check_port,
                         help='specify a port number to use')
-    parser.add_argument('-s', '--solver',  metavar='FILE', action='store',
-                        help='specify a filename for the mfixsolver Python extension (mfixsolver.so or mfixsolver.pyd)')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
     parser.add_argument('-v', '--version', action='version', version=get_version)
 
     args = parser.parse_args()
 
-    passed_kwargs = ['='.join([k,v]) for k,v in vars(args)['MFIX_KEY=VALUE'].items()]
+    passed_kwargs = ['='.join([k, v]) for k, v in vars(args)['MFIX_KEY=VALUE'].items()]
     return args.file.ljust(80), args.solver, not args.wait, args.port, passed_kwargs
 
 if __name__ == '__main__':
