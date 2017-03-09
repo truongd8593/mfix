@@ -567,7 +567,7 @@ class RunPopup(QDialog):
             smp = []
 
         # FIXME: code-cleanup; mfix_exe really should be renamed to mfixsolver everywhere
-        run_cmd = smp + dmp + [self.mfix_exe]
+        run_cmd = smp + dmp + [self.solver]
 
         project_filename = os.path.basename(self.parent.get_project_file())
         # Warning, not all versions of mfix support '-f' !
