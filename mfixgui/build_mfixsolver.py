@@ -4,6 +4,7 @@ standalone command to build the custom mfixsolvers. """
 
 import atexit
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -134,20 +135,18 @@ class BuildExtCommand(build_ext):
 
 
 def main():
-    """ Custom installation: set --prefix to RUNDIR
+    """ Custom installation: run install_lib command with install-dir==RUNDIR/lib/python/site-packages
      https://docs.python.org/3/install/#custom-installation """
 
     rundir = os.getcwd()
-    builddir = os.path.join(rundir, '.build')
 
     pypath = os.path.join(rundir,
                           'lib',
                           'python%d.%d' % sys.version_info[:2],
                           'site-packages')
     os.environ['PYTHONPATH'] = pypath
-    for dirname in (builddir, pypath):
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+    if not os.path.isdir(pypath):
+        os.makedirs(pypath)
 
 
     # copy sys.argv to BUILD_ARGS, route arguments to either configure_mfix or make
@@ -164,8 +163,6 @@ def main():
         'install_lib',
         '--install-dir', pypath,
     ]
-
-    os.chdir(builddir)
 
     setup(
         name='custom_mfixsolver',
@@ -188,15 +185,34 @@ def main():
         scripts={},
     )
 
-    mfixsolver = os.path.join(rundir, 'mfixsolver')
-    with open(mfixsolver, 'w') as wrapper:
-        wrapper.write('#!/bin/sh\n')
-        wrapper.write('\n')
-        wrapper.write('env PYTHONPATH=%s %s -m mfixgui.pymfix "$@"\n' % (pypath, sys.executable))
+    if platform.system() == 'Windows':
+        mfixsolver = os.path.join(rundir, 'mfixsolver.bat')
+        template = BAT_TEMPLATE
+    else:
+        mfixsolver = os.path.join(rundir, 'mfixsolver')
+        template = SH_TEMPLATE
 
-    # make executable
+    wrapper_contents = template.replace('{PYPATH}', pypath).replace('{PYEXE}', sys.executable)
+
+    with open(mfixsolver, 'wt') as wrapper:
+        wrapper.write(wrapper_contents)
+
+    # set executable permission for wrapper
     permissions = os.stat(mfixsolver)
     os.chmod(mfixsolver, permissions.st_mode | 0o111)
+
+SH_TEMPLATE = \
+r"""#!/bin/sh
+
+env PYTHONPATH={PYPATH} {PYEXE} -m mfixgui.pymfix "$@"
+"""
+
+BAT_TEMPLATE = \
+r"""@echo on
+
+set PYTHONPATH={PYPATH}
+call "{PYEXE}" -m mfixgui.pymfix %*
+"""
 
 if __name__ == '__main__':
     main()
