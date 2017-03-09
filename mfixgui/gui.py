@@ -830,7 +830,7 @@ class MfixGui(QtWidgets.QMainWindow,
             # update plot data
             status = self.job_manager.job.status
             if not self.job_manager.job.is_paused():
-                self.update_plots()
+                self.update_plots(status)
 
             # update progress bar
             t = status.get('time', None)
