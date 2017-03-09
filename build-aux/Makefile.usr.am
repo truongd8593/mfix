@@ -47,6 +47,8 @@ mfixsolver_LDADD += $(LIBMFIX)
 
 .PHONY: TAGS test $(LIBMFIX) .build
 
+libmfix: $(mfixsolver_LDADD)
+
 # top level directory needs to be built first
 $(LIBMFIX):
 	$(MAKE) -C $(top_builddir) mfixsolver$(EXEEXT)

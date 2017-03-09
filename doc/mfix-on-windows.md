@@ -1,5 +1,7 @@
 # Building, Installing, and Running MFIX for Windows
 
+# This document is mostly historical.  See SETUP_GUIDE.md
+
 ## Building MFIX package
 
 The binary Python extension (mfixsolver.so on Linux, mfixsolver.pyd on Windows)
@@ -31,7 +33,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 ```shell
    $ mkdir /somewhere/VBOX_SHARE
    $ cd /somewhere/VBOX_SHARE
-   $ git clone -b gui <working_dir>/mfixsolver  # can clone local mfix repo
+   $ git clone  <working_dir>/  # FIXME
 ```
 
    Then setup a shared folder pointing to VBOX_SHARE, and you should see
@@ -45,7 +47,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
    difficult to download other needed packages.  To disable this, open
    the "Edit group policy" control panel, navigate to Computer
    Configuration/Administrative Templates/Network/BITS, select "Limit the
-   maximim network bandwidth" and set the limits to 0.
+   maximum network bandwidth" and set the limits to 0.
 
    As the help text states: "If you disable or do not configure this policy
    setting, BITS uses all available unused bandwidth."
@@ -74,7 +76,7 @@ If you have access to a Windows build host, you can skip ahead to "Install Anaco
 ```
 
 #### Patch Anaconda for Python 3
-At the time of this writing, distutils does not support Visual Studio 2015, which is what Python 3 is built with. As a result, to build for Python patching distutils is needed.
+At the time of5 this writing, distutils does not support Visual Studio 2015, which is what Python 3 is built with. As a result, to build for Python patching distutils is needed.
 
  - Edit `Anaconda3\Lib\distutils\cygwinccompiler.py`.
  - Search for VS2010

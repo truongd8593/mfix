@@ -29,7 +29,7 @@ DISTCLEANFILES += tests
 DISTCLEANFILES += tutorials
 DISTCLEANFILES += fdep
 
-INCS = $(FC_MODINC)./../../../model/include \
+INCS = $(FC_MODINC)$(top_srcdir)/../model/include \
 			 $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS = $(INCS) \
 						 $(FC_MODOUT)$(MODOUTDIR)

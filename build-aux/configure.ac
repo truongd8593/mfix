@@ -85,6 +85,7 @@ AC_CHECK_PROGS(PYUIC,pyuic pyuic4 pyuic5,pyuic)
 if test x"$PYUIC" = x; then
 AC_MSG_ERROR([Enabling python support requires pyuic to be in PATH])
 fi
+fi
 
 AC_MSG_CHECKING(whether fPIC compiler option is accepted)
 SAVED_FCFLAGS="$FCFLAGS"
@@ -103,8 +104,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
 FFLAGS="$SAVED_FFLAGS -fPIC"],
 [AC_MSG_RESULT(no)
 FFLAGS="$SAVED_FFLAGS"])
-
-fi
 
 AC_ARG_WITH([perl],
             AS_HELP_STRING([--with-perl], [full path to Perl interpreter]),
@@ -212,9 +211,6 @@ endif
 '
 AC_SUBST([make_endif])
 AM_SUBST_NOTMAKE([make_endif])
-AC_CONFIG_COMMANDS([cases],
-[cp $ac_srcdir/test.sh $ac_builddir/build-aux; for casedir in benchmarks legacy_tests tests tutorials; do [[ "$ac_builddir" != "$ac_srcdir" ]] && cp -r $ac_srcdir/../$casedir $ac_builddir; chmod -R +w $ac_builddir/$casedir; done ],
-)
 
 AC_OUTPUT
 

@@ -702,7 +702,7 @@ changed as well as export options for saving an image of the plot or exporting
 the data to a text file.
 
 > Note: plotting requires the optinal `pyqtgraph` dependency and a connection to
-> the pymfixsolver
+> the mfixsolver
 
 <img alt="command line" src="media/gui_plot_dt.png" style="width:800;height:600" />
 
