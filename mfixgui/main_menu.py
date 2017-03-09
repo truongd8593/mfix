@@ -782,7 +782,7 @@ class MainMenu(object):
             path_var = []
             top_path = os.path.join(mfx_dir, dirname, '')
             for root, dirs, files in os.walk(top_path):
-                if any(f.endswith('mfix.dat') for f in files):
+                if any(f.endswith('mfix.dat') or f.endswith('.mfx') for f in files):
                     path_var.append(root.replace(top_path,''))
             if path_var:
                 path_var.sort(key=lambda y: y.lower())
