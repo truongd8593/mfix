@@ -194,7 +194,7 @@ class SolidsPIC(object):
         #Define solids stress model parameter: non-singularity factor
         # Sets keyword FRIC_NON_SING_FAC
         # DEFAULT value of 1.0E-8
-        for (key, default) in [('psfrac_fric_pic', 10.0),
+        for (key, default) in [('psfac_fric_pic', 10.0),
                                ('fric_exp_pic', 3.0),
                                ('fric_non_sing_fac', 1.0e-8)]:
             val = self.project.get_value(key)
