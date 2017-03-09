@@ -3273,7 +3273,7 @@ background-color:white;
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_29">
             <item>
-             <widget class="QLabel" name="label_psfrac_fric_pic">
+             <widget class="QLabel" name="label_psfac_fric_pic">
               <property name="text">
                <string>Pressure constant</string>
               </property>
@@ -3303,7 +3303,7 @@ background-color:white;
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_psfrac_fric_pic_units">
+             <widget class="QLabel" name="label_psfac_fric_pic_units">
               <property name="maximumSize">
                <size>
                 <width>25</width>

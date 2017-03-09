@@ -58,7 +58,7 @@ class SolidsPIC(object):
         # Selection always available
         # Sets keyword MPPIC_SOLID_STRESS_SNIDER=.T.
         self.update_keyword('mppic_solid_stress_snider', True)
-        # TODO FIXME how does this ever get cleared?
+        # TODO FIXME does this ever get cleared?
 
         #Option to enable implicit treatment of drag force
         # Sets keyword: MPPIC_PDRAG_IMPLICIT
@@ -156,8 +156,12 @@ class SolidsPIC(object):
             cb.setCurrentIndex(NONE)
             des_interp_scheme = 'NONE'
         else:
-            des_interp_scheme = des_interp_schemes[cb.currentIndex()]
-        #
+            if des_interp_scheme not in des_interp_schemes:
+                self.warning("invalid des_interp_scheme %s" % des_interp_scheme)
+                des_interp_scheme = 'SQUARE_DPVM'
+            idx = des_interp_schemes.index(des_interp_scheme)
+            cb.setCurrentIndex(idx)
+
         # per-item enable flags
         enabled = (not interp_enabled, not des_explicity_coupled, True)
         for (i,e) in enumerate(enabled):
@@ -194,7 +198,7 @@ class SolidsPIC(object):
         #Define solids stress model parameter: non-singularity factor
         # Sets keyword FRIC_NON_SING_FAC
         # DEFAULT value of 1.0E-8
-        for (key, default) in [('psfrac_fric_pic', 10.0),
+        for (key, default) in [('psfac_fric_pic', 10.0),
                                ('fric_exp_pic', 3.0),
                                ('fric_non_sing_fac', 1.0e-8)]:
             val = self.project.get_value(key)
