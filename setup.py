@@ -9,9 +9,11 @@ import codecs
 import platform
 import shutil
 import subprocess
+import sys
 import zipfile
+
 from glob import glob
-from os import makedirs, path, walk
+from os import makedirs, path, walk, environ
 
 # must import setuptools and cygwinccompiler before numpy.distutils
 import setuptools
@@ -133,6 +135,29 @@ class BuildDocCommand(setuptools.Command):
     def run(self):
         build_doc()
 
+class TestLoadAllCommand(setuptools.Command):
+    """ renders setup guide and user guide from Markdown to HTML """
+
+    description = "load every mfix.dat file for testing"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        cases = []
+        for root, dirs, files in walk('.'):
+            if 'mfix.dat' in files:
+                cases.append(path.join(root, 'mfix.dat'))
+
+        for case in cases:
+            cmd = '%s -m mfixgui.gui -d -linfo -t %s' % (sys.executable, case)
+            environ["MFIX_NO_VTK"] = "1"
+            subprocess.check_call(cmd, shell=True)
+
 
 setup(
     name=NAME,
@@ -141,6 +166,7 @@ setup(
         'build_doc': BuildDocCommand,
         'build_ext': BuildExtCommand,
         'build_mfix': BuildMfixCommand,
+        'test_load_all': TestLoadAllCommand,
     },
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
