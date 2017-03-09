@@ -830,7 +830,7 @@ class MfixGui(QtWidgets.QMainWindow,
             # update plot data
             status = self.job_manager.job.status
             if not self.job_manager.job.is_paused():
-                self.update_plots(status)
+                self.update_plots()
 
             # update progress bar
             t = status.get('time', None)
@@ -2117,7 +2117,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         run_name = match.group('run_name')
 
         except Exception as e:
-            self.message(text="Error %s in project template %s:  %s" % (template,e),
+            self.message(text="Error in project template %s:  %s" % (template,e),
                          buttons=['ok'],
                          default=['ok'])
             self.set_no_project()
