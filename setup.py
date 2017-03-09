@@ -136,7 +136,7 @@ class BuildDocCommand(setuptools.Command):
         build_doc()
 
 class TestLoadAllCommand(setuptools.Command):
-    """ renders setup guide and user guide from Markdown to HTML """
+    """ search for all mfix.dat files and open each in GUI with -t option """
 
     description = "load every mfix.dat file for testing"
     user_options = []
