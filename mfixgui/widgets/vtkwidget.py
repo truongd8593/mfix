@@ -689,7 +689,7 @@ class VtkWidget(BaseVtkWidget):
 
     def get_tree_item(self, name):
         """return the tree item with name"""
-        items = self.geometrytree.findItems(name, QtCore.Qt.MatchContains|QtCore.Qt.MatchRecursive, 0)
+        items = self.geometrytree.findItems(name, QtCore.Qt.MatchRecursive, 0)
         return items[0]
 
     def geometry_clicked(self, item):
