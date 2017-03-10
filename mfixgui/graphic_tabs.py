@@ -221,7 +221,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
         elif len(self.y)>1:
             if len(self.x) == 0:
                 self.curve.setData(self.y)
-            else:
+            elif len(self.x) > 1:
                 self.curve.setData(self.x, self.y)
 
     def get_index(self):
