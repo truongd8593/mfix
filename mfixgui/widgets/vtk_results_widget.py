@@ -280,7 +280,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.vtp_files = []
         self.vtu_files = []
         self.update_color_by = False
-        self.time_format = '{0:.2f} s'
+        self.time = 0.0
+        self.time_format = '{:.2f} s'
 
         self.play_timer = QtCore.QTimer()
         self.play_timer.timeout.connect(self.forward)
@@ -464,6 +465,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                     combo = QtWidgets.QComboBox(self.visible_menu)
                     combo.activated.connect(lambda item, g=geo, c=combo: self.change_file_pattern(g, c))
                     combo.setEnabled(False)
+                    combo.setToolTip('File pattern to display')
                     layout.addWidget(combo, i, 1)
                     btns['file_pattern'] = combo
                 elif geo == 'nodes':
@@ -474,6 +476,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
                 combo.setEnabled(False)
+                combo.setToolTip('Variable to color by')
                 layout.addWidget(combo, i, 2)
                 btns['color_by'] = combo
 
@@ -481,6 +484,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo2 = QtWidgets.QComboBox(self.visible_menu)
                 combo2.activated.connect(lambda item, g=geo, c=combo, c2=combo2: self.change_color_by(g, c, c2))
                 combo2.addItems(['mag', 'x', 'y', 'z'])
+                combo2.setToolTip('Component to color by')
                 combo2.setEnabled(False)
                 layout.addWidget(combo2, i, 3)
                 btns['component'] = combo2
@@ -498,6 +502,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, c=combo: self.change_colorbar_loc(c))
                 combo.setEnabled(False)
+                combo.setToolTip('Location of color bar')
                 layout.addWidget(combo, i, 3)
                 combo.addItems(['Left', 'Right', 'Top', 'Bottom'])
                 combo.setCurrentIndex(1)
@@ -505,14 +510,14 @@ class GraphicsVtkWidget(BaseVtkWidget):
             elif geo == 'time_label':
                 lineedit = QtWidgets.QLineEdit(self.visible_menu)
                 lineedit.setText(self.time_format)
+                lineedit.textChanged.connect(self.handle_label_format)
                 lineedit.setEnabled(False)
-                layout.addWidget(combo, i, 1)
+                layout.addWidget(lineedit, i, 1)
                 lineedit.setToolTip('Format to be used in the display of the '
                                     'time label. Needs to be a valid python'
                                     'format string such as "{:.2f}", or'
                                     '"{:2E}".')
-
-
+                btns['label_format'] = lineedit
 
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
             size = QtCore.QSize(25, 25)
@@ -724,6 +729,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 self.read_vtu(self.vtu_files[time])
                 if n_vtp:
                     self.read_vtp(list(self.vtp_files.values())[bisect_left(list(self.vtp_files.keys()), time)-1])
+            self.time = time
 
             self.set_timelabel(text=self.time_format.format(time))
             self.render()
@@ -1102,3 +1108,14 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.set_colorbar(mapper=mapper, label=label)
 
         self.render()
+
+    def handle_label_format(self, text):
+
+        try:
+            text.format(1.34)
+            self.time_format = text
+            self.set_timelabel(text=self.time_format.format(self.time))
+            color = 'black'
+        except:
+            color = 'red'
+        self.visual_btns['time_label']['label_format'].setStyleSheet("color: " + color)
