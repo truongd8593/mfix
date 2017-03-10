@@ -9,25 +9,65 @@ try:
     PYQTGRAPH_AVAILABLE = True
     pg.setConfigOption('background', 'w')
     pg.setConfigOption('foreground', 'k')
-    DEFAULT_PEN = pg.mkPen(color='#64B5F6', width=2)
-except ImportError:
+except (ImportError, RuntimeError):
     pg = None
     PYQTGRAPH_AVAILABLE = False
-    DEFAULT_PEN = 'b'
-except RuntimeError:
-    pg = None
-    PYQTGRAPH_AVAILABLE = False
-    DEFAULT_PEN = 'b'
 
 from qtpy import QtCore, QtWidgets
 from mfixgui.tools.general import get_icon, clear_layout, get_unique_string
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
-    ['dt', {'left':'dt', 'bottom':'Time Step', 'var':'dt'}],
-    ['nit', {'left':'Number of Iterations', 'bottom':'Time Step', 'var':'nit'}],
-    ['time', {'left':'Simulation Time [s]', 'bottom':'Elapsed Wall Time [s]', 'var':'time', 'var2':'walltime_elapsed'}],
+    ['DT vs Simulation Time', {
+        'left':'Time Step [s]',
+        'bottom':'Simulation Time [s]',
+        'x_var':'time',
+        'y_var':'dt'}],
+    ['NIT vs Simulation time', {
+        'left':'Number of Iterations [-]',
+        'bottom':'Simulation Time [s]',
+        'x_var':'time',
+        'y_var':'nit'}],
+    ['Elapsed time vs Simulation time', {
+        'left':'Simulation Time [s]',
+        'bottom':'Elapsed Wall Time [s]',
+        'x_var':'walltime_elapsed',
+        'y_var':'time'}],
+    ['Residuals vs Simulation time', {
+        'left':'Residual',
+        'bottom':'Simulation Time [s]',
+        'x_var':'time',
+        'y_var':'residuals'}],
     ])
+
+TABLEAU20 = [(31, 119, 180),
+             (255, 127, 14),
+             (44, 160, 44),
+             (214, 39, 40),
+             (148, 103, 189),
+             (140, 86, 75),
+             (227, 119, 194),
+             (127, 127, 127),
+             (188, 189, 34),
+             (219, 219, 141),
+             (23, 190, 207),
+             (158, 218, 229),
+             (174, 199, 232),
+             (255, 187, 120),
+             (152, 223, 138),
+             (255, 152, 150),
+             (197, 176, 213),
+             (196, 156, 148),
+             (247, 182, 210),
+             (199, 199, 199)
+             ]
+
+if PYQTGRAPH_AVAILABLE:
+    DEFAULT_PENS = []
+    for color in TABLEAU20:
+        DEFAULT_PENS.append(pg.mkPen(color=color, width=2))
+else:
+    DEFAULT_PENS = []
 
 class BaseGraphicTab(QtWidgets.QWidget):
     """Base graphics plot widget, provides options to redirect to a specific
@@ -56,7 +96,6 @@ class BaseGraphicTab(QtWidgets.QWidget):
 
         self.build_option_widgets()
 
-
     def build_option_widgets(self):
 
         # spacers
@@ -83,7 +122,6 @@ class BaseGraphicTab(QtWidgets.QWidget):
             item = model.item(i)
             if item.text() in self.plot_dict:
                 item.setFlags(item.flags() & ~(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled))
-
 
         self.layout.addWidget(combobox, 1, 1)
 
@@ -122,16 +160,22 @@ class BaseGraphicTab(QtWidgets.QWidget):
 
         clear_layout(self.layout)
         self.change_name(name)
-        props = PLOT_ITEMS[name]
+        props = PLOT_ITEMS.get(name, None)
+        if props is None:
+            return
 
-        plot = pg.PlotWidget()
+        plot = self.plot_widget = pg.PlotWidget()
         plot.addLegend()
         plot.setLabel('left', props['left'])
         plot.setLabel('bottom', props['bottom'])
         plot.getPlotItem().showGrid(True, True, 0.5)
         plot.setDownsampling(ds=True, auto=True, mode='subsample')
 
-        self.curve = plot.plot([], pen=DEFAULT_PEN, name=name)
+        if 'residuals' in name.lower():
+            plot.setLogMode(y=True)
+            self.curve = {}
+        else:
+            self.curve = plot.plot([], pen=DEFAULT_PENS[0], name=name)
         self.layout.addWidget(plot)
 
     def create_vtk_widget(self):
@@ -142,15 +186,42 @@ class BaseGraphicTab(QtWidgets.QWidget):
         self.layout.addWidget(self.vtk_widget)
 
     def plot(self, x=None, y=None, append=False):
+        """update the plot"""
+        if y is None: return
+
+        # append the data to the internal data structure
         if append:
             if x is not None:
                 self.x.append(x)
-            if y is not None:
+            if isinstance(y, (list, tuple)):
+                if self.y == []:
+                    self.y = {}
+                for item in y:
+                    if len(item) == 2:
+                        key = item[0].strip()
+                        if key:
+                            self.y.setdefault(key,[]).append(float(item[1]))
+            elif y is not None:
                 self.y.append(y)
-        if len(self.y)>1:
+
+        # handle residual ploting
+        if isinstance(self.y, dict):
+            for i, (key, y) in enumerate(self.y.items()):
+                curve = self.curve.get(key, None)
+
+                # no curve, create one
+                if curve is None:
+                    curve = self.curve[key] = self.plot_widget.plot([], pen=DEFAULT_PENS[i], name=key)
+                if len(y) > 1:
+                    if len(self.x) == 0:
+                        curve.setData(y)
+                    else:
+                        curve.setData(self.x, y)
+        # normal plotting
+        elif len(self.y)>1:
             if len(self.x) == 0:
                 self.curve.setData(self.y)
-            else:
+            elif len(self.x) > 1:
                 self.curve.setData(self.x, self.y)
 
     def get_index(self):
@@ -208,11 +279,12 @@ class GraphicTabs(object):
         self.ui.tabWidgetGraphics.setCurrentIndex(index)
 
     def update_plots(self, status):
+        # loop through plots
         for k, plot in self.plot_dict.items():
             if k in PLOT_ITEMS:
-                if k not in status: continue
-                props = PLOT_ITEMS[k]
-                if 'var2' in props:
-                    plot.plot(x=status[props['var2']], y=status[props['var']], append=True)
-                else:
-                    plot.plot(y=status[props['var']], append=True)
+                props = PLOT_ITEMS.get(k, None)
+                if props is None: continue
+                x_var = props.get('x_var', None)
+                y_var = props.get('y_var', None)
+                if y_var is None: continue
+                plot.plot(x=status.get(x_var, None), y=status.get(y_var, None), append=True)

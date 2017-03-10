@@ -91,7 +91,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="checkbox_reversed">
         <property name="text">
-         <string>Reversed</string>
+         <string>Invert color map</string>
         </property>
        </widget>
       </item>
