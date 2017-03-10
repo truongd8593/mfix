@@ -403,6 +403,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         mapper = self.mappers['geometry'] = vtk.vtkPolyDataMapper()
         if poly_data is not None:
             mapper.SetInputConnection(poly_data.GetOutputPort())
+        mapper.ScalarVisibilityOff()
 
         # Create an actor
         actor = self.actors['geometry'] = vtk.vtkActor()
