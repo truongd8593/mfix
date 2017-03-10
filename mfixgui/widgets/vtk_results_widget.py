@@ -326,6 +326,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.particle_mapper = None
 
         self.time_label.SetVisibility(True)
+        self.time_label.SetInput(self.time_format.format(self.time))
 
     def init_ugrid(self):
         '''setup the cell/point vtk stuff'''
