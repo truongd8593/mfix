@@ -436,7 +436,7 @@
                   OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
                   WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
                   WRITE(PVD_UNIT,"(A)")'<VTKFile type="Collection" &
-                     &version="0.1" byte_order="LittleEndian">'
+                     &version="0.1" byte_order="BigEndian">'
                   WRITE(PVD_UNIT,"(3X,'<Collection>')")
                ENDIF
 
@@ -802,6 +802,7 @@
               ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'SEQUENTIAL' if 'STREAM' is not supported
               ACTION   = 'WRITE',            &
+              CONVERT  = 'BIG_ENDIAN',       &  ! Big Endian
               IOSTAT=ISTAT)
 
 
