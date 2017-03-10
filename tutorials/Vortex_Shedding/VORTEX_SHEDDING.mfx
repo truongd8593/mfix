@@ -273,6 +273,6 @@
 #!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
 #!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
 #!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
-#!MFIX-GUI project_version = 1
-#!MFIX-GUI gui_version = <function get_version at 0x2af743157ed8>
+#!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
