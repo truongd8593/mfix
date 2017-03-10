@@ -484,6 +484,7 @@
               ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'SEQUENTIAL' if 'STREAM' is not supported
               ACTION   = 'WRITE',            &
+              CONVERT  = 'BIG_ENDIAN',       &  ! Big Endian
               IOSTAT=ISTAT)
 
 
@@ -614,7 +615,7 @@
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
 
-         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME),CONVERT  = 'BIG_ENDIAN')
 
          WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
          WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
@@ -1448,7 +1449,7 @@
             IF (.NOT.PVD_EXISTS) THEN
                OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
                WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
-               WRITE(PVD_UNIT,100) '<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">'
+               WRITE(PVD_UNIT,100) '<VTKFile type="Collection" version="0.1" byte_order="BigEndian">'
                WRITE(PVD_UNIT,100) '<Collection>'
 !               CALL UPDATE_AND_CLOSE_PVD_FILE
                PVD_FILE_INITIALIZED(VTK_REGION)=.TRUE.
