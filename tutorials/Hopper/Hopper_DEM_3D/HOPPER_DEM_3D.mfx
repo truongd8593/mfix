@@ -213,6 +213,9 @@
   vtk_part_diameter(1) = .True.
   vtk_part_vel(1) = .True.
 
+  gravity_x = 0.0
+  gravity_z = 0.0
+
 #!MFIX-GUI SECTION
 #!MFIX-GUI regions_dict = {"regions": {"Wall": {"color": "#a694e0", "to":
 #!MFIX-GUI   [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq":
@@ -248,37 +251,26 @@
 #!MFIX-GUI   "equation", "type": "float"}], "type": "XZ-plane"}}, "order":
 #!MFIX-GUI   ["Background IC", "top outlet", "Initial solids", "Wall", "Vertical
 #!MFIX-GUI   slice"]}
-#!MFIX-GUI created_date = 2017-03-02 16:13
-#!MFIX-GUI project_version = 111
-#!MFIX-GUI gui_version = <function get_version at 0x2b52dd8bded8>
+#!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
 #!MFIX-GUI geometry = {"tree": {"union": ["hopper", "cone"], "hopper": [],
 #!MFIX-GUI   "outlet1": [], "union1": ["union", "outlet"], "union2": ["union1",
 #!MFIX-GUI   "outlet1"], "cone": [], "outlet": []}, "geometry_dict": {"union":
 #!MFIX-GUI   {"visible": false, "geo_type": "boolean", "type": "union",
-#!MFIX-GUI   "children": ["hopper", "cone", "hopper", "cone", "hopper", "cone",
-#!MFIX-GUI   "hopper", "cone", "hopper", "cone", "hopper", "cone", "hopper",
-#!MFIX-GUI   "cone", "hopper", "cone", "hopper", "cone", "hopper", "cone",
-#!MFIX-GUI   "hopper", "cone", "hopper", "cone", "hopper", "cone"]}, "hopper":
-#!MFIX-GUI   {"visible": false, "geo_type": "primitive", "radius": 0.5, "type":
-#!MFIX-GUI   "cylinder", "resolution": 30}, "outlet1": {"resolution": 20,
-#!MFIX-GUI   "height": 0.5, "visible": false, "radius": 0.25, "centery": -1.695,
-#!MFIX-GUI   "geo_type": "primitive", "type": "cylinder"}, "union1": {"visible":
-#!MFIX-GUI   false, "geo_type": "boolean", "type": "union", "children":
-#!MFIX-GUI   ["outlet", "union", "union", "outlet", "union", "outlet", "union",
-#!MFIX-GUI   "outlet", "union", "outlet", "union", "outlet", "union", "outlet",
-#!MFIX-GUI   "union", "outlet", "union", "outlet", "union", "outlet", "union",
-#!MFIX-GUI   "outlet", "union", "outlet", "union", "outlet"]}, "union2":
-#!MFIX-GUI   {"geo_type": "boolean", "type": "union", "children": ["outlet1",
-#!MFIX-GUI   "union1", "union1", "outlet1", "union1", "outlet1", "union1",
-#!MFIX-GUI   "outlet1", "union1", "outlet1", "union1", "outlet1", "union1",
-#!MFIX-GUI   "outlet1", "union1", "outlet1", "union1", "outlet1", "union1",
-#!MFIX-GUI   "outlet1", "union1", "outlet1", "union1", "outlet1", "union1",
-#!MFIX-GUI   "outlet1"]}, "cone": {"rotationz": -90, "resolution": 30, "height":
-#!MFIX-GUI   0.6, "visible": false, "radius": 0.5, "centery": -0.8, "geo_type":
-#!MFIX-GUI   "primitive", "type": "cone"}, "outlet": {"resolution": 20,
-#!MFIX-GUI   "height": 0.5, "visible": false, "radius": 0.1, "centery": -1.2,
-#!MFIX-GUI   "geo_type": "primitive", "type": "cylinder"}}}
+#!MFIX-GUI   "children": ["hopper", "cone"]}, "hopper": {"visible": false,
+#!MFIX-GUI   "geo_type": "primitive", "radius": 0.5, "type": "cylinder",
+#!MFIX-GUI   "resolution": 30}, "outlet1": {"resolution": 20, "height": 0.5,
+#!MFIX-GUI   "visible": false, "radius": 0.25, "centery": -1.695, "geo_type":
+#!MFIX-GUI   "primitive", "type": "cylinder"}, "union1": {"visible": false,
+#!MFIX-GUI   "geo_type": "boolean", "type": "union", "children": ["union",
+#!MFIX-GUI   "outlet"]}, "union2": {"geo_type": "boolean", "type": "union",
+#!MFIX-GUI   "children": ["union1", "outlet1"]}, "cone": {"rotationz": -90,
+#!MFIX-GUI   "resolution": 30, "height": 0.6, "visible": false, "radius": 0.5,
+#!MFIX-GUI   "centery": -0.8, "geo_type": "primitive", "type": "cone"},
+#!MFIX-GUI   "outlet": {"resolution": 20, "height": 0.5, "visible": false,
+#!MFIX-GUI   "radius": 0.1, "centery": -1.2, "geo_type": "primitive", "type":
+#!MFIX-GUI   "cylinder"}}}
 #!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
 #!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
 #!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
@@ -297,6 +289,3 @@
 #!MFIX-GUI   "zmax": 0.5}}
 #!MFIX-GUI OMP_NUM_THREADS = 1
 #!MFIX-GUI run_location = 1
-#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
-#!MFIX-GUI   "anaconda/2.7", "QUEUE": "general", "template": "Joule", "CORES":
-#!MFIX-GUI   16, "JOB_NAME": "${PROJECT_NAME}"}

@@ -398,13 +398,17 @@
   cartesian_grid = .False.
   use_stl = .False.
 
+  gravity_x = 0.0
+  gravity_y = -9.81
+  gravity_z = 0.0
+
 #!MFIX-GUI SECTION
 #!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
 #!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin": 0,
 #!MFIX-GUI   "xmax": 0.2, "ymin": 0, "ymax": 1.0, "zmin": 0, "zmax": 0.2}}
-#!MFIX-GUI project_version = 4
-#!MFIX-GUI gui_version = <function get_version at 0x2b8782ab0ed8>
+#!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
 #!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
 #!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
 #!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
@@ -440,6 +444,3 @@
 #!MFIX-GUI   [[4], ["VTK_4"]], [[5], ["VTK_5"]]]
 #!MFIX-GUI OMP_NUM_THREADS = 1
 #!MFIX-GUI run_location = 1
-#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
-#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
-#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}

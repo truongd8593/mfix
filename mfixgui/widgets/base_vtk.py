@@ -320,6 +320,8 @@ class BaseVtkWidget(QtWidgets.QWidget):
                 return
 
         # off screen rendering
+        if os.name == 'nt': #TODO: bug with offscreen rendering on windows (menpo vtk?)
+            offscreen = False
         if offscreen and self.offscreen_vtkrenderer is None:
             self.init_offscreen_render(size)
         elif offscreen:
