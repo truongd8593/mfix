@@ -136,8 +136,21 @@ C:\> conda install python==3.4 numpy pyqt qtpy pandoc libpython
 C:\> conda install -c menpo vtk
 ```
 
-To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
+<aside style="display: block; border: 1px solid red;">
+**Error message "msvcr100.dll is missing from you computer"**
 
+If you run the `conda` command and get the error message `msvcr100.dll is
+missing from you computer`, that means you need to install the
+[Microsoft Visual C++ 2010 runtime](https://www.microsoft.com/en-us/download/details.aspx?id=26999).
+Click on the download button from that link, and select
+
+- vcredist_x86.exe for 32-bit Windows
+- vcredist_x64.exe for 64-bit Windows
+
+If you do not see this error message, that means you already have the runtime library installed.
+</aside>
+
+To install MFIX from binaries, proceed to [Installing MFIX](#installing-mfix)
 
 To build MFIX from source or build the custom solver:
 
