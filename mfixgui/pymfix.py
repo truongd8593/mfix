@@ -736,7 +736,7 @@ def parse_command_line_arguments():
     args = parser.parse_args()
 
     passed_kwargs = ['='.join([k, v]) for k, v in vars(args)['MFIX_KEY=VALUE'].items()]
-    return args.file.ljust(80), args.solver, not args.wait, args.port, passed_kwargs
+    return args.file.ljust(80), None, not args.wait, args.port, passed_kwargs
 
 if __name__ == '__main__':
     main()
