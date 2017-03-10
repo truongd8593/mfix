@@ -253,7 +253,7 @@
 #!MFIX-GUI   slice"]}
 #!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
-#!MFIX-GUI author = "tutorial"
+#!MFIX-GUI author = tutorial
 #!MFIX-GUI geometry = {"tree": {"union": ["hopper", "cone"], "hopper": [],
 #!MFIX-GUI   "outlet1": [], "union1": ["union", "outlet"], "union2": ["union1",
 #!MFIX-GUI   "outlet1"], "cone": [], "outlet": []}, "geometry_dict": {"union":

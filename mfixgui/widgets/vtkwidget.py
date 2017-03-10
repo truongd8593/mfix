@@ -1418,7 +1418,6 @@ class VtkWidget(BaseVtkWidget):
                           children=None, loading=False):
         """Apply a boolean operation with the currently selected toplevel
         items."""
-        print(children)
         if children is not None:
             current_selection = []
             for child in children:

@@ -215,7 +215,7 @@
 #!MFIX-GUI   "xmax": 0.15, "ymin": 0, "ymax": 0.9, "zmin": 0, "zmax": 0.004}}
 #!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
-#!MFIX-GUI author = "tutorial"
+#!MFIX-GUI author = tutorial
 #!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
 #!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
 #!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":

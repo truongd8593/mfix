@@ -163,14 +163,6 @@ class MainMenu(object):
                                            QtWidgets.QSizePolicy.Maximum,)
         ow_layout.addItem(spacer_exp, 1, 1)
 
-        lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
-        lw_f.setFrameStyle(lw_f.NoFrame)
-        lw_f.setIconSize(QtCore.QSize(128, 128))
-        lw_f.setUniformItemSizes(True)
-        lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
-        lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 10, 0, 1, -1)
-
         tb = QtWidgets.QToolButton()
         tb.setText('Clear Recent')
         tb.setToolTip('Clear list of recent projects')
@@ -198,7 +190,7 @@ class MainMenu(object):
         lw_f.setUniformItemSizes(True)
         lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 3, 0, 1, -1)
+        ow_layout.addWidget(lw_f, 10, 0, 1, -1)
 
         # apply previous state
         if self.settings.value('open_list_mode', 'icon') == 'icon':

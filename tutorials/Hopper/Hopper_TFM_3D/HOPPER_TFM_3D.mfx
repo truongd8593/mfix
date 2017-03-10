@@ -257,10 +257,9 @@
 #!MFIX-GUI   "equation", "type": "float"}], "type": "XZ-plane"}}, "order":
 #!MFIX-GUI   ["Background IC", "top outlet", "Initial solids", "Wall", "Vertical
 #!MFIX-GUI   slice"]}
-#!MFIX-GUI created_date = 2017-03-02 16:13
-#!MFIX-GUI project_version = 84
 #!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
 #!MFIX-GUI geometry = {"tree": {"union": ["hopper", "cone"], "hopper": [],
 #!MFIX-GUI   "outlet1": [], "union1": ["union", "outlet"], "union2": ["union1",
 #!MFIX-GUI   "outlet1"], "cone": [], "outlet": []}, "geometry_dict": {"union":
@@ -296,7 +295,3 @@
 #!MFIX-GUI   "zmax": 0.5}}
 #!MFIX-GUI OMP_NUM_THREADS = 1
 #!MFIX-GUI run_location = 1
-#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
-#!MFIX-GUI   "anaconda/2.7", "QUEUE": "general", "template": "Joule", "CORES":
-#!MFIX-GUI   16, "JOB_NAME": "${PROJECT_NAME}"}
-#!MFIX-GUI modified_by = justin
