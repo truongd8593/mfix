@@ -40,6 +40,10 @@ def get_data_files():
     """ walks subdirectories to generate a list of all files that get packaged as data_files """
     data_files = []
 
+    # to run autoreconf and generate build-aux autotools files
+    cmd = 'bash configure_mfix'
+    subprocess.check_call(cmd, shell=True)
+
     data_files.append((NAME, ['configure_mfix']))
 
     subdirs = [
