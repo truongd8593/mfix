@@ -164,7 +164,7 @@ def main():
             global pidfilename
             while not get_run_name():
                 # wait for mfix thread to initialize RUN_NAME
-                pass
+                time.sleep(0.1)
             pidfilename = '%s.pid' % get_run_name()
             with open(pidfilename, 'w') as pid:
                 pid.write('pid=%s\n' % (os.getpid(),))
