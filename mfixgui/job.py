@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-
+import os
+import errno
 import json
 import logging
-import os
 import pprint
 import signal
 import uuid
@@ -23,24 +23,25 @@ from mfixgui.tools.general import replace_with_dict
 #: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
-def get_dict_from_pidfile(pid_filename):
+def get_process_info(filename):
     """Read contents of provided MFiX job pid file and set supported
     key-value pairs as dictionary members
     """
-    pid_dict = {}
+    d = {}
     try:
-        with open(pid_filename) as pidfile:
-            for line in pidfile.readlines():
-                try:
-                    key, value = line.strip().split('=')
-                    if key in SUPPORTED_PYMFIXPID_FIELDS:
-                            pid_dict[key] = value
-                except ValueError:
-                    continue
-    except Exception as e:
-        pass # fixme
-    return pid_dict
+        with open(filename) as f:
+            for line in f:
+                tok = line.strip().split('=', 1)
+                if len(tok) == 2 and tok[0] in SUPPORTED_PYMFIXPID_FIELDS:
+                    k, v = tok
+                    d[k] = v
+                else:
+                    raise ValueError(line)
 
+    except OSError as e:
+        if e.errno != errno.ENOENT: # Return empty dict if no file
+            raise
+    return d
 
 
 class PymfixAPI(QNetworkAccessManager):
@@ -59,9 +60,8 @@ class PymfixAPI(QNetworkAccessManager):
         self.warning = parent.warning
         self.error = parent.error
         self.pidfile = parent.pidfile
-        self.pid_contents = get_dict_from_pidfile(self.pidfile)
-        for k, v in self.pid_contents.items():
-            setattr(self, k, v)
+        self.process_info = get_process_info(self.pidfile)
+        self.mfix_pid = self.process_info.get('pid')
         self.requests = set()
         self.def_response_handler = def_response_handler
         self.api_available = False
@@ -73,7 +73,7 @@ class PymfixAPI(QNetworkAccessManager):
     def test_connection(self, response, error=None):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
-        if not self.pid_contents.get('url'):
+        if not self.process_info.get('url'):
             self.error('pidfile does not contain API url (test_connection)')
             raise Exception
         self.get('status', handlers={'response': response, 'error': error})
@@ -105,8 +105,8 @@ class PymfixAPI(QNetworkAccessManager):
             headers = {}
         if not handlers:
             handlers = {}
-        url = self.pid_contents.get('url')
-        token = self.pid_contents.get('token')
+        url = self.process_info.get('url')
+        token = self.process_info.get('token')
         req = QNetworkRequest(QUrl('%s/%s' % (url, endpoint)))
         api_method = self.methods[str(method).lower()]
         req_id = str(uuid.uuid4())
@@ -307,9 +307,9 @@ class JobManager(QObject):
         # TODO: handle queued job polling
         if not self.job:
             return False
-        pid_contents = get_dict_from_pidfile(self.job.pidfile)
+        process_info = get_process_info(self.job.pidfile)
         # if local process
-        pid = pid_contents.get('pid')
+        pid = process_info.get('pid')
         if pid:
             try:
                 os.kill(int(pid), 0)
@@ -403,11 +403,14 @@ class JobManager(QObject):
         self.warning('Job ended or connection to running job failed')
         pidfile = self.job.pidfile
         try:
-            pid_contents = get_dict_from_pidfile(pidfile)
-            pid = pid_contents.get('pid', None)
-            job_id = pid_contents.get('qjobid', None)
+            process_info = get_process_info(pidfile)
+            pid = process_info.get('pid', None)
+            job_id = process_info.get('qjobid', None)
+
         except Exception as e:
             self.error("Cannot get PID: %s" % e)
+            pid = job_id = None
+
         finally:
             # update GUI
             if (self.job.api_test_timer
@@ -440,13 +443,12 @@ class JobManager(QObject):
                 try:
                     os.remove(pidfile)
                 except OSError as e:
-                    self.warning("could not remove %s" % pidfile)
+                    self.warning("could not remove %s: %s" % (pidfile, e))
         # NOTE: this timeout needs to exceed the retry limit
-        QTimer.singleShot(1000, force_stop)
+        QTimer.singleShot(1000, force_stop) # why?
 
 
 class Job(QObject):
-
     """Class for managing and monitoring an MFiX job. This class contains
     methods for issuing requests to and handling responses from the MFiX API.
 
@@ -477,14 +479,13 @@ class Job(QObject):
         super(Job, self).__init__()
         self.warning = parent.warning
         self.error = parent.error
-
+        self.mfix_pid = None
         self.status = {}
         self.pretty_status = ""
         self.pidfile = pidfile
         self.requests = {}
         self.api = None
         self.api_available = False
-        self.mfix_pid = None
         self.sig_api_response.connect(self.slot_api_response)
 
         self.sig_handle_api_test.connect(self.slot_handle_api_test)
@@ -494,7 +495,7 @@ class Job(QObject):
                         self.sig_api_response,
                         ignore_ssl_errors=True)
 
-        self.mfix_pid = self.api.pid
+        self.mfix_pid = self.api.mfix_pid # ?
 
         # test API before starting status loop
         # Timer will be stopped by slot_handle_api_test
