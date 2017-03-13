@@ -19,12 +19,12 @@ MFIX website useful before downloading the code.
 For information on running MFIX, please see the user guide: [USER_GUIDE.html](USER_GUIDE.html)
 
 
-To run MFIX simulations, you need to have the MFIX gui (referred to as mfixgui)
+To run MFIX simulations, you need to have the MFIX gui (referred to as mfix)
 and the MFIX flow solver (referred to as mfixsolver) installed. The MFIX flow
 solver can be the default solver (no UDF), or the customed solver (with UDF, for
 example for chemically reacting flows that required coded reaction rates).It is
 recommended to start installing MFIX from the provided binary packages on a
-given platform (Linux, MAC, or Windows OS). The binary packages include mfixgui
+given platform (Linux, MAC, or Windows OS). The binary packages include mfix
 and the default mfixsolver. A list of known operating systems where MFIX has
 been sucessfully installed is given below.
 
@@ -277,7 +277,7 @@ mfixsolver
 
 The `build_mfixsolver` command creates a wrapper script `mfixsolver`, that runs the case-specific MFIX solver (which is installed in the `.build` directory).
 
-When running `mfixgui`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver file you have just built.
+When running `mfix`, in the [Run Dialog](USER_GUIDE.html#run-dialog) select the mfixsolver file you have just built.
 
 
 # Appendix - Building MFIX
