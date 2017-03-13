@@ -204,13 +204,13 @@ def main():
 SH_TEMPLATE = \
 r"""#!/bin/sh
 
-env PYTHONPATH={PYPATH} {PYEXE} -m mfixgui.pymfix "$@"
+env PYTHONPATH={PYPATH}:${PYTHONPATH} {PYEXE} -m mfixgui.pymfix "$@"
 """
 
 BAT_TEMPLATE = \
 r"""@echo on
 
-set PYTHONPATH={PYPATH}
+set PYTHONPATH={PYPATH};%PYTHONPATH%
 call "{PYEXE}" -m mfixgui.pymfix %*
 """
 
