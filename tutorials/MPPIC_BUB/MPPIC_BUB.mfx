@@ -1,0 +1,336 @@
+!*******************************************************************************************************
+! MPPIC simulation of a small bubbling bed
+!
+!
+!*******************************************************************************************************
+  run_name = 'MPPIC_BUB'
+  description = 'bubbling bed'
+  run_type = 'new'
+  units = 'SI'
+  time = 0.0    !start time
+  tstop = 0.5
+  dt = 5.0000e-05    !time step
+!  DT_FAC                = 1.0
+  dt_max = 1.0000e-03
+
+  energy_eq = .False.    !do not solve energy eq
+  species_eq(0) = .False.    !do not solve species eq
+  species_eq(1) = .False.    !do not solve species eq
+
+!  MOMENTUM_X_EQ(0) = .FALSE.
+!  MOMENTUM_Y_EQ(0) = .FALSE.
+!  MOMENTUM_Z_EQ(0) = .FALSE.
+
+  momentum_x_eq(1) = .False.
+  momentum_y_eq(1) = .False.
+  momentum_z_eq(1) = .False.
+
+  max_nit = 250
+  tol_resid = 1.0000e-03
+
+  discretize(1) = 2
+  discretize(2) = 2
+  discretize(3) = 2
+  discretize(4) = 2
+  discretize(5) = 2
+  discretize(6) = 2
+  discretize(7) = 2
+  c(1) = 0.0    !1.57
+
+! Geometry Section
+  coordinates = 'cartesian'
+  imax = 20    !cells in i direction
+  jmax = 100    !cells in j direction
+  kmax = 4
+
+! Gas-phase Section
+  mu_g0 = 1.8000e-05    !constant gas viscosity
+  mw_avg = 28.8
+
+! Solids-phase Section
+  ro_s0(1) = 2500.0    !solids density
+  d_p0(1) = 0.001    !particle diameter
+  e = 0.97    !restitution coefficient
+  phi = 30.0    !angle of internal friction
+  ep_star = 0.38    !void fraction at minimum
+
+  solids_model(1) = 'PIC'
+
+! Initial Conditions Section
+! 1. bed
+  ic_x_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  ic_x_w(2) = 0.0 #!MFIX-GUI eq{xmin,float}
+  ic_x_e(1) = 0.1 #!MFIX-GUI eq{xmax,float}
+  ic_x_e(2) = 0.1 #!MFIX-GUI eq{xmax,float}
+  ic_y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  ic_y_s(2) = 0.0 #!MFIX-GUI eq{ymin,float}
+  ic_y_n(1) = 0.5 #!MFIX-GUI eq{ymax,float}
+  ic_y_n(2) = 0.2
+  ic_z_b(1) = 0.0 #!MFIX-GUI eq{zmin,float}
+  ic_z_b(2) = 0.0 #!MFIX-GUI eq{zmin,float}
+  ic_z_t(1) = 0.02 #!MFIX-GUI eq{zmax,float}
+  ic_z_t(2) = 0.02 #!MFIX-GUI eq{zmax,float}
+! initial values in the region
+  ic_ep_g(1) = 1.0    ! void fraction
+  ic_ep_g(2) = 0.6    ! void fraction
+  ic_u_g(1) = 0.0    ! x-dir gas velocity
+  ic_u_g(2) = 0.0    ! x-dir gas velocity
+  ic_v_g(1) = 0.01    ! y-dir gas velocity
+  ic_v_g(2) = 0.01    ! y-dir gas velocity
+  ic_w_g(1) = 0.0    ! z-dir gas velocity
+  ic_w_g(2) = 0.0    ! z-dir gas velocity
+
+  ic_u_s(1,1) = 0.0
+  ic_u_s(2,1) = 0.0
+  ic_v_s(1,1) = 0.0
+  ic_v_s(2,1) = 0.0
+  ic_w_s(1,1) = 0.0
+  ic_w_s(2,1) = 0.0
+
+  ic_p_g(1) = 101325.0
+  ic_p_g(2) = 101325.0
+  ic_t_g(1) = 298.0
+  ic_t_g(2) = 298.0
+  ic_t_s(1,1) = 298.0
+  ic_t_s(2,1) = 298.0
+  ic_pic_const_npc(1,1) = 0
+  ic_pic_const_npc(2,1) = 5
+  ic_theta_m(1,1) = 0.0
+  ic_theta_m(2,1) = 0.0
+
+! Boundary Conditions Section
+! 1. bottom
+  bc_x_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_e(1) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_s(1) = 0.0
+  bc_y_n(1) = 0.0
+  bc_z_b(1) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_t(1) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_type(1) = 'MI'    !specified mass inflow
+
+  bc_ep_g(1) = 1.0
+  bc_u_g(1) = 0.0
+  bc_v_g(1) = 0.8
+  bc_w_g(1) = 0.0
+  bc_p_g(1) = 101325.0
+  bc_t_g(1) = 298.0
+  bc_t_s(1,1) = 298.0
+
+! 2. Exit
+  bc_x_w(4) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_e(4) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_s(4) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_y_n(4) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_z_b(4) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_t(4) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_type(4) = 'PO'    !specified pressure outflow
+  bc_p_g(4) = 101325.0
+
+  bc_x_w(5) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_w(6) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_w(7) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_w(8) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_x_e(5) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_x_e(6) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_x_e(7) = 0.0 #!MFIX-GUI eq{xmin,float}
+  bc_x_e(8) = 0.1 #!MFIX-GUI eq{xmax,float}
+  bc_y_s(5) = 0.0 #!MFIX-GUI eq{ymin,float}
+  bc_y_s(6) = 0.0 #!MFIX-GUI eq{ymin,float}
+  bc_y_s(7) = 0.0 #!MFIX-GUI eq{ymin,float}
+  bc_y_s(8) = 0.0 #!MFIX-GUI eq{ymin,float}
+  bc_y_n(5) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_y_n(6) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_y_n(7) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_y_n(8) = 0.5 #!MFIX-GUI eq{ymax,float}
+  bc_z_b(5) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_b(6) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_z_b(7) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_b(8) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_t(5) = 0.0 #!MFIX-GUI eq{zmin,float}
+  bc_z_t(6) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_z_t(7) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_z_t(8) = 0.02 #!MFIX-GUI eq{zmax,float}
+  bc_type(5) = 'FSW'
+  bc_type(6) = 'FSW'
+  bc_type(7) = 'FSW'
+  bc_type(8) = 'FSW'
+
+  max_inlet_vel_fac = 1000.0
+
+! DES INPUT
+
+  particles = 1280000    !Number of parcels used to intialize arrays
+! the actual number of parcels will be determined from the intial
+! conditions
+
+! First and second coefficients of restituion for the
+! frictional stres in MPPIC model
+! See the MPPIC model theory guide
+
+  mppic_coeff_en1 = 0.5
+  mppic_coeff_en2 = 0.5
+
+! Normal coefficient of friction for the parcel-wall
+! collision in MPPIC model
+  mppic_coeff_en_wall = 0.5
+
+! CFL used to set the time-step size in parcel evoltion equations
+! under MPPIC model
+  cfl_pic = 0.05
+
+! Des grid size used in DEM model for neighbor search. Althuough not
+! needed in MPPIC, it is a good idea to declare this grid as a small
+! grid or else the solver might set a very high grid for coarse
+! MPPIC model simulations.
+  desgridsearch_imax = 4
+  desgridsearch_jmax = 4
+  desgridsearch_kmax = 4
+
+! Flag to choose if the drag force on parcels (and as well
+! as on the Eulerian grid) is obtained by interpolation or not.
+  des_interp_mean_fields = .True.
+  des_interp_on = .True.
+  des_interp_scheme = 'SQUARE_DPVM'
+
+! Flag to decide if initial parcel config is read in or
+! generated by the code itself
+  gener_part_config = .True.
+
+! Drag type
+  drag_type = 'GIDASPOW'
+
+  print_des_data = .True.
+
+! Output Control
+  out_dt = 0.05    !write text file BUB01.OUT
+!  every 0.1s
+  res_dt = 0.5    !write binary restart file
+!  BUB01.RES every 0.01 s
+  nlog = 25    !write logfile BUB01.LOG
+!every 25 time steps
+  full_log = .True.    !display residuals on screen
+
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+! EP_g P_g    U_g  U_s  ROP_s     T_g  X_g
+!      P_star V_g  V_s            T_s  X_s     Theta   Scalar
+!             W_g  W_s
+
+! The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+
+! Sweep Direction
+  ic_ep_s(1,1) = 0.0
+  ic_ep_s(2,1) = 0.4
+  bc_ep_s(1,1) = 0.0
+  nmax_s(1) = 0
+  y_max = 0.5
+  y_min = 0
+  z_min = 0
+  z_max = 0.02
+  gravity_x = 0.0
+  gravity_z = 0.0
+  gravity_y = -9.81
+  x_min = 0
+  x_max = 0.1
+  cartesian_grid = .False.
+  use_stl = .False.
+  mppic_solid_stress_snider = .True.
+  mppic_coeff_et_wall = 0.99
+  fric_exp_pic = 3.0
+  fric_non_sing_fac = 1.0000e-08
+  write_vtk_files = .True.
+  time_dependent_filename = .True.
+  vtk_data(1) = 'P'
+  vtk_x_w(1) = 0.0 #!MFIX-GUI eq{xmin,float}
+  vtk_y_s(1) = 0.0 #!MFIX-GUI eq{ymin,float}
+  vtk_z_b(1) = 0.0 #!MFIX-GUI eq{zmin,float}
+  vtk_x_e(1) = 0.1 #!MFIX-GUI eq{xmax,float}
+  vtk_y_n(1) = 0.5 #!MFIX-GUI eq{ymax,float}
+  vtk_z_t(1) = 0.02 #!MFIX-GUI eq{zmax,float}
+  vtk_filebase(1) = 'MPPIC_BUB'
+  vtk_dt(1) = 0.01
+  vtk_nxs(1) = 0
+  vtk_nys(1) = 0
+  vtk_nzs(1) = 0
+  vtk_part_diameter(1) = .True.
+  vtk_part_vel(1) = .True.
+
+  des_interp_width = 0.01
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI gui_version = 17.1.dev0
+#!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
+#!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
+#!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
+#!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
+#!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
+#!MFIX-GUI   "#707070", "opacity": 0.5}, "mesh": {"color": "#f44328", "visible":
+#!MFIX-GUI   true, "rep": "wire", "edge": "#7a2114", "opacity": 1},
+#!MFIX-GUI   "background_mesh": {"color": "#64b6f7", "visible": true, "rep":
+#!MFIX-GUI   "wire", "edge": "#325b7b", "opacity": 1.0}}
+#!MFIX-GUI regions_dict = {"regions": {"BC_4": {"color": "#c5958c", "to":
+#!MFIX-GUI   [{"eq": "xmax", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "ymax", "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "type": "XZ-plane"},
+#!MFIX-GUI   "BC_5": {"color": "#e369d3", "to": [{"eq": "xmax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "ymax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "zmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "ymin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, {"eq": "zmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}], "type": "XY-plane"}, "BC_6":
+#!MFIX-GUI   {"color": "#caa6ca", "to": [{"eq": "xmax", "__type__": "equation",
+#!MFIX-GUI   "type": "float"}, {"eq": "ymax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}],
+#!MFIX-GUI   "from": [{"eq": "xmin", "__type__": "equation", "type": "float"},
+#!MFIX-GUI   {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "zmax", "__type__": "equation", "type": "float"}], "type":
+#!MFIX-GUI   "XY-plane"}, "BC_7": {"color": "#6aa0dc", "to": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "type": "YZ-plane"},
+#!MFIX-GUI   "BC_1": {"color": "#e4b8cc", "to": [{"eq": "xmax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, 0.0, {"eq": "zmax", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}], "from": [{"eq": "xmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}, 0.0, {"eq": "zmin", "__type__":
+#!MFIX-GUI   "equation", "type": "float"}], "type": "XZ-plane"}, "BC_8":
+#!MFIX-GUI   {"color": "#9bb0b2", "to": [{"eq": "xmax", "__type__": "equation",
+#!MFIX-GUI   "type": "float"}, {"eq": "ymax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "zmax", "__type__": "equation", "type": "float"}],
+#!MFIX-GUI   "from": [{"eq": "xmax", "__type__": "equation", "type": "float"},
+#!MFIX-GUI   {"eq": "ymin", "__type__": "equation", "type": "float"}, {"eq":
+#!MFIX-GUI   "zmin", "__type__": "equation", "type": "float"}], "type":
+#!MFIX-GUI   "YZ-plane"}, "IC_1": {"color": "#b58190", "to": [{"eq": "xmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmax",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}], "from": [{"eq": "xmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "ymin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}, {"eq": "zmin",
+#!MFIX-GUI   "__type__": "equation", "type": "float"}]}, "IC_2": {"color":
+#!MFIX-GUI   "#79df85", "to": [{"eq": "xmax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, 0.2, {"eq": "zmax", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}], "from": [{"eq": "xmin", "__type__": "equation", "type":
+#!MFIX-GUI   "float"}, {"eq": "ymin", "__type__": "equation", "type": "float"},
+#!MFIX-GUI   {"eq": "zmin", "__type__": "equation", "type": "float"}]}},
+#!MFIX-GUI   "order": ["IC_1", "IC_2", "BC_1", "BC_4", "BC_5", "BC_6", "BC_7",
+#!MFIX-GUI   "BC_8"]}
+#!MFIX-GUI bc_regions = [[[1], ["BC_1"]], [[4], ["BC_4"]], [[5], ["BC_5"]],
+#!MFIX-GUI   [[6], ["BC_6"]], [[7], ["BC_7"]], [[8], ["BC_8"]]]
+#!MFIX-GUI ic_regions = [[[1], ["IC_1"]], [[2], ["IC_2"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
+#!MFIX-GUI vtk_regions = [[[1], ["IC_1"]]]
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin": 0,
+#!MFIX-GUI   "xmax": 0.1, "ymin": 0, "ymax": 0.5, "zmin": 0, "zmax": 0.02}}
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI run_location = 1

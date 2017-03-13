@@ -18,11 +18,20 @@ rm -f config.log
 RUN_DIR=$(pwd)
 MFIX_HOME=$(cd $(dirname $0); pwd)
 
+if [[ "${@}" == *"--buildrundir"* ]]; then
+    BUILD_IN_RUNDIR=true
+else
+    BUILD_IN_RUNDIR=false
+fi
+
 cd "${MFIX_HOME}/build-aux"
 [ -f configure ] || autoreconf -i
-args=("${@/--dmp/--enable-dmp}")
+
+args=("${@}")
+args=("${args[@]/--dmp/--enable-dmp}")
 args=("${args[@]/--smp/--enable-smp}")
 args=("${args[@]/--python/--enable-python}")
+args=("${args[@]/--buildrundir/}")
 
 if [ "${MFIX_HOME}/build-aux" == "${RUN_DIR}" ]; then
     # building in MFIX_HOME, no need to copy Makefile.usr
@@ -32,17 +41,25 @@ fi
 
 # Create BUILD_DIR
 args_dir_name=$( echo "${args[@]}" | tr -c '[[:alnum:]].-' '_' )
+args_dir_name=${args_dir_name#_*}
+args_dir_name=${args_dir_name%_*}
 trunc_args_dir_name=$( echo "${args_dir_name}" | cut -c 1-250 )
-BUILD_DIR="${MFIX_HOME}/build/${trunc_args_dir_name}/build-aux"
+if $BUILD_IN_RUNDIR; then
+    BUILD_DIR="${RUN_DIR}/build/${trunc_args_dir_name}/build-aux"
+else
+    BUILD_DIR="${MFIX_HOME}/build/${trunc_args_dir_name}/build-aux"
+fi
+
 [ "${args_dir_name}" != "${trunc_args_dir_name}" ] && rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}"
+
 
 # configure in BUILD_DIR
 cd "${BUILD_DIR}"
 set +e
 
 if [[ -n ${RECONFIGURE} ]]; then
-    find ${BUILD_DIR} -name "*.d" -delete
+    find "${BUILD_DIR}" -name "*.d" -delete
 fi
 
 if [[ -f ${BUILD_DIR}/config.status && -z ${RECONFIGURE} ]]; then
@@ -66,18 +83,18 @@ if [ -f "${MAKEFILE_USR}" ]; then
 fi
 FDEP=${MFIX_HOME}/build-aux/fdep
 FDEP_USR=${BUILD_DIR}/build-aux/fdep
-if [ -f ${FDEP_USR} ] ; then
-    cp ${FDEP_USR} ${FDEP}
+if [ -f "${FDEP_USR}" ] ; then
+    cp "${FDEP_USR}" "${FDEP}"
 fi
 
 if [[ $(uname -a) =~ "CYGWIN" ]]; then
-    cd ${RUN_DIR}
+    cd "${RUN_DIR}"
     cp Makefile Makefile.cyg
     sed 's=/cygdrive/\(.\)/=\1:/=' Makefile.cyg > Makefile
 fi
 
 if [[ $(uname -a) =~ "MSYS" ]]; then
-    cd ${RUN_DIR}
+    cd "${RUN_DIR}"
     cp Makefile Makefile.msys
     sed 's=/c/Users=c:/Users=' Makefile.msys > Makefile
 fi

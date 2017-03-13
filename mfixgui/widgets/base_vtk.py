@@ -179,6 +179,7 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.defer_render = False
         self.view_flip = [False]*3
         self.offscreen_vtkrenderer = None
+        self.scalar_bar = None
 
         self.screenshot_dialog = ScreenshotDialog(self)
 
@@ -227,6 +228,18 @@ class BaseVtkWidget(QtWidgets.QWidget):
         self.orientation_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
         self.orientation_widget.SetEnabled(1)
         self.orientation_widget.InteractiveOff()
+
+        # --- time label ---
+        self.time_label = vtk.vtkTextActor()
+        self.time_label.SetVisibility(False)
+        self.time_label.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+        self.time_label.GetPosition2Coordinate().SetCoordinateSystemToNormalizedViewport()
+        self.time_label.SetPosition(.99, .95)
+        tprop = self.time_label.GetTextProperty()
+        tprop.SetFontSize(24)
+        tprop.SetJustificationToRight()
+        self.vtkrenderer.AddActor2D(self.time_label)
+        self.set_timelabel(color=[0,0,0])
 
         # --- balloon widget ---
         # there seems to be issues with this widget, text doesn't show and the
@@ -307,6 +320,8 @@ class BaseVtkWidget(QtWidgets.QWidget):
                 return
 
         # off screen rendering
+        if VTK_MAJOR_VERSION > 6:
+            offscreen = False
         if offscreen and self.offscreen_vtkrenderer is None:
             self.init_offscreen_render(size)
         elif offscreen:
@@ -428,3 +443,69 @@ class BaseVtkWidget(QtWidgets.QWidget):
         """reset the camera so that the geometry is visible in the scene"""
         self.vtkrenderer.ResetCamera()
         self.render()
+
+    def set_colorbar(self, mapper=None, label=None, position=None, color=None,
+                     shadow=None, italic=None):
+        if self.scalar_bar is None:
+            self.scalar_bar = vtk.vtkScalarBarActor()
+            self.scalar_bar.GetPositionCoordinate().SetCoordinateSystemToNormalizedViewport()
+            self.vtkrenderer.AddActor(self.scalar_bar)
+            self.scalar_bar.SetNumberOfLabels(10)
+            position = 'right'
+            shadow = False
+            italic = False
+            color = [0, 0, 0]
+
+        if position is not None:
+            geo = [0.08, 0.7]
+            if position == 'right':
+                pos = [0.9, 0.15]
+                self.scalar_bar.SetOrientationToVertical()
+            elif position == 'left':
+                pos = [0.02, 0.15]
+                self.scalar_bar.SetOrientationToVertical()
+            elif position =='bottom':
+                pos = [0.15, 0.02]
+                geo = list(reversed(geo))
+                self.scalar_bar.SetOrientationToHorizontal()
+            elif position == 'top':
+                pos = [0.15, 0.9]
+                geo = list(reversed(geo))
+                self.scalar_bar.SetOrientationToHorizontal()
+
+            self.scalar_bar.GetPositionCoordinate().SetValue(*pos)
+            self.scalar_bar.SetWidth(geo[0])
+            self.scalar_bar.SetHeight(geo[1])
+
+        if mapper is not None:
+            self.scalar_bar.SetLookupTable(mapper.GetLookupTable())
+
+        if label is not None:
+            self.scalar_bar.SetTitle(label)
+
+        if color is not None:
+            for label in [self.scalar_bar.GetLabelTextProperty(), self.scalar_bar.GetTitleTextProperty()]:
+                label.SetColor(color)
+
+        if shadow is not None:
+            for label in [self.scalar_bar.GetLabelTextProperty(), self.scalar_bar.GetTitleTextProperty()]:
+                label.SetShadow(shadow)
+
+        if italic is not None:
+            for label in [self.scalar_bar.GetLabelTextProperty(), self.scalar_bar.GetTitleTextProperty()]:
+                label.SetItalic(italic)
+
+
+    def set_timelabel(self, text=None, fontsize=None, pos=None, color=None):
+        text_prop = self.time_label.GetTextProperty()
+        if text is not None:
+            self.time_label.SetInput(text)
+
+        if fontsize is not None:
+            text_prop.SetFontSizw(fontsize)
+
+        if color is not None:
+            text_prop.SetColor(color)
+
+        if pos is not None:
+            self.time_label.SetDisplayPosition(*pos)

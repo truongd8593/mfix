@@ -58,6 +58,7 @@ SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
 DEFAULT_PLAYBACK_SPEED = 100
 DEFAULT_MAXIMUM_POINTS = 10000
 DEFAULT_GEO_COLOR = QtGui.QColor(224, 224, 224)
+DEFAULT_TEXT_COLOR = QtGui.QColor(0, 0, 0)
 
 UI_FILE_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir, 'uifiles')
 
@@ -279,6 +280,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.vtp_files = []
         self.vtu_files = []
         self.update_color_by = False
+        self.time = 0.0
+        self.time_format = '{:.2f} s'
 
         self.play_timer = QtCore.QTimer()
         self.play_timer.timeout.connect(self.forward)
@@ -303,6 +306,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.init_vtk()
         self.init_geometry()
 
+        # enable time label and color bar
+        self.enable_toolbar_geo('time_label')
+
         # look for files
         self.look_for_files()
 
@@ -311,7 +317,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
     def init_vtk(self):
 
-        self.actors = {}
+        self.actors = {'time_label':self.time_label, 'color_bar':self.scalar_bar}
         self.mappers = {}
         self.lookuptables = {}
 
@@ -319,10 +325,14 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.ugrid_node_mapper = None
         self.particle_mapper = None
 
+        self.time_label.SetVisibility(True)
+        self.time_label.SetInput(self.time_format.format(self.time))
+
     def init_ugrid(self):
         '''setup the cell/point vtk stuff'''
         # cells
         self.enable_toolbar_geo('cells', visible=False)
+        self.enable_colorbar_select(0)
         self.ugrid_reader = vtk.vtkXMLUnstructuredGridReader()
 
         self.ugrid_cell_mapper = self.mappers['cells'] = vtk.vtkDataSetMapper()
@@ -339,6 +349,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         # points
         self.enable_toolbar_geo('nodes')
+        self.enable_colorbar_select(1)
 
         self.ugrid_cell_to_points = vtk.vtkCellDataToPointData()
         self.ugrid_cell_to_points.SetInputConnection(self.ugrid_reader.GetOutputPort())
@@ -357,6 +368,8 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def init_particles(self):
         '''setup the particle vtk stuff'''
         self.enable_toolbar_geo('points')
+        self.enable_colorbar_select(2)
+
         self.particle_reader = vtk.vtkXMLPolyDataReader()
 
         ss = vtk.vtkSphereSource()
@@ -380,7 +393,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         actor = self.actors['points'] = vtk.vtkActor()
         actor.SetMapper(self.particle_mapper)
-
         self.vtkrenderer.AddActor(actor)
 
     def init_geometry(self):
@@ -391,6 +403,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         mapper = self.mappers['geometry'] = vtk.vtkPolyDataMapper()
         if poly_data is not None:
             mapper.SetInputConnection(poly_data.GetOutputPort())
+        mapper.ScalarVisibilityOff()
 
         # Create an actor
         actor = self.actors['geometry'] = vtk.vtkActor()
@@ -408,6 +421,17 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 wid.setChecked(True)
             wid.setEnabled(True)
 
+    def enable_colorbar_select(self, index, enable=True, combo=None):
+        if combo is None:
+            combo = self.visual_btns['color_bar']['mapper']
+        model = combo.model()
+        item = model.item(index)
+        if not enable:
+            flags = QtCore.Qt.NoItemFlags
+        else:
+            flags = QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled
+        item.setFlags(flags)
+
     def init_toolbar(self):
         self.init_base_toolbar()
 
@@ -422,7 +446,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         layout = self.visible_menu.layout
         layout.setContentsMargins(0, 5, 5, 5)
         self.visual_btns = {}
-        for i, geo_name in enumerate(['Cells', 'Nodes', 'Points', 'Geometry']):
+        for i, geo_name in enumerate(['Cells', 'Nodes', 'Points', 'Geometry', 'Color Bar', 'Time Label']):
             geo = geo_name.lower().replace(' ', '_')
             btns = self.visual_btns[geo] = {}
             # tool button
@@ -437,12 +461,13 @@ class GraphicsVtkWidget(BaseVtkWidget):
             btns['visible'] = toolbutton
 
             combo = None
-            if not geo == 'geometry':
+            if geo in ['cells', 'nodes', 'points']:
                 # file pattern
                 if not geo == 'nodes':
                     combo = QtWidgets.QComboBox(self.visible_menu)
                     combo.activated.connect(lambda item, g=geo, c=combo: self.change_file_pattern(g, c))
                     combo.setEnabled(False)
+                    combo.setToolTip('File pattern to display')
                     layout.addWidget(combo, i, 1)
                     btns['file_pattern'] = combo
                 elif geo == 'nodes':
@@ -453,6 +478,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo = QtWidgets.QComboBox(self.visible_menu)
                 combo.activated.connect(lambda item, g=geo, c=combo: self.change_color_by(g, c))
                 combo.setEnabled(False)
+                combo.setToolTip('Variable to color by')
                 layout.addWidget(combo, i, 2)
                 btns['color_by'] = combo
 
@@ -460,22 +486,58 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo2 = QtWidgets.QComboBox(self.visible_menu)
                 combo2.activated.connect(lambda item, g=geo, c=combo, c2=combo2: self.change_color_by(g, c, c2))
                 combo2.addItems(['mag', 'x', 'y', 'z'])
+                combo2.setToolTip('Component to color by')
                 combo2.setEnabled(False)
                 layout.addWidget(combo2, i, 3)
                 btns['component'] = combo2
 
+            elif geo == 'color_bar':
+                combo = QtWidgets.QComboBox(self.visible_menu)
+                combo.activated.connect(lambda item, g=geo, c=combo: self.change_colorbar_mapper(g, c))
+                combo.setEnabled(False)
+                layout.addWidget(combo, i, 1)
+                combo.addItems(['Cells', 'Nodes', 'Points'])
+                for ind in range(3):
+                    self.enable_colorbar_select(ind, False, combo)
+                btns['mapper'] = combo
+
+                combo = QtWidgets.QComboBox(self.visible_menu)
+                combo.activated.connect(lambda item, c=combo: self.change_colorbar_loc(c))
+                combo.setEnabled(False)
+                combo.setToolTip('Location of color bar')
+                layout.addWidget(combo, i, 3)
+                combo.addItems(['Left', 'Right', 'Top', 'Bottom'])
+                combo.setCurrentIndex(1)
+                btns['pos'] = combo
+            elif geo == 'time_label':
+                lineedit = QtWidgets.QLineEdit(self.visible_menu)
+                lineedit.setText(self.time_format)
+                lineedit.textChanged.connect(self.handle_label_format)
+                lineedit.setEnabled(False)
+                layout.addWidget(lineedit, i, 1)
+                lineedit.setToolTip('Format to be used in the display of the '
+                                    'time label. Needs to be a valid python'
+                                    'format string such as "{:.2f}", or'
+                                    '"{:2E}".')
+                btns['label_format'] = lineedit
 
             toolbutton = QtWidgets.QToolButton(self.visible_menu)
             size = QtCore.QSize(25, 25)
             toolbutton.setMinimumSize(size)
             toolbutton.setMaximumSize(size)
             toolbutton.setIconSize(size)
-            if not geo == 'geometry':
+            if geo in ['cells', 'nodes', 'points']:
                 toolbutton.clicked.connect(lambda ignore, g=geo, t=toolbutton, c=combo: self.handle_change_color(g, t, c))
                 toolbutton.setIcon(build_qicons().get('viridis', {}).get('icon', QtGui.QIcon))
-            else:
+            elif geo == 'geometry':
                 toolbutton.clicked.connect(lambda ignore, t=toolbutton: self.change_geo_color(t))
                 toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_GEO_COLOR.name()))
+            elif geo == 'color_bar':
+                toolbutton.clicked.connect(lambda ignore, t=toolbutton: self.change_color_bar_color(t))
+                toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_TEXT_COLOR.name()))
+            elif geo == 'time_label':
+                toolbutton.clicked.connect(lambda ignore, t=toolbutton: self.change_time_label_color(t))
+                toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(DEFAULT_TEXT_COLOR.name()))
             toolbutton.setAutoRaise(True)
             toolbutton.setEnabled(False)
             layout.addWidget(toolbutton, i, 4)
@@ -510,6 +572,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 layout.addWidget(toolbutton, i, 11)
                 btns['more'] = toolbutton
 
+        # --- play/stop/forward/backward controls ---
         self.toolbutton_first = QtWidgets.QToolButton()
         self.toolbutton_first.clicked.connect(self.handle_first)
         self.toolbutton_first.setIcon(get_icon('first.png'))
@@ -668,6 +731,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 self.read_vtu(self.vtu_files[time])
                 if n_vtp:
                     self.read_vtp(list(self.vtp_files.values())[bisect_left(list(self.vtp_files.keys()), time)-1])
+            self.time = time
+
+            self.set_timelabel(text=self.time_format.format(time))
             self.render()
 
             if self.checkbox_snap.isChecked():
@@ -679,12 +745,15 @@ class GraphicsVtkWidget(BaseVtkWidget):
         pvd_files = glob.glob(os.path.join(self.project_dir, '*.pvd'))
         for pvd in pvd_files:
             base_name = os.path.basename(pvd).replace('.pvd', '')
-            files = parse_pvd_file(pvd)
-            if base_name in self.pvd_files and files:
-                self.pvd_files[base_name]['files'].update(files)
-            elif files:
-                t = 'vtp' if files[0].endswith('vtp') else'vtu'
-                self.pvd_files[base_name] = {'files':files, 'type':t}
+            files = parse_pvd_file(pvd) # returns OrderedDict keyed by time
+            if files:
+                if base_name in self.pvd_files:
+                    self.pvd_files[base_name]['files'].update(files)
+                else:
+                    key = list(files.keys())[0] # files is nonempty
+                    filename = files[key]
+                    t = 'vtp' if filename and filename.endswith('vtp') else 'vtu'
+                    self.pvd_files[base_name] = {'files':files, 'type':t}
 
         # update the combo_boxes
         vtp = []
@@ -771,6 +840,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 combo.addItems(items)
                 combo.setEnabled(bool(items))
                 combo.setCurrentIndex(combo.findText(name))
+            if init:
+                self.set_colorbar(mapper=self.ugrid_node_mapper, label=name)
+                self.visual_btns['color_bar']['mapper'].setCurrentIndex(1)
             self.update_color_by = False
 
     def read_vtp(self, path):
@@ -809,6 +881,9 @@ class GraphicsVtkWidget(BaseVtkWidget):
             combo.addItems(items)
             combo.setEnabled(bool(items))
             combo.setCurrentIndex(combo.findText(name))
+            if init:
+                self.set_colorbar(mapper=self.particle_mapper, label=name)
+                self.visual_btns['color_bar']['mapper'].setCurrentIndex(2)
             self.update_color_by = False
 
     def change_visibility(self, geo, visible):
@@ -843,6 +918,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         mapper = self.mappers.get(geo)
         mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
+        if self.visual_btns['color_bar']['mapper'].currentText().lower() == geo:
+            map_text = self.visual_btns['color_bar']['mapper'].currentText().lower()
+            label = self.visual_btns[map_text]['color_by'].currentText()
+            self.set_colorbar(mapper=mapper, label=label)
 
         single_color = array.get('single_color', False)
         if single_color:
@@ -940,6 +1019,10 @@ class GraphicsVtkWidget(BaseVtkWidget):
             mapper.ScalarVisibilityOn()
 
         mapper.SetScalarRange(array.get('from', 0), array.get('to', 1))
+        if self.visual_btns['color_bar']['mapper'].currentText().lower() == geo:
+            map_text = self.visual_btns['color_bar']['mapper'].currentText().lower()
+            label = self.visual_btns[map_text]['color_by'].currentText()
+            self.set_colorbar(mapper=mapper, label=label)
 
         self.render()
 
@@ -956,12 +1039,33 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
         self.render()
 
+    def change_color_bar_color(self, button):
+        """Change the color of the geometry actor"""
+        col = QtWidgets.QColorDialog.getColor(parent=self)
+        if not col.isValid():
+            return
+
+        button.setStyleSheet("QToolButton{{ background: {};}}".format(
+            col.name()))
+
+        self.set_colorbar(color=col.getRgbF()[:3])
+
+    def change_time_label_color(self, button):
+        """Change the color of the geometry actor"""
+        col = QtWidgets.QColorDialog.getColor(parent=self)
+        if not col.isValid():
+            return
+
+        button.setStyleSheet("QToolButton{{ background: {};}}".format(
+            col.name()))
+
+        self.set_timelabel(color=col.getRgbF()[:3])
+
     def change_opacity(self, geo, opacity):
         """change the opactiy of an actor"""
         if geo in self.actors:
             self.actors[geo].GetProperty().SetOpacity(opacity)
             self.render()
-
 
     def handle_particle_options(self):
         result = self.particle_option_dialog.exec_()
@@ -979,3 +1083,41 @@ class GraphicsVtkWidget(BaseVtkWidget):
     def set_glyph_source(self, name):
         gs = GLYPHS[name]()
         self.glyph.SetSourceConnection(gs.GetOutputPort())
+
+    def set_colorbar(self, mapper=None, label=None, position=None, color=None,
+                     shadow=None, italic=None):
+        BaseVtkWidget.set_colorbar(self, mapper, label, position, color, shadow, italic)
+        self.enable_toolbar_geo('color_bar')
+        self.actors['color_bar'] = self.scalar_bar
+
+    def change_colorbar_loc(self, combo):
+        pos = combo.currentText().lower()
+        self.set_colorbar(position=pos)
+        self.render()
+
+    def change_colorbar_mapper(self, geo, combo):
+        map_text = combo.currentText().lower()
+
+        if map_text == 'cells':
+            mapper = self.ugrid_cell_mapper
+        elif map_text == 'nodes':
+            mapper = self.ugrid_node_mapper
+        else:
+            mapper = self.particle_mapper
+
+        label = self.visual_btns[map_text]['color_by'].currentText()
+
+        self.set_colorbar(mapper=mapper, label=label)
+
+        self.render()
+
+    def handle_label_format(self, text):
+
+        try:
+            text.format(1.34)
+            self.time_format = text
+            self.set_timelabel(text=self.time_format.format(self.time))
+            color = 'black'
+        except:
+            color = 'red'
+        self.visual_btns['time_label']['label_format'].setStyleSheet("color: " + color)

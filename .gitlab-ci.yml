@@ -1,4 +1,5 @@
 stages:
+  - test
   - build:src
   - build:libmfix
   - build:py2
@@ -8,6 +9,16 @@ stages:
 variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
+
+# test:
+#   script:
+#     - python setup.py test_load_all
+#   stage: test
+#   only:
+#     - develop
+#     - tags
+#   tags:
+#     - windows
 
 # build:src builds a source distribution tarball
 
@@ -96,39 +107,39 @@ build_linux_py2:
   tags:
     - linux
 
-build_mac_py2:
-  script:
-    - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
-  stage: build:py2
-  only:
-    - develop
-    - tags
-  dependencies:
-    - build:mac
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfix*.whl
-  tags:
-    - mac
+# build_mac_py2:
+#   script:
+#     - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
+#   stage: build:py2
+#   only:
+#     - develop
+#     - tags
+#   dependencies:
+#     - build:mac
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - dist/mfix*.whl
+#   tags:
+#     - mac
 
-build_windows_py2:
-  script:
-    - python2.7 setup.py bdist_wheel
-  stage: build:py2
-  only:
-    - develop
-    - tags
-  dependencies:
-    - build:windows
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfix*.whl
-  tags:
-    - windows
+# build_windows_py2:
+#   script:
+#     - python2.7 setup.py bdist_wheel
+#   stage: build:py2
+#   only:
+#     - develop
+#     - tags
+#   dependencies:
+#     - build:windows
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - dist/mfix*.whl
+#   tags:
+#     - windows
 
 
 # build:py3 stage builds python3 wheel packages

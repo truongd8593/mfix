@@ -1,0 +1,304 @@
+########################################################################
+# Tutorial: 2D Fluidized Bed                                           #
+#                                                                      #
+# Author: Jeff Dietiker                                                #
+# Date: September 29, 2016                                             #
+#                                                                      #
+#                                                                      #
+########################################################################
+
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  run_name = 'FB2D'
+  description = '2D FLUIDIZED BED'
+  run_type = 'new'
+  units = 'SI'
+  time = 0.0    ! (sec)
+  tstop = 2.0    ! (sec)
+  dt = 1.0000e-03    ! (sec)
+  dt_max = 1.0000e-02    ! (sec)
+  dt_min = 1.0000e-06    ! (sec)
+
+  energy_eq = .False.
+  species_eq(0) = .False.
+  species_eq(1) = .False.
+
+#_______________________________________________________________________
+# NUMERICAL SECTION
+
+! Normalize residuals:
+
+  norm_g = 0.0
+  norm_s = 0.0
+
+  max_inlet_vel_fac = 1000.0
+
+  leq_pc(1) = 'NONE'    ! No preconditioner
+  leq_pc(2) = 'NONE'    ! No preconditioner
+  leq_pc(3) = 'NONE'    ! No preconditioner
+  leq_pc(4) = 'NONE'    ! No preconditioner
+  leq_pc(5) = 'NONE'    ! No preconditioner
+  leq_pc(6) = 'NONE'    ! No preconditioner
+  leq_pc(7) = 'NONE'    ! No preconditioner
+  leq_pc(8) = 'NONE'    ! No preconditioner
+  leq_pc(9) = 'NONE'    ! No preconditioner
+
+  discretize(1) = 2    ! Superbee
+  discretize(2) = 2    ! Superbee
+  discretize(3) = 2    ! Superbee
+  discretize(4) = 2    ! Superbee
+  discretize(5) = 2    ! Superbee
+  discretize(6) = 2    ! Superbee
+  discretize(7) = 2    ! Superbee
+  discretize(8) = 2    ! Superbee
+  discretize(9) = 2    ! Superbee
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  coordinates = 'CARTESIAN'
+  x_min = -0.1
+  x_max = 0.1
+  imax = 20
+
+  jmax = 100
+
+  no_k = .True.
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! Gas Section
+!---------------------------------------------------------------------//
+
+  mw_avg = 29.0    ! (kg/kmol)
+
+! Particle Section
+!---------------------------------------------------------------------//
+
+  ep_star = 0.42    ! void fraction at maximum packing (-)
+  e = 0.9    ! part-part restitution coefficient (-)
+  e_w = 0.9    ! part-wall restitution coefficient (-)
+  phi = 30.0    ! angle of internal friction (degrees)
+  phi_w = 11.31    ! particle-wall angle of internal friction (degrees)
+
+  mmax = 1
+
+! Solids phase 1:
+!---------------------------------------------------------------------//
+  ro_s0(1) = 2000.0    ! (kg/m3)                 !solids density
+  d_p0(1) = 2.5000e-04    ! (m)                     !particle diameter
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+! Entire domain initialized as stagnant air
+!---------------------------------------------------------------------//
+
+  ic_x_w(1) = -0.1    ! (m)
+  ic_x_e(1) = 0.1    ! (m)
+  ic_y_s(1) = 0.0    ! (m)
+  ic_y_n(1) = 1.0    ! (m)
+
+! Gas phase:
+!----------------------------------------/
+  ic_ep_g(1) = 1.0    ! (-)
+
+  ic_t_g(1) = 298.15    ! (K)
+  ic_p_g(1) = 1.0132e+05    ! (Pa)
+
+  ic_u_g(1) = 0.0    ! (m/sec)
+  ic_v_g(1) = 0.0    ! (m/sec)
+
+! Solids phase:
+!----------------------------------------/
+  ic_ep_s(1,1) = 0.0    ! (-)
+
+  ic_t_s(1,1) = 298.15    ! (K)
+
+  ic_u_s(1,1) = 0.0    ! (m/sec)
+  ic_v_s(1,1) = 0.0    ! (m/sec)
+
+! Bed:
+!---------------------------------------------------------------------//
+  ic_x_w(2) = -0.1    ! (m)
+  ic_x_e(2) = 0.1    ! (m)
+  ic_y_s(2) = 0.0    ! (m)
+  ic_y_n(2) = 0.5    ! (m)
+
+! Gas phase:
+!----------------------------------------/
+  ic_ep_g(2) = 0.45    ! (-)
+
+  ic_t_g(2) = 298.15    ! (K)
+  ic_p_g(2) = 1.0132e+05    ! (Pa)
+
+  ic_u_g(2) = 0.0    ! (m/sec)
+  ic_v_g(2) = 0.2    ! (m/sec)
+
+! Solids phase:
+!----------------------------------------/
+  ic_ep_s(2,1) = 0.55    ! (-)
+
+  ic_t_s(2,1) = 298.15    ! (K)
+
+  ic_u_s(2,1) = 0.0    ! (m/sec)
+  ic_v_s(2,1) = 0.2    ! (m/sec)
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! Uniform fluidization
+!---------------------------------------------------------------------//
+
+  bc_x_w(1) = -0.1    ! (m)
+  bc_x_e(1) = 0.1    ! (m)
+  bc_y_s(1) = 0.0    ! (m)
+  bc_y_n(1) = 0.0    ! (m)
+
+  bc_type(1) = 'MI'
+
+! Gas Phase:
+
+  bc_ep_g(1) = 1.0    ! (-)
+
+  bc_u_g(1) = 0.0    ! (m/s)
+  bc_v_g(1) = 0.25    ! (m/s)
+
+  bc_p_g(1) = 1.0132e+05    ! (Pa)
+  bc_t_g(1) = 298.15    ! (K)
+
+! Pressure Outlet
+!---------------------------------------------------------------------//
+  bc_x_w(2) = -0.1    ! (m)
+  bc_x_e(2) = 0.1    ! (m)
+  bc_y_s(2) = 1.0    ! (m)
+  bc_y_n(2) = 1.0    ! (m)
+
+  bc_type(2) = 'PO'
+
+  bc_p_g(2) = 1.0132e+05    ! (Pa)
+  bc_t_g(2) = 298.15    ! (K)
+
+! Vessel walls + internal obstacle
+!---------------------------------------------------------------------//
+  bc_x_w(3) = -0.1    ! (m)
+  bc_x_w(4) = 0.1    ! (m)
+  bc_x_e(3) = -0.1    ! (m)
+  bc_x_e(4) = 0.1    ! (m)
+  bc_y_s(3) = 0.0    ! (m)
+  bc_y_s(4) = 0.0    ! (m)
+  bc_y_n(3) = 1.0    ! (m)
+  bc_y_n(4) = 1.0    ! (m)
+
+  bc_type(3) = 'NSW'
+  bc_type(4) = 'NSW'
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+! RES and SPX files
+!---------------------------------------------------------------------//
+  res_dt = 0.1
+
+! The SPX files are not saved (since TSTOP = 1.0 sec)
+
+  spx_dt(1) = 100.0    ! EP_g
+  spx_dt(2) = 100.0    ! P_g, P_star
+  spx_dt(3) = 100.0    ! U_g, V_g, W_g
+  spx_dt(4) = 100.0    ! U_s, V_s, W_s
+  spx_dt(5) = 100.0    ! ROP_s
+  spx_dt(6) = 100.0    ! T_g, T_s
+  spx_dt(7) = 100.0    ! X_g, X_s
+  spx_dt(8) = 100.0    ! theta
+  spx_dt(9) = 100.0    ! Scalar
+  spx_dt(10) = 100.0    ! Reaction Rates
+
+! VTK files
+!---------------------------------------------------------------------//
+  write_vtk_files = .True.
+  time_dependent_filename = .True.
+  vtu_dir = 'VTU'
+
+  vtk_dt(1) = 0.01
+  vtk_filebase(1) = 'FB2D'
+  vtk_x_w(1) = -0.1
+  vtk_x_e(1) = 0.1
+  vtk_y_s(1) = 0.0
+  vtk_y_n(1) = 1.0
+  vtk_ep_g(1) = .True.
+  vtk_p_g(1) = .True.
+  vtk_vel_g(1) = .True.
+  vtk_vel_s(1,1) = .True.
+
+  resid_string(1) = 'P0'
+  resid_string(2) = 'U0'
+  resid_string(3) = 'V0,W0'
+  resid_string(4) = 'U1'
+  resid_string(5) = 'V1,W1'
+  group_resid = .True.
+
+  nlog = 50
+  full_log = .True.
+  write_dashboard = .True.
+  f_dashboard = 1
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  enable_dmp_log = .False.
+
+  drag_c1 = 0.8
+  drag_d1 = 2.65
+  solids_model(1) = 'TFM'
+  bc_ep_s(1,1) = 0.0
+  nmax_s(1) = 0
+  y_max = 1.0
+  y_min = 0
+  vtk_data(1) = 'C'
+  cartesian_grid = .False.
+  use_stl = .False.
+
+  vtk_nxs(1) = 0
+  vtk_nys(1) = 0
+  vtk_nzs(1) = 0
+
+  gravity_x = 0.0
+  gravity_y = -9.81
+  gravity_z = 0.0
+
+#!MFIX-GUI SECTION
+#!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
+#!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin":
+#!MFIX-GUI   -0.1, "xmax": 0.1, "ymin": 0, "ymax": 1.0, "zmin": 0.0, "zmax": 0.0}}
+#!MFIX-GUI gui_version = 17.1.dev0
+#!MFIX-GUI project_notes = ""
+#!MFIX-GUI author = "tutorial"
+#!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
+#!MFIX-GUI visual_props = {"geometry": {"color": "#e0e0e0", "visible": true,
+#!MFIX-GUI   "rep": "wire", "edge": "#707070", "opacity": 1.0}, "regions":
+#!MFIX-GUI   {"color": "#e0e0e0", "visible": true, "rep": "solid", "edge":
+#!MFIX-GUI   "#707070", "opacity": 0.5}, "mesh": {"color": "#f44328", "visible":
+#!MFIX-GUI   true, "rep": "wire", "edge": "#7a2114", "opacity": 1},
+#!MFIX-GUI   "background_mesh": {"color": "#64b6f7", "visible": true, "rep":
+#!MFIX-GUI   "wire", "edge": "#325b7b", "opacity": 1.0}}
+#!MFIX-GUI regions_dict = {"regions": {"BC_4": {"color": "#d4bddd", "to": [0.1,
+#!MFIX-GUI   1.0, 0.0], "from": [0.1, 0.0, 0.0], "type": "YZ-plane"}, "BC_1":
+#!MFIX-GUI   {"color": "#b48766", "to": [0.1, 0.0, 0.0], "from": [-0.1, 0.0,
+#!MFIX-GUI   0.0], "type": "XZ-plane"}, "BC_2": {"color": "#74b18c", "to": [0.1,
+#!MFIX-GUI   1.0, 0.0], "from": [-0.1, 1.0, 0.0], "type": "XZ-plane"}, "BC_3":
+#!MFIX-GUI   {"color": "#899368", "to": [-0.1, 1.0, 0.0], "from": [-0.1, 0.0,
+#!MFIX-GUI   0.0], "type": "YZ-plane"}, "IC_1": {"color": "#c3b86b", "to": [0.1,
+#!MFIX-GUI   1.0, 0.0], "from": [-0.1, 0.0, 0.0], "type": "XY-plane"}, "IC_2":
+#!MFIX-GUI   {"color": "#d46d87", "to": [0.1, 0.5, 0.0], "from": [-0.1, 0.0,
+#!MFIX-GUI   0.0], "type": "XY-plane"}}, "order": ["IC_1", "IC_2", "BC_1",
+#!MFIX-GUI   "BC_2", "BC_3", "BC_4"]}
+#!MFIX-GUI bc_regions = [[[1], ["BC_1"]], [[2], ["BC_2"]], [[3], ["BC_3"]],
+#!MFIX-GUI   [[4], ["BC_4"]]]
+#!MFIX-GUI ic_regions = [[[1], ["IC_1"]], [[2], ["IC_2"]]]
+#!MFIX-GUI is_regions = []
+#!MFIX-GUI ps_regions = []
+#!MFIX-GUI vtk_regions = [[[1], ["IC_1"]]]
+#!MFIX-GUI OMP_NUM_THREADS = 1
+#!MFIX-GUI run_location = 1

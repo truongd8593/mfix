@@ -462,10 +462,10 @@ class VtkWidget(BaseVtkWidget):
         while itr.value():
             item = itr.value()
             text = item.text(0)
-            if text not in tree:
-                tree[text] = []
+
+            children = tree.setdefault(text, [])
             for i in range(item.childCount()):
-                tree[text].append(item.child(i).text(0))
+                children.append(item.child(i).text(0))
             itr += 1
 
         data = {'geometry_dict': clean_geo_dict(self.geometrydict),
@@ -689,7 +689,7 @@ class VtkWidget(BaseVtkWidget):
 
     def get_tree_item(self, name):
         """return the tree item with name"""
-        items = self.geometrytree.findItems(name, QtCore.Qt.MatchContains|QtCore.Qt.MatchRecursive, 0)
+        items = self.geometrytree.findItems(name, QtCore.Qt.MatchRecursive, 0)
         return items[0]
 
     def geometry_clicked(self, item):
@@ -1414,10 +1414,10 @@ class VtkWidget(BaseVtkWidget):
 
         return name
 
-    def boolean_operation(self, booltype=None, boolname=None, data=None, children=None, loading=False):
+    def boolean_operation(self, booltype=None, boolname=None, data=None,
+                          children=None, loading=False):
         """Apply a boolean operation with the currently selected toplevel
         items."""
-
         if children is not None:
             current_selection = []
             for child in children:
@@ -1464,9 +1464,10 @@ class VtkWidget(BaseVtkWidget):
             icon = 'difference'
 
         union_list = []
+        children = bool_data['children'] = []
         for i, selection in enumerate(current_selection):
             name = str(selection.text(0)).lower()
-            bool_data['children'].append(name)
+            children.append(name)
             child = self.geometrydict[name]
             if implicit:
                 boolean_operation.AddFunction(child['source'])

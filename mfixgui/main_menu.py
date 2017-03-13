@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import glob
 
 
 # FIXME: should we use six.moves.urllib_parse.urljoin six.moves.urllib.request.pathname2url instead?
@@ -162,14 +163,6 @@ class MainMenu(object):
                                            QtWidgets.QSizePolicy.Maximum,)
         ow_layout.addItem(spacer_exp, 1, 1)
 
-        lw_f = self.ui.main_menu_file_lw = QtWidgets.QListWidget()
-        lw_f.setFrameStyle(lw_f.NoFrame)
-        lw_f.setIconSize(QtCore.QSize(128, 128))
-        lw_f.setUniformItemSizes(True)
-        lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
-        lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 10, 0, 1, -1)
-
         tb = QtWidgets.QToolButton()
         tb.setText('Clear Recent')
         tb.setToolTip('Clear list of recent projects')
@@ -197,7 +190,7 @@ class MainMenu(object):
         lw_f.setUniformItemSizes(True)
         lw_f.setResizeMode(QtWidgets.QListWidget.Adjust)
         lw_f.itemDoubleClicked.connect(self.handle_main_menu_open_project)
-        ow_layout.addWidget(lw_f, 3, 0, 1, -1)
+        ow_layout.addWidget(lw_f, 10, 0, 1, -1)
 
         # apply previous state
         if self.settings.value('open_list_mode', 'icon') == 'icon':
@@ -262,7 +255,7 @@ class MainMenu(object):
         lw.setIconSize(QtCore.QSize(128, 128))
         lw.setUniformItemSizes(True)
         lw.setResizeMode(QtWidgets.QListWidget.Adjust)
-        lw.itemDoubleClicked.connect(self.handle_main_menu_new_proect)
+        lw.itemDoubleClicked.connect(self.handle_main_menu_new_project)
         nw_layout.addWidget(lw, 10, 1, 10, 1)
 
         tb_l = QtWidgets.QToolButton()
@@ -579,7 +572,7 @@ class MainMenu(object):
         else:
             self.message(text="File does not exist: %s" % project_path)
 
-    def handle_main_menu_new_proect(self, item):
+    def handle_main_menu_new_project(self, item):
         if self.unsaved_flag:
             confirm = self.message(text="Project not saved\nData will be lost!\nProceed?",
                                    buttons=['yes', 'no'],
@@ -587,8 +580,12 @@ class MainMenu(object):
             if confirm != 'yes':
                 return
             self.clear_unsaved_flag()
-
-        self.open_new_from_template(os.path.join(item.full_path, 'mfix.dat'))
+        mfx_files = glob.glob(os.path.join(item.full_path, '*.mfx'))
+        if not mfx_files:
+            path = os.path.join(item.full_path, 'mfix.dat')
+        else:
+            path = mfx_files[0]
+        self.open_new_from_template(path)
 
     def handle_clear_recent(self):
         self.settings.setValue('recent_projects', '|'.join([]))
@@ -782,7 +779,7 @@ class MainMenu(object):
             path_var = []
             top_path = os.path.join(mfx_dir, dirname, '')
             for root, dirs, files in os.walk(top_path):
-                if any(f.endswith('mfix.dat') for f in files):
+                if any(f.endswith('mfix.dat') or f.endswith('.mfx') for f in files):
                     path_var.append(root.replace(top_path,''))
             if path_var:
                 path_var.sort(key=lambda y: y.lower())

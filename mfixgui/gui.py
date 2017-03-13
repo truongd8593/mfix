@@ -940,7 +940,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % get_version,
+        self.print_internal("MFiX-GUI version %s" % get_version(),
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1912,7 +1912,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = get_version
+        self.project.mfix_gui_comments['gui_version'] = get_version()
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2117,7 +2117,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         run_name = match.group('run_name')
 
         except Exception as e:
-            self.message(text="Error %s in project template %s:  %s" % (template,e),
+            self.message(text="Error in project template %s:  %s" % (template,e),
                          buttons=['ok'],
                          default=['ok'])
             self.set_no_project()

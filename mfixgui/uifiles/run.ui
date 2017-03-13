@@ -23,64 +23,15 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_dt_fac">
-     <property name="text">
-      <string>Time step factor</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QCheckBox" name="checkbox_pymfix_output">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="text">
-      <string>Show pyMFiX output</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_dt_max"/>
-   </item>
-   <item row="3" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_dt_min"/>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="label_dt_min_units">
+   <item row="1" column="2">
+    <widget class="QLabel" name="label_dt_units">
      <property name="text">
       <string>s</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_dt_max">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Maximum time step</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QCheckBox" name="checkbox_detect_stall">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Detect stall</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLabel" name="label_dt_units">
+   <item row="2" column="2">
+    <widget class="QLabel" name="label_dt_max_units">
      <property name="text">
       <string>s</string>
      </property>
@@ -91,36 +42,6 @@
    </item>
    <item row="1" column="1">
     <widget class="LineEdit" name="lineedit_keyword_dt"/>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_tstop">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Stop time</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="LineEdit" name="lineedit_keyword_tstop"/>
-   </item>
-   <item row="2" column="2">
-    <widget class="QLabel" name="label_dt_max_units">
-     <property name="text">
-      <string>s</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_dt_min">
-     <property name="text">
-      <string>Minimum time step</string>
-     </property>
-    </widget>
    </item>
    <item row="0" column="2">
     <widget class="QLabel" name="label_tstop_units">
@@ -142,7 +63,93 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0" colspan="2">
+   <item row="3" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_dt_min"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_dt_max">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Maximum time step</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="3">
+    <widget class="GroupBox" name="groupbox_keyword_chk_batchq_end">
+     <property name="title">
+      <string>Automatically Stop</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>s</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Maximum Ellapsed Time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="LineEdit" name="lineedit_keyword_batch_wallclock">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Write Buffer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>s</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="LineEdit" name="lineedit_keyword_term_buffer">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="label_dt_min_units">
+     <property name="text">
+      <string>s</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_tstop"/>
+   </item>
+   <item row="9" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -155,13 +162,77 @@
      </property>
     </spacer>
    </item>
+   <item row="2" column="1">
+    <widget class="LineEdit" name="lineedit_keyword_dt_max"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_dt_fac">
+     <property name="text">
+      <string>Time step factor</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_tstop">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Stop time</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_dt_min">
+     <property name="text">
+      <string>Minimum time step</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="3">
+    <widget class="QCheckBox" name="checkbox_pymfix_output">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Show pyMFiX output</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="3">
+    <widget class="CheckBox" name="checkbox_keyword_detect_stall">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>Detect stall</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
+   <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
    <class>LineEdit</class>
    <extends>QLineEdit</extends>
    <header>mfixgui.widgets.base</header>
+  </customwidget>
+  <customwidget>
+   <class>GroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>mfixgui.widgets.base</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

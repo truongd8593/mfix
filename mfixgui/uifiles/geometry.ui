@@ -654,7 +654,7 @@ background-color: transparent;
           </font>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>30</number>
          </property>
          <widget class="QWidget" name="none"/>
          <widget class="QWidget" name="sphere">
@@ -4785,7 +4785,7 @@ background-color: transparent;
             <number>5</number>
            </property>
            <item row="3" column="2" colspan="3">
-            <widget class="LineEdit" name="lineedit_transform_scalex"/>
+            <widget class="LineEdit" name="lineedit_transf_scalex"/>
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_29">
@@ -4798,10 +4798,10 @@ background-color: transparent;
             </widget>
            </item>
            <item row="4" column="7">
-            <widget class="LineEdit" name="lineedit_translate_translatez"/>
+            <widget class="LineEdit" name="lineedit_transf_translatez"/>
            </item>
            <item row="4" column="5" colspan="2">
-            <widget class="LineEdit" name="lineedit_translate_translatey"/>
+            <widget class="LineEdit" name="lineedit_transf_translatey"/>
            </item>
            <item row="3" column="0" colspan="2">
             <widget class="QLabel" name="label_28">
@@ -4811,16 +4811,16 @@ background-color: transparent;
             </widget>
            </item>
            <item row="3" column="7">
-            <widget class="LineEdit" name="lineedit_transform_scalez"/>
+            <widget class="LineEdit" name="lineedit_transf_scalez"/>
            </item>
            <item row="5" column="7">
-            <widget class="LineEdit" name="lineedit_rotate_rotationz"/>
+            <widget class="LineEdit" name="lineedit_transf_rotationz"/>
            </item>
            <item row="4" column="2" colspan="3">
-            <widget class="LineEdit" name="lineedit_translate_translatex"/>
+            <widget class="LineEdit" name="lineedit_transf_translatex"/>
            </item>
            <item row="5" column="5" colspan="2">
-            <widget class="LineEdit" name="lineedit_rotate_rotationy"/>
+            <widget class="LineEdit" name="lineedit_transf_rotationy"/>
            </item>
            <item row="6" column="5">
             <spacer name="verticalSpacer_15">
@@ -4846,10 +4846,10 @@ background-color: transparent;
             </widget>
            </item>
            <item row="3" column="5" colspan="2">
-            <widget class="LineEdit" name="lineedit_transform_scaley"/>
+            <widget class="LineEdit" name="lineedit_transf_scaley"/>
            </item>
            <item row="5" column="2" colspan="3">
-            <widget class="LineEdit" name="lineedit_rotate_rotationx"/>
+            <widget class="LineEdit" name="lineedit_transf_rotationx"/>
            </item>
            <item row="5" column="8">
             <widget class="QLabel" name="label_139">
@@ -5656,6 +5656,7 @@ background-color: transparent;
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>checkbox_keyword_no_k</tabstop>
   <tabstop>lineedit_keyword_x_min</tabstop>
   <tabstop>lineedit_keyword_x_max</tabstop>
   <tabstop>lineedit_keyword_y_min</tabstop>
@@ -5672,86 +5673,79 @@ background-color: transparent;
   <tabstop>toolbutton_geometry_union</tabstop>
   <tabstop>toolbutton_geometry_intersect</tabstop>
   <tabstop>toolbutton_geometry_difference</tabstop>
-  <tabstop>lineedit_sphere_theta_resolution</tabstop>
-  <tabstop>lineedit_sphere_phi_resolution</tabstop>
-  <tabstop>lineedit_sphere_radius</tabstop>
-  <tabstop>lineedit_sphere_implicit_center_x</tabstop>
-  <tabstop>lineedit_sphere_implicit_center_y</tabstop>
-  <tabstop>lineedit_sphere_implicit_radius</tabstop>
-  <tabstop>lineedit_sphere_implicit_center_z</tabstop>
-  <tabstop>lineedit_box_implicit_length_y</tabstop>
-  <tabstop>lineedit_box_implicit_center_y</tabstop>
-  <tabstop>lineedit_box_implicit_length_z</tabstop>
-  <tabstop>lineedit_box_implicit_center_z</tabstop>
-  <tabstop>lineedit_box_implicit_center_x</tabstop>
-  <tabstop>lineedit_box_implicit_length_x</tabstop>
-  <tabstop>lineedit_box_implicit_rotation_x</tabstop>
-  <tabstop>lineedit_box_implicit_rotation_y</tabstop>
-  <tabstop>lineedit_box_implicit_rotation_z</tabstop>
-  <tabstop>lineedit_cone_implicit_radius</tabstop>
-  <tabstop>lineedit_cone_implicit_center_z</tabstop>
-  <tabstop>lineedit_cone_implicit_center_y</tabstop>
+  <tabstop>lineedit_cylinder_center_x</tabstop>
+  <tabstop>lineedit_cylinder_center_y</tabstop>
+  <tabstop>lineedit_cylinder_center_z</tabstop>
+  <tabstop>lineedit_cylinder_rotation_x</tabstop>
+  <tabstop>lineedit_cylinder_rotation_y</tabstop>
+  <tabstop>lineedit_cylinder_rotation_z</tabstop>
+  <tabstop>lineedit_cylinder_height</tabstop>
+  <tabstop>lineedit_cylinder_radius</tabstop>
+  <tabstop>lineedit_cylinder_resolution</tabstop>
   <tabstop>lineedit_cone_implicit_center_x</tabstop>
-  <tabstop>lineedit_cone_implicit_height</tabstop>
+  <tabstop>lineedit_cone_implicit_center_y</tabstop>
+  <tabstop>lineedit_cone_implicit_center_z</tabstop>
   <tabstop>lineedit_cone_implicit_rotation_x</tabstop>
   <tabstop>lineedit_cone_implicit_rotation_y</tabstop>
   <tabstop>lineedit_cone_implicit_rotation_z</tabstop>
-  <tabstop>lineedit_cylinder_implicit_center_z</tabstop>
-  <tabstop>lineedit_cylinder_implicit_height</tabstop>
-  <tabstop>lineedit_cylinder_implicit_center_y</tabstop>
+  <tabstop>lineedit_cone_implicit_height</tabstop>
+  <tabstop>lineedit_cone_implicit_radius</tabstop>
   <tabstop>lineedit_cylinder_implicit_center_x</tabstop>
-  <tabstop>lineedit_cylinder_implicit_radius</tabstop>
-  <tabstop>lineedit_cylinder_implicit_rotation_y</tabstop>
+  <tabstop>lineedit_cylinder_implicit_center_y</tabstop>
+  <tabstop>lineedit_cylinder_implicit_center_z</tabstop>
   <tabstop>lineedit_cylinder_implicit_rotation_x</tabstop>
+  <tabstop>lineedit_cylinder_implicit_rotation_y</tabstop>
   <tabstop>lineedit_cylinder_implicit_rotation_z</tabstop>
-  <tabstop>lineedit_quadric_implicit_a2</tabstop>
-  <tabstop>lineedit_quadric_implicit_a6</tabstop>
-  <tabstop>lineedit_quadric_implicit_a8</tabstop>
-  <tabstop>lineedit_quadric_implicit_a1</tabstop>
-  <tabstop>lineedit_quadric_implicit_a9</tabstop>
-  <tabstop>lineedit_quadric_implicit_a7</tabstop>
-  <tabstop>lineedit_quadric_implicit_a0</tabstop>
-  <tabstop>lineedit_quadric_implicit_a3</tabstop>
-  <tabstop>lineedit_quadric_implicit_a4</tabstop>
-  <tabstop>lineedit_quadric_implicit_a5</tabstop>
+  <tabstop>lineedit_cylinder_implicit_height</tabstop>
+  <tabstop>lineedit_cylinder_implicit_radius</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_x_2</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_y_2</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_z_2</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_x_2</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_y_2</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_z_2</tabstop>
+  <tabstop>lineedit_quadric_implicit_a0</tabstop>
+  <tabstop>lineedit_quadric_implicit_a1</tabstop>
+  <tabstop>lineedit_quadric_implicit_a2</tabstop>
+  <tabstop>lineedit_quadric_implicit_a3</tabstop>
+  <tabstop>lineedit_quadric_implicit_a4</tabstop>
+  <tabstop>lineedit_quadric_implicit_a5</tabstop>
+  <tabstop>lineedit_quadric_implicit_a6</tabstop>
+  <tabstop>lineedit_quadric_implicit_a7</tabstop>
+  <tabstop>lineedit_quadric_implicit_a8</tabstop>
+  <tabstop>lineedit_quadric_implicit_a9</tabstop>
   <tabstop>lineedit_quadric_minx</tabstop>
   <tabstop>lineedit_quadric_miny</tabstop>
   <tabstop>lineedit_quadric_minz</tabstop>
   <tabstop>lineedit_quadric_maxx</tabstop>
   <tabstop>lineedit_quadric_maxy</tabstop>
   <tabstop>lineedit_quadric_maxz</tabstop>
-  <tabstop>lineedit_superquadric_implicit_radius</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_x</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_y</tabstop>
   <tabstop>lineedit_superquadric_implicit_center_z</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_x</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_y</tabstop>
   <tabstop>lineedit_superquadric_implicit_rotation_z</tabstop>
+  <tabstop>lineedit_superquadric_implicit_radius</tabstop>
   <tabstop>lineedit_superquadric_implicit_phi</tabstop>
   <tabstop>lineedit_superquadric_implicit_theta</tabstop>
   <tabstop>lineedit_superquadric_implicit_thickness</tabstop>
   <tabstop>checkbox_superquadric_implicit_toroidal</tabstop>
+  <tabstop>lineedit_torus_translation_x</tabstop>
   <tabstop>lineedit_torus_translation_y</tabstop>
   <tabstop>lineedit_torus_translation_z</tabstop>
   <tabstop>lineedit_torus_rotation_x</tabstop>
-  <tabstop>lineedit_torus_rotation_z</tabstop>
   <tabstop>lineedit_torus_rotation_y</tabstop>
-  <tabstop>lineedit_torus_translation_x</tabstop>
+  <tabstop>lineedit_torus_rotation_z</tabstop>
   <tabstop>lineedit_torus_ringradius</tabstop>
   <tabstop>lineedit_torus_crosssectionradius</tabstop>
-  <tabstop>lineedit_boy_translation_z</tabstop>
-  <tabstop>lineedit_boy_zscale</tabstop>
-  <tabstop>lineedit_boy_rotation_y</tabstop>
-  <tabstop>lineedit_boy_translation_y</tabstop>
   <tabstop>lineedit_boy_translation_x</tabstop>
+  <tabstop>lineedit_boy_translation_y</tabstop>
+  <tabstop>lineedit_boy_translation_z</tabstop>
   <tabstop>lineedit_boy_rotation_x</tabstop>
+  <tabstop>lineedit_boy_rotation_y</tabstop>
   <tabstop>lineedit_boy_rotation_z</tabstop>
+  <tabstop>lineedit_boy_zscale</tabstop>
   <tabstop>lineedit_conic_spiral_translation_x</tabstop>
   <tabstop>lineedit_conic_spiral_translation_y</tabstop>
   <tabstop>lineedit_conic_spiral_translation_z</tabstop>
@@ -5776,10 +5770,10 @@ background-color: transparent;
   <tabstop>lineedit_dini_rotation_z</tabstop>
   <tabstop>lineedit_dini_ascale</tabstop>
   <tabstop>lineedit_dini_bscale</tabstop>
-  <tabstop>lineedit_ellipsoid_translation_y</tabstop>
-  <tabstop>lineedit_ellipsoid_rotation_x</tabstop>
-  <tabstop>lineedit_ellipsoid_translation_z</tabstop>
   <tabstop>lineedit_ellipsoid_translation_x</tabstop>
+  <tabstop>lineedit_ellipsoid_translation_y</tabstop>
+  <tabstop>lineedit_ellipsoid_translation_z</tabstop>
+  <tabstop>lineedit_ellipsoid_rotation_x</tabstop>
   <tabstop>lineedit_ellipsoid_rotation_y</tabstop>
   <tabstop>lineedit_ellipsoid_rotation_z</tabstop>
   <tabstop>lineedit_ellipsoid_radius_x</tabstop>
@@ -5792,10 +5786,10 @@ background-color: transparent;
   <tabstop>lineedit_enneper_rotation_y</tabstop>
   <tabstop>lineedit_enneper_rotation_z</tabstop>
   <tabstop>lineedit_figure_8_klein_translation_x</tabstop>
-  <tabstop>lineedit_figure_8_klein_translation_z</tabstop>
   <tabstop>lineedit_figure_8_klein_translation_y</tabstop>
-  <tabstop>lineedit_figure_8_klein_rotation_y</tabstop>
+  <tabstop>lineedit_figure_8_klein_translation_z</tabstop>
   <tabstop>lineedit_figure_8_klein_rotation_x</tabstop>
+  <tabstop>lineedit_figure_8_klein_rotation_y</tabstop>
   <tabstop>lineedit_figure_8_klein_rotation_z</tabstop>
   <tabstop>lineedit_figure_8_klein_radius</tabstop>
   <tabstop>lineedit_klein_translation_x</tabstop>
@@ -5804,82 +5798,82 @@ background-color: transparent;
   <tabstop>lineedit_klein_rotation_x</tabstop>
   <tabstop>lineedit_klein_rotation_y</tabstop>
   <tabstop>lineedit_klein_rotation_z</tabstop>
-  <tabstop>lineedit_mobius_rotation_x</tabstop>
-  <tabstop>lineedit_mobius_rotation_z</tabstop>
   <tabstop>lineedit_mobius_translation_x</tabstop>
   <tabstop>lineedit_mobius_translation_y</tabstop>
   <tabstop>lineedit_mobius_translation_z</tabstop>
+  <tabstop>lineedit_mobius_rotation_x</tabstop>
   <tabstop>lineedit_mobius_rotation_y</tabstop>
+  <tabstop>lineedit_mobius_rotation_z</tabstop>
   <tabstop>lineedit_mobius_radius</tabstop>
-  <tabstop>lineedit_random_hills_scale_x</tabstop>
-  <tabstop>checkbox_random_hills_allow_random</tabstop>
-  <tabstop>lineedit_random_hills_nhills</tabstop>
-  <tabstop>lineedit_random_hills_translation_y</tabstop>
   <tabstop>lineedit_random_hills_translation_x</tabstop>
+  <tabstop>lineedit_random_hills_translation_y</tabstop>
   <tabstop>lineedit_random_hills_translation_z</tabstop>
   <tabstop>lineedit_random_hills_rotation_x</tabstop>
   <tabstop>lineedit_random_hills_rotation_y</tabstop>
   <tabstop>lineedit_random_hills_rotation_z</tabstop>
-  <tabstop>lineedit_random_hills_amplitude</tabstop>
+  <tabstop>lineedit_random_hills_nhills</tabstop>
+  <tabstop>lineedit_random_hills_variance_x</tabstop>
+  <tabstop>lineedit_random_hills_scale_x</tabstop>
   <tabstop>lineedit_random_hills_variance_y</tabstop>
   <tabstop>lineedit_random_hills_scale_y</tabstop>
-  <tabstop>lineedit_random_hills_variance_x</tabstop>
+  <tabstop>lineedit_random_hills_amplitude</tabstop>
   <tabstop>lineedit_random_hills_scale_amplitude</tabstop>
-  <tabstop>lineedit_roman_translation_z</tabstop>
+  <tabstop>checkbox_random_hills_allow_random</tabstop>
   <tabstop>lineedit_roman_translation_x</tabstop>
+  <tabstop>lineedit_roman_translation_y</tabstop>
+  <tabstop>lineedit_roman_translation_z</tabstop>
   <tabstop>lineedit_roman_rotation_x</tabstop>
   <tabstop>lineedit_roman_rotation_y</tabstop>
   <tabstop>lineedit_roman_rotation_z</tabstop>
-  <tabstop>lineedit_roman_translation_y</tabstop>
   <tabstop>lineedit_roman_radius</tabstop>
-  <tabstop>lineedit_super_ellipsoid_translation_z</tabstop>
-  <tabstop>lineedit_super_ellipsoid_translation_y</tabstop>
   <tabstop>lineedit_super_ellipsoid_translation_x</tabstop>
-  <tabstop>lineedit_super_ellipsoid_rotation_z</tabstop>
-  <tabstop>lineedit_super_ellipsoid_rotation_y</tabstop>
+  <tabstop>lineedit_super_ellipsoid_translation_y</tabstop>
+  <tabstop>lineedit_super_ellipsoid_translation_z</tabstop>
   <tabstop>lineedit_super_ellipsoid_rotation_x</tabstop>
-  <tabstop>lineedit_super_ellipsoid_radius_z</tabstop>
-  <tabstop>lineedit_super_ellipsoid_radius_y</tabstop>
+  <tabstop>lineedit_super_ellipsoid_rotation_y</tabstop>
+  <tabstop>lineedit_super_ellipsoid_rotation_z</tabstop>
   <tabstop>lineedit_super_ellipsoid_radius_x</tabstop>
+  <tabstop>lineedit_super_ellipsoid_radius_y</tabstop>
+  <tabstop>lineedit_super_ellipsoid_radius_z</tabstop>
   <tabstop>lineedit_super_ellipsoid_n1</tabstop>
   <tabstop>lineedit_super_ellipsoid_n2</tabstop>
-  <tabstop>lineedit_super_toroid_translation_y</tabstop>
-  <tabstop>lineedit_super_toroid_rotation_z</tabstop>
-  <tabstop>lineedit_super_toroid_rotation_x</tabstop>
-  <tabstop>lineedit_super_ellipsoid_radius_z_2</tabstop>
-  <tabstop>lineedit_super_toroid_rotation_y</tabstop>
-  <tabstop>lineedit_super_ellipsoid_radius_y_2</tabstop>
-  <tabstop>lineedit_super_ellipsoid_radius_x_2</tabstop>
   <tabstop>lineedit_super_toroid_translation_x</tabstop>
+  <tabstop>lineedit_super_toroid_translation_y</tabstop>
   <tabstop>lineedit_super_toroid_translation_z</tabstop>
-  <tabstop>lineedit_torus_crosssectionradius_2</tabstop>
+  <tabstop>lineedit_super_toroid_rotation_x</tabstop>
+  <tabstop>lineedit_super_toroid_rotation_y</tabstop>
+  <tabstop>lineedit_super_toroid_rotation_z</tabstop>
+  <tabstop>lineedit_super_ellipsoid_radius_x_2</tabstop>
+  <tabstop>lineedit_super_ellipsoid_radius_y_2</tabstop>
+  <tabstop>lineedit_super_ellipsoid_radius_z_2</tabstop>
   <tabstop>lineedit_torus_ringradius_2</tabstop>
-  <tabstop>lineedit_super_ellipsoid_n2_2</tabstop>
+  <tabstop>lineedit_torus_crosssectionradius_2</tabstop>
   <tabstop>lineedit_super_ellipsoid_n1_2</tabstop>
-  <tabstop>lineedit_stl_extent_x_min</tabstop>
-  <tabstop>lineedit_stl_extent_y_min</tabstop>
-  <tabstop>lineedit_stl_extent_y_max</tabstop>
-  <tabstop>lineedit_stl_extent_x_max</tabstop>
-  <tabstop>lineedit_stl_extent_z_min</tabstop>
-  <tabstop>lineedit_stl_extent_z_max</tabstop>
+  <tabstop>lineedit_super_ellipsoid_n2_2</tabstop>
+  <tabstop>checkbox_stl__about_origin</tabstop>
+  <tabstop>combobox_stl_units</tabstop>
+  <tabstop>lineedit_stl_scale</tabstop>
   <tabstop>lineedit_stl_translation_x</tabstop>
   <tabstop>lineedit_stl_translation_y</tabstop>
   <tabstop>lineedit_stl_translation_z</tabstop>
   <tabstop>lineedit_stl_rotation_x</tabstop>
-  <tabstop>lineedit_stl_rotation_z</tabstop>
-  <tabstop>combobox_stl_units</tabstop>
   <tabstop>lineedit_stl_rotation_y</tabstop>
-  <tabstop>lineedit_stl_scale</tabstop>
-  <tabstop>checkbox_stl__about_origin</tabstop>
-  <tabstop>lineedit_transform_scalex</tabstop>
-  <tabstop>lineedit_translate_translatez</tabstop>
-  <tabstop>lineedit_translate_translatey</tabstop>
-  <tabstop>lineedit_transform_scalez</tabstop>
-  <tabstop>lineedit_rotate_rotationz</tabstop>
-  <tabstop>lineedit_translate_translatex</tabstop>
-  <tabstop>lineedit_rotate_rotationy</tabstop>
-  <tabstop>lineedit_transform_scaley</tabstop>
-  <tabstop>lineedit_rotate_rotationx</tabstop>
+  <tabstop>lineedit_stl_rotation_z</tabstop>
+  <tabstop>lineedit_stl_extent_x_min</tabstop>
+  <tabstop>lineedit_stl_extent_x_max</tabstop>
+  <tabstop>lineedit_stl_extent_y_min</tabstop>
+  <tabstop>lineedit_stl_extent_y_max</tabstop>
+  <tabstop>lineedit_stl_extent_z_min</tabstop>
+  <tabstop>lineedit_stl_extent_z_max</tabstop>
+  <tabstop>lineedit_transf_scalex</tabstop>
+  <tabstop>lineedit_transf_scaley</tabstop>
+  <tabstop>lineedit_transf_scalez</tabstop>
+  <tabstop>lineedit_transf_translatex</tabstop>
+  <tabstop>lineedit_transf_translatey</tabstop>
+  <tabstop>lineedit_transf_translatez</tabstop>
+  <tabstop>lineedit_transf_rotationx</tabstop>
+  <tabstop>lineedit_transf_rotationy</tabstop>
+  <tabstop>lineedit_transf_rotationz</tabstop>
   <tabstop>checkbox_clean_lines_to_points</tabstop>
   <tabstop>checkbox_clean_polys_to_lines</tabstop>
   <tabstop>checkbox_clean_strips_to_polys</tabstop>
@@ -5891,36 +5885,79 @@ background-color: transparent;
   <tabstop>checkbox_decimation_split_mesh</tabstop>
   <tabstop>checkbox_decimation_delete_vertices</tabstop>
   <tabstop>lineedit_quadric_decimation_target_reduction</tabstop>
-  <tabstop>lineedit_quadric_clustering_divisions_y</tabstop>
   <tabstop>lineedit_quadric_clustering_divisions_x</tabstop>
+  <tabstop>lineedit_quadric_clustering_divisions_y</tabstop>
   <tabstop>lineedit_quadric_clustering_divisions_z</tabstop>
   <tabstop>checkbox_quadric_clustering_auto_adjust_divisions</tabstop>
+  <tabstop>pushbutton_boolean_flip_order</tabstop>
   <tabstop>lineedit_iterations</tabstop>
   <tabstop>lineedit_relaxation</tabstop>
   <tabstop>lineedit_edgeangle</tabstop>
   <tabstop>checkbox_boundarysmoothing</tabstop>
   <tabstop>checkbox_featureedgesmoothing</tabstop>
   <tabstop>lineedit_featureangle</tabstop>
-  <tabstop>lineedit_passband</tabstop>
-  <tabstop>checkbox_normalize</tabstop>
   <tabstop>lineedit_windowed_sinc_iterations</tabstop>
-  <tabstop>checkbox_windowed_sinc_featureedgesmoothing</tabstop>
   <tabstop>lineedit_windowed_sinc_edgeangle</tabstop>
-  <tabstop>lineedit_windowed_sinc_featureangle</tabstop>
-  <tabstop>checkbox_windowed_sinc_boundarysmoothing</tabstop>
+  <tabstop>lineedit_passband</tabstop>
   <tabstop>checkbox_manifoldsmoothing</tabstop>
-  <tabstop>checkbox_reversenormals</tabstop>
+  <tabstop>checkbox_normalize</tabstop>
+  <tabstop>checkbox_windowed_sinc_boundarysmoothing</tabstop>
+  <tabstop>checkbox_windowed_sinc_featureedgesmoothing</tabstop>
+  <tabstop>lineedit_windowed_sinc_featureangle</tabstop>
   <tabstop>checkbox_reversecells</tabstop>
+  <tabstop>checkbox_reversenormals</tabstop>
   <tabstop>lineedit_sample_implicit_samplesx</tabstop>
-  <tabstop>lineedit_sample_implicit_samplesz</tabstop>
   <tabstop>lineedit_sample_implicit_samplesy</tabstop>
-  <tabstop>lineedit_sample_implicit_maxy</tabstop>
-  <tabstop>lineedit_sample_implicit_maxx</tabstop>
+  <tabstop>lineedit_sample_implicit_samplesz</tabstop>
   <tabstop>lineedit_sample_implicit_minx</tabstop>
   <tabstop>lineedit_sample_implicit_miny</tabstop>
   <tabstop>lineedit_sample_implicit_minz</tabstop>
+  <tabstop>lineedit_sample_implicit_maxx</tabstop>
+  <tabstop>lineedit_sample_implicit_maxy</tabstop>
   <tabstop>lineedit_sample_implicit_maxz</tabstop>
-  <tabstop>pushbutton_boolean_flip_order</tabstop>
+  <tabstop>lineedit_sphere_center_x</tabstop>
+  <tabstop>lineedit_sphere_center_y</tabstop>
+  <tabstop>lineedit_sphere_center_z</tabstop>
+  <tabstop>lineedit_sphere_rotation_x</tabstop>
+  <tabstop>lineedit_sphere_rotation_y</tabstop>
+  <tabstop>lineedit_sphere_rotation_z</tabstop>
+  <tabstop>lineedit_sphere_radius</tabstop>
+  <tabstop>lineedit_sphere_theta_resolution</tabstop>
+  <tabstop>lineedit_sphere_phi_resolution</tabstop>
+  <tabstop>lineedit_sphere_implicit_center_x</tabstop>
+  <tabstop>lineedit_sphere_implicit_center_y</tabstop>
+  <tabstop>lineedit_sphere_implicit_center_z</tabstop>
+  <tabstop>lineedit_sphere_implicit_radius</tabstop>
+  <tabstop>lineedit_box_center_x</tabstop>
+  <tabstop>lineedit_box_center_y</tabstop>
+  <tabstop>lineedit_box_center_z</tabstop>
+  <tabstop>lineedit_box_rotation_x</tabstop>
+  <tabstop>lineedit_box_rotation_y</tabstop>
+  <tabstop>lineedit_box_rotation_z</tabstop>
+  <tabstop>lineedit_box_length_x</tabstop>
+  <tabstop>lineedit_box_length_y</tabstop>
+  <tabstop>lineedit_box_length_z</tabstop>
+  <tabstop>lineedit_box_implicit_center_x</tabstop>
+  <tabstop>lineedit_box_implicit_center_y</tabstop>
+  <tabstop>lineedit_box_implicit_center_z</tabstop>
+  <tabstop>lineedit_box_implicit_rotation_x</tabstop>
+  <tabstop>lineedit_box_implicit_rotation_y</tabstop>
+  <tabstop>lineedit_box_implicit_rotation_z</tabstop>
+  <tabstop>lineedit_box_implicit_length_x</tabstop>
+  <tabstop>lineedit_box_implicit_length_y</tabstop>
+  <tabstop>lineedit_box_implicit_length_z</tabstop>
+  <tabstop>lineedit_cone_center_x</tabstop>
+  <tabstop>lineedit_cone_center_y</tabstop>
+  <tabstop>lineedit_cone_center_z</tabstop>
+  <tabstop>lineedit_cone_rotation_x</tabstop>
+  <tabstop>lineedit_cone_rotation_y</tabstop>
+  <tabstop>lineedit_cone_rotation_z</tabstop>
+  <tabstop>lineedit_cone_direction_x</tabstop>
+  <tabstop>lineedit_cone_direction_y</tabstop>
+  <tabstop>lineedit_cone_direction_z</tabstop>
+  <tabstop>lineedit_cone_height</tabstop>
+  <tabstop>lineedit_cone_radius</tabstop>
+  <tabstop>linerdit_cone_resolution</tabstop>
  </tabstops>
  <resources/>
  <connections/>
