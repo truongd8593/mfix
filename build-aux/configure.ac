@@ -135,7 +135,7 @@ AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies]
 # release tarball. Running "touch *" in MFIX_HOME is another workaround for this
 # issue.
 #
-# AM_MAINTAINER_MODE([disable])
+AM_MAINTAINER_MODE([disable])
 
 AC_ARG_ENABLE([mkl],
 [  --enable-mkl    Enable Math Kernel Library support],
