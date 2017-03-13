@@ -535,12 +535,12 @@ def reinitialize():
             tmp.flush()
             # MFiX truncates path to 80 characters, so try to keep it short.
             # split tmp name (defaults to absolute) on cwd, remove leading slash
-            relative_name = tmp.name.split(os.getcwdu())[-1].lstrip('/')
-            status_code, command_output = \
-              mfix_thread.do_command("REINIT", args={'mfix_dat': relative_name})
+            relative_name = tmp.name.split(os.getcwd())[-1].lstrip('/')
+            status_code, command_output = mfix_thread.do_command(
+                "REINIT", args={'mfix_dat': relative_name})
     except Exception as e:
         status_code = 500
-        command_output = "Error saving submitted project file"
+        command_output = "Error %s saving submitted project file" % e
     return api_response(status_code, command_output)
 
 @FLASK_APP.route('/set/<modname>/<varname>', methods=['POST'])
