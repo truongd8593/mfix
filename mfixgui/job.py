@@ -83,19 +83,6 @@ class PymfixAPI(QNetworkAccessManager):
         returned to the caller. Callbacks are set on the request to response
         and error handlers within this class.
 
-        :param method: HTTP verb to be used in API request
-        :type method: str
-        :param endpoint: API endpoint (URL portion after the domain)
-        :type endpoint: str
-        :param data: Data to be included in request (only used in PUT and POST)
-        :type data: str
-        :param headers: HTTP headers to include in request
-        :type headers: dict
-        :param handlers: Response and error handling signals
-        :type handlers: dict
-        :return: Request ID
-        :rtype: string
-
         The "handlers" dictionary must contain one or both of the keys 'error'
         and 'response'. These must be `QtCore.Signal` objects, and the internal
         handlers in this class will emit these signals after local response
@@ -144,11 +131,6 @@ class PymfixAPI(QNetworkAccessManager):
         the string content is emitted via the specified signal. If the response
         is not parsable as JSON, an error JSON string is assembled and emitted
         via the specified signal.
-
-        :param response_object: API call response object
-        :type response_object: QtNetwork.QNetworkReply
-        :param signal: Signal to emit
-        :type signal: QtCore.Signal
         """
         try:
             response = response_object.readAll()
@@ -172,12 +154,6 @@ class PymfixAPI(QNetworkAccessManager):
     def slot_protocol_error(self, req_id, response_object, signal):
         """Process API response errors then emit a signal containing the
         request id and `QtNetwork.QNetworkReply` object to the signal object provided.
-
-        :param req_id: API request ID
-        :param response_object: API call response object
-        :type response_object: QtNetwork.QNetworkReply
-        :param signal: Signal to emit
-        :type signal: QtCore.Signal
         """
         try:
             response_error_code = response_object.error()
@@ -202,33 +178,20 @@ class PymfixAPI(QNetworkAccessManager):
             raise Exception
 
     def get(self, endpoint, handlers=None):
-        """API request via HTTP GET
-
-        :param endpoint: API endpoint (URL suffix spit at and excluding domain)
-        :param handlers: Dictionary containing ::QtCore.Signal:: objects to
-                         connect to API response and error signals"""
+        """API request via HTTP GET"""
         req_id = self.api_request(
                     'get', endpoint, handlers=handlers)
         return req_id
 
     def put(self, endpoint, data=b'', handlers=None):
-        """API request via HTTP PUT
+        """API request via HTTP PUT"""
 
-        :param endpoint: API endpoint (URL suffix spit at and excluding domain)
-        :param data: Data to include in request body
-        :param handlers: Dictionary containing ::QtCore.Signal:: objects to
-                         connect to API response and error signals"""
         req_id = self.api_request(
                     'put', endpoint, data=data, handlers=handlers)
         return req_id
 
     def post(self, endpoint, data=b'', headers=None, handlers=None):
-        """API request via HTTP POST
-
-        :param endpoint: API endpoint (URL suffix spit at and excluding domain)
-        :param data: Data to include in request body
-        :param handlers: Dictionary containing ::QtCore.Signal:: objects to
-                         connect to API response and error signals"""
+        """API request via HTTP POST"""
         req_id = self.api_request(
                     'post', endpoint, data=data, headers=headers, handlers=handlers)
         return req_id
@@ -278,13 +241,7 @@ class JobManager(QObject):
         self.API_ERROR_HARD_LIMIT = 6 # trigger pid check
 
     def try_to_connect(self, pidfile):
-        """Create Job object if one does not yet exist.
-
-        :param pidfile: Name of file containing MFiX process and connection
-                        details. The file name must be prefixed with an
-                        absolute path.
-        """
-
+        """Create Job object if one does not yet exist."""
         if self.job:
             pass
         elif os.path.isfile(pidfile):
@@ -300,6 +257,7 @@ class JobManager(QObject):
             self.job.sig_api_success.connect(self.reset_api_error_count)
             # TODO? handle with signal so this can be managed in gui
         else:
+            # Nothing to do
             self.warning("Can't start new job")
 
     def mfix_proc_is_alive(self):
@@ -325,8 +283,7 @@ class JobManager(QObject):
         self.api_error_count = 0
 
     def increment_api_error_count(self):
-        """Increment API error count. Signal job exit if limit
-        :class:`JobManager.API_ERROR_HARD_LIMIT` has been exceeded.
+        """Increment API error count. Signal job exit if limit has been exceeded.
         """
         self.api_error_count += 1
         count = self.api_error_count
@@ -452,27 +409,17 @@ class Job(QObject):
     """Class for managing and monitoring an MFiX job. This class contains
     methods for issuing requests to and handling responses from the MFiX API.
 
-    :param pidfile: Name of file containing MFiX API connection information.
-                    This string must contain the absolute path to the file.
+    pidfile: Name of file containing MFiX API connection information.
     """
 
-    #: Signal to emit at job exit. This is used for clean exit and fatal errors
+    # Signals
     sig_job_exit = Signal()
-    #: Signal to be bound to a local response handler
     sig_api_response = Signal(str, str)
-    #: Signal to be emitted when an API error is encountered
     sig_api_error = Signal()
-    #: Signal to be emitted after an API response is successfully parsed
     sig_api_success = Signal()
-
-    #: Signal to be bound to API test response handler
     sig_handle_api_test = Signal(str, str)
-    #: Signal to be bound to API test error handler
     sig_handle_api_test_error = Signal(str, QObject)
-
-    #: Signal emitted when job status content has changed
     sig_update_job_status = Signal()
-    #: Signal emitted when running job state has changed
     sig_change_run_state = Signal()
 
     def __init__(self, parent, pidfile):
@@ -541,9 +488,6 @@ class Job(QObject):
 
         If API response includes a permenant failure or is not well formed,
         emit :class:`Job.sig_api_error` signal.
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API response in JSON string format
         """
         # this can be hit multiple times: until we hit JobManager error limit
         try:
@@ -568,21 +512,12 @@ class Job(QObject):
         self.sig_change_run_state.emit()
 
     def register_request(self, req_id, handler):
-        """Bind handler to req_id.
-
-        :param req_id: Request ID obtained from API call
-        :param handler: :class:`Job` method to call when a response is recieved
-        """
+        """Bind handler to req_id."""
         registered_requests = self.requests.get(req_id, set([]))
         registered_requests.add(handler)
         self.requests[req_id] = registered_requests
 
     def slot_api_response(self, req_id, response_string):
-        """Handler connected to :class:`Job.sig_api_response.
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
         try:
             response_json = json.loads(response_string)
         except Exception as e:
@@ -623,11 +558,6 @@ class Job(QObject):
         self.register_request(req_id, self.handle_pause)
 
     def handle_pause(self, req_id, response_string):
-        """Handler for responses to `pause` API requests
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
         self.handle_status(req_id, response_string)
         self.sig_change_run_state.emit()
 
@@ -636,11 +566,6 @@ class Job(QObject):
         self.register_request(req_id, self.handle_unpause)
 
     def handle_unpause(self, req_id, response_string):
-        """Handler for responses to `unpause` API requests
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
         self.handle_status(req_id, response_string)
         self.sig_change_run_state.emit()
 
@@ -649,11 +574,6 @@ class Job(QObject):
         self.register_request(req_id, self.handle_status)
 
     def handle_status(self, req_id, response_string):
-        """Handler for responses to `update_job_status`
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
         response_json = json.loads(response_string)
         self.status = json.loads(response_json.get('mfix_status'))
         if not self.status:
@@ -665,22 +585,14 @@ class Job(QObject):
         self.sig_change_run_state.emit()
 
     def set_pymfix_output(self, state):
-        """Toggle verbose Flask messages.
-
-        :param state: State to set Flask's logging. This must be one of
-                      'enable' or 'disable'."""
-
+        """Toggle verbose Flask messages."""
         state = 'enable' if state else 'disable'
         arg = 'logging/%s' % state
         req_id = self.api.post(arg, data=b'')
         self.register_request(req_id, self.handle_set_api_output)
 
     def handle_set_api_output(self, req_id, response_string):
-        """Handler for responses to `set_pymfix_output` API requests
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
+        """Handler for responses to `set_pymfix_output` API requests"""
         self.handle_status(req_id, response_string)
         self.sig_change_run_state.emit()
 
@@ -690,11 +602,7 @@ class Job(QObject):
         self.register_request(req_id, self.handle_stop_mfix)
 
     def handle_stop_mfix(self, req_id, response_string):
-        """Handler for responses to `stop_mfix` API requests
-
-        :param req_id: Request ID obtained from API call
-        :param response_string: API call response in JSON string format
-        """
+        """Handler for responses to `stop_mfix` API requests"""
         self.api_available = False
         self.api_status_timer.stop()
         self.handle_status(req_id, response_string)
