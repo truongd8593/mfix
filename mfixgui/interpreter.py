@@ -13,13 +13,6 @@ from qtpy import QtGui
 from qtpy.QtCore import QEvent, Qt
 
 
-# WISHLIST:
-#   syntax highlighting
-#   auto-complete
-#   readline
-#   clear window
-#   search
-
 class Interpreter(object):
 
     def eventFilter(self, obj, event):
@@ -85,7 +78,18 @@ class Interpreter(object):
             return
 
         self.interp_setup_done = True
-        for line in ("from __main__ import gui as g", "p = g.project"):
+        try:
+            from mfixgui.gui import gui as g
+            installed = True
+        except ImportError:
+            installed = False
+        if installed:
+            prelude = ("from mfixgui.gui import gui as g", "p = g.project")
+        else:
+            prelude = ("from __main__ import gui as g", "p = g.project")
+            installed = False
+
+        for line in prelude:
             self.ui.lineedit_interpreter_input.setText('>>> ' + line)
             self.handle_interp_line()
 
