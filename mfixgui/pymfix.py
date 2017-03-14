@@ -332,7 +332,7 @@ class Mfix(object):
         """Run DEM timesteps"""
         start = timer()
         for ii in range(DES_TIME_MARCH.factor):
-            print("DEM timestep %d / %d" % (ii, DES_TIME_MARCH.factor))
+            ##print("DEM timestep %d / %d" % (ii, DES_TIME_MARCH.factor))
             DES_TIME_MARCH.des_time_step(ii)
             self.check_requests()
         self.des_time_steps_walltime = float(timer() - start)
