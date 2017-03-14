@@ -758,9 +758,10 @@ class MainMenu(object):
         self.ui.pushButtonDeveloper.setVisible(enable)
         self.ui.pushButtonInterpreter.setVisible(enable)
         if enable:
-            self.ui.tabWidgetGraphics.addTab(self.ui.api_response, 'api response')
+            self.ui.tabWidgetGraphics.addTab(self.ui.mfix_response, 'MFiX responses')
         else:
-            self.ui.tabWidgetGraphics.removeTab(self.ui.tabWidgetGraphics.indexOf(self.ui.api_response))
+            self.ui.tabWidgetGraphics.removeTab(
+                self.ui.tabWidgetGraphics.indexOf(self.ui.mfix_response))
 
         self.settings.setValue('developer_mode', int(enable))
 
