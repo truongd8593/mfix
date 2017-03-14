@@ -395,6 +395,9 @@ class WorkflowWidget(QtWidgets.QWidget):
             else:
                 args = []
             proj.updateKeyword(key, value, args=args)
+        # change run type (restart)
+        if restart is not None:
+            proj.updateKeyword('run_type', restart)
 
         run_name = proj.get_value('run_name')
         if run_name is None:
@@ -433,7 +436,6 @@ class WorkflowWidget(QtWidgets.QWidget):
         else:
             self.submit_cmd = None
         self.run_cmd = run_dialog.get_run_command()
-        print(self.run_cmd)
         return True
 
     def run_project(self, mfx_file):
