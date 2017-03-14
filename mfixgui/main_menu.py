@@ -769,7 +769,9 @@ class MainMenu(object):
         self.main_menu_new_enable_list[idx] = checked
         for r in range(self.ui.main_menu_new_list.count()):
             item = self.ui.main_menu_new_list.item(r)
-            show = any(e==True and i==True for e, i in zip(self.main_menu_new_enable_list, item.enable_list))
+            show = any(e==True and i==True
+                       for (e,i) in
+                       zip(self.main_menu_new_enable_list, item.enable_list))
             item.setHidden(not show)
 
     def collect_template_files(self):

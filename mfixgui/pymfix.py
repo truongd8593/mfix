@@ -177,7 +177,6 @@ def main():
                 f.write('token=%s:%s\n' % (
                     FLASK_APP.config['TOKEN_NAME'],
                     FLASK_APP.config['SECRET_KEY']))
-            log.debug('flask starting on port %d', port)
             FLASK_APP.run(host=host,
                           port=port, debug=debug,
                           use_reloader=use_reloader)
@@ -197,14 +196,13 @@ def main():
         except OSError as e:
             if e.errno != errno.ENOENT:
                 raise
-        os._exit(0)
+        os._exit(0) # Why?  this avoids all deallocators and atexit hooks
 
     else:
         # nothing else for rank>0 to do
         mfix_thread.thread.join()
 
 
-# FIXME: it would be make sense to subclass Thread
 class Mfix(object):
     requests = {}
     responses = {}
@@ -541,7 +539,7 @@ def reinitialize():
             # split tmp name (defaults to absolute) on cwd, remove leading slash
             relative_name = tmp.name.split(os.getcwd())[-1].lstrip('/')
             status_code, command_output = mfix_thread.do_command("REINIT",
-                                                                 args={'mfix_dat': relative_name})
+                                        args={'mfix_dat': relative_name})
     except Exception as e:
         status_code = 500
         command_output = "Error %s saving submitted project file" % e

@@ -246,6 +246,8 @@ class JobManager(QObject):
 
 
     def cleanup_stale_pidfile(self, pidfile):
+        """Delete pidfile if it refers to a job that is no longer running.
+        Return True if file was stale/deleted"""
         #  TODO extend for queued jobs
         try:
             process_info = get_process_info(pidfile)
@@ -254,18 +256,19 @@ class JobManager(QObject):
             return True
         pid = process_info.get('pid')
         job_id = process_info.get('qjobid')
-        if job_id is None and pid is not None:
+        if job_id is not None: # TODO check for remote job
+            return False
+        if pid is not None:
             try:
                 os.kill(int(pid), 0) # Succeeds if process is running
                 return False
             except Exception as e:
                 self.error('MFiX process %s: %s' % (pid, e))
-                try:
-                    self.warning("Removing stale file %s" % pidfile)
-                    os.unlink(pidfile)
-
-                except Exception as e:
-                    self.error('%s: %s' % (pidfile, e))
+        try:
+            self.warning("Removing stale file %s" % pidfile)
+            os.unlink(pidfile)
+        except Exception as e:
+            self.error('%s: %s' % (pidfile, e))
         return True
 
 
