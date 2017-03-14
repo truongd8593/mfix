@@ -167,6 +167,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.mfix_available = False
         self.open_succeeded = False
         self.unsaved_flag = False
+        self.last_line = None
         self.run_dialog = None
         if set_splash_text is not None:
             self.set_splash_text = set_splash_text
@@ -1612,7 +1613,6 @@ class MfixGui(QtWidgets.QMainWindow,
         for line in lines:
             if self.can_skip(line):
                 continue
-
             self.print_internal(line, color=color, font='Courier')
         self.scan_errors(lines)
 
@@ -1630,6 +1630,10 @@ class MfixGui(QtWidgets.QMainWindow,
         self.scan_errors(lines)
 
     def print_internal(self, line, color=None, font=None):
+        if line == self.last_line: # Avoid repeated output lines
+            return
+        self.last_line = line
+
         qtextbrowser = self.ui.command_output
         stripped = line.strip()
         if not stripped:
@@ -1657,7 +1661,7 @@ class MfixGui(QtWidgets.QMainWindow,
         char_format = QtGui.QTextCharFormat()
 
         # HACK is this going too far?  we should define message types, not infer from messages
-        if any(x in lower for x in ('error', 'warn', 'fail')) and not 'error%' in lower:
+        if any(x in lower for x in ('error', 'warn', 'fail')) and 'error%' not in lower:
             color='red'
         if color:
             char_format.setForeground(QtGui.QColor(color))
