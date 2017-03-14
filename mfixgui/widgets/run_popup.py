@@ -673,7 +673,8 @@ class RunPopup(QDialog):
                         raise
                 finally:
                     # Turn off timers!
-                    self.parent.job_manager.job.cleanup_and_exit()
+                    if self.parent.job_manager.job:
+                        self.parent.job_manager.job.cleanup_and_exit()
                     self.parent.job_manager.job = None
                     msg = "MFiX process has stopped"
                     self.parent.signal_update_runbuttons.emit(msg)
