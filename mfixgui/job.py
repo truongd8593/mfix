@@ -15,7 +15,9 @@ from subprocess import Popen, PIPE
 log = logging.getLogger(__name__)
 
 from qtpy.QtCore import QObject, QTimer, QUrl, Signal
-from qtpy.QtNetwork import QNetworkAccessManager,  QNetworkRequest
+from qtpy.QtNetwork import (QNetworkAccessManager,
+                            QNetworkRequest,
+                            QNetworkReply)
 
 
 from mfixgui.tools.general import replace_with_dict
@@ -49,7 +51,7 @@ class PymfixAPI(QNetworkAccessManager):
        use directly.
 
        The PymfixAPI class extends :mod:`QtNetwork.QNetworkAccessManager` and
-       sets the MFiX API connection details transparently in API calls. This
+       sets the MFiX connection details transparently in API calls. This
        class is used by instances of :mod:`job.Job`
     """
 
@@ -74,11 +76,11 @@ class PymfixAPI(QNetworkAccessManager):
         # use request/reply methods to call 'status', Job will provide the
         # signal handler
         if not self.process_info.get('url'):
-            self.error('pidfile does not contain API url (test_connection)')
+            self.error('pidfile does not contain URL')
             raise Exception
         self.get('status', handlers={'response': response, 'error': error})
 
-    def api_request(self, method, endpoint, data=None, headers=None, handlers=None):
+    def request(self, method, endpoint, data=None, headers=None, handlers=None):
         """This method abstracts HTTP requests. A unique request ID will be
         returned to the caller. Callbacks are set on the request to response
         and error handlers within this class.
@@ -99,7 +101,7 @@ class PymfixAPI(QNetworkAccessManager):
         req_id = str(uuid.uuid4())
         self.requests.add(req_id)
         # assemble headers
-        if 'content-type' not in [x.lower for x in headers.keys() if type(x) == str]:
+        if 'content-type' not in [x.lower() for x in headers.keys() if type(x) == str]:
             headers['content-type'] = 'text/plain'
         headers['x-pymfix-requestid'] = req_id
         headers['content-length'] = str(len(data if data else ''))
@@ -119,13 +121,13 @@ class PymfixAPI(QNetworkAccessManager):
         error_handler = handlers.get('error')
         request_object.finished.connect(
           partial(
-            self.slot_api_response, req_id, request_object, response_handler))
+            self.slot_response, req_id, request_object, response_handler))
         request_object.error.connect(
           partial(
             self.slot_protocol_error, req_id, request_object, error_handler))
         return req_id
 
-    def slot_api_response(self, req_id, response_object, signal):
+    def slot_response(self, req_id, response_object, signal):
         """Process QNetworkReply content then emit a signal containing response
         content to the signal object provided. If reponse content is valid JSON
         the string content is emitted via the specified signal. If the response
@@ -134,36 +136,40 @@ class PymfixAPI(QNetworkAccessManager):
         """
         try:
             response = response_object.readAll()
+            if not response:  # Nothing read. We should not have gotten here
+                response_json = None # for "finally" clause
+                return
             response_json = response.data().decode('utf-8')
             json.loads(response_json)
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError, json.decoder.JSONDecodeError) as e:
             error_code = response_object.error()
-            error_desc = "API response could not be parsed"
+            error_desc = str(e)
             response_json = json.dumps(
                               {"mfix_status": {},
                                "command_output": "",
-                               "internal_api_error": {
+                               "internal_error": {
                                  "error_code": error_code,
                                  "error_desc": error_desc,
-                                 "raw_api_message":  str(response.data())}})
+                                 "raw_message":  str(response.data())}})
         finally:
             self.requests.discard(req_id)
-            signal.emit(req_id, response_json)
+            if signal and response_json:
+                signal.emit(req_id, response_json)
             response_object.deleteLater()
 
     def slot_protocol_error(self, req_id, response_object, signal):
-        """Process API response errors then emit a signal containing the
+        """Process response errors then emit a signal containing the
         request id and `QtNetwork.QNetworkReply` object to the signal object provided.
         """
         try:
-            response_error_code = response_object.error()
-            if response_error_code == 1:
-                self.warning("API network connection error %s" % self)
-            else:
-                self.warning("Unknown network error %s" % self)
-        except Exception as e:
-            self.error("Unhandled API error %s" % e)
+            error_code = response_object.error()
+            error_string = response_object.errorString()
+            self.error(error_string)
+            if error_code == QNetworkReply.ConnectionRefusedError:
+                self.parent.parent.increment_error_count() # XXX
         finally:
+            if signal:
+                signal.emit(req_id, response_object)
             response_object.deleteLater()
 
     def slot_ssl_error(self, reply):
@@ -172,27 +178,27 @@ class PymfixAPI(QNetworkAccessManager):
         if self.api.ignore_ssl_errors:
             reply.ignoreSsl()
         else:
-            self.warning('call to %s:%s aborted due to SSL errors' %
+            self.error('call to %s:%s aborted due to SSL errors' %
                          (self.runname_pid, self.endpoint))
-            # find appropriate Qt exception or make this meaningful
-            raise Exception
+            raise RuntimeException("SSL connection error")
+
 
     def get(self, endpoint, handlers=None):
-        """API request via HTTP GET"""
-        req_id = self.api_request(
+        """HTTP GET"""
+        req_id = self.request(
                     'get', endpoint, handlers=handlers)
         return req_id
 
     def put(self, endpoint, data=b'', handlers=None):
-        """API request via HTTP PUT"""
+        """HTTP PUT"""
 
-        req_id = self.api_request(
+        req_id = self.request(
                     'put', endpoint, data=data, handlers=handlers)
         return req_id
 
     def post(self, endpoint, data=b'', headers=None, handlers=None):
-        """API request via HTTP POST"""
-        req_id = self.api_request(
+        """HTTP POST"""
+        req_id = self.request(
                     'post', endpoint, data=data, headers=headers, handlers=handlers)
         return req_id
 
@@ -207,27 +213,25 @@ class JobManager(QObject):
         #   pid file exists -> (
         #       contains queue info -> (
         #           qstat state is running -> (
-        #               API url in pid file -> (
-        #                   API connection works -> state is running remote, may be paused |
-        #                   API connection fails -> state is stale pid, enqueued remote and job error
+        #               url in pid file -> (
+        #                   http connection works -> state is running remote, may be paused |
+        #                   http connection fails -> state is stale pid, enqueued remote and job error
         #               ) |
-        #               API url is not in pid file -> state is enqueued, waiting for API
+        #               url is not in pid file -> state is enqueued, waiting for API
         #           ) |
         #           qstat state is error -> state is stale pid, queue error |
         #           qstat state is job finished -> state is stale pid, job error, mfix didn't write to pid
         #       ) |
         #       no queue info -> (
-        #           contains API url -> (
-        #               API connection works - state is running locally (may be paused) |
-        #               API connection fails - state is stale pid |
+        #           contains url -> (
+        #               http connection works - state is running locally (may be paused) |
+        #               http connection fails - state is stale pid |
         #           ) |
-        #           no API url -> should not happen
+        #           no url -> should not happen
         #       )
         #   )
 
-    #: `QtCore.Signal` to emit when job status changes
     sig_update_job_status = Signal()
-    #: `QtCore.Signal` to emit when running job state changes
     sig_change_run_state = Signal()
 
     def __init__(self, parent):
@@ -236,36 +240,65 @@ class JobManager(QObject):
         self.parent = parent
         self.warning = parent.warning
         self.error = parent.error
-        self.api_error_count = 0
-        self.API_ERROR_SOFT_LIMIT = 3 # API request failures before pid check
-        self.API_ERROR_HARD_LIMIT = 6 # trigger pid check
+        self.error_count = 0
+        self.ERROR_SOFT_LIMIT = 3 # API request failures before pid check
+        self.ERROR_HARD_LIMIT = 6 # trigger pid check
+
+
+    def cleanup_stale_pidfile(self, pidfile):
+        #  TODO extend for queued jobs
+        try:
+            process_info = get_process_info(pidfile)
+        except Exception as e:
+            self.error("Removing file %s due to exception %s" % (pidfile, e))
+            return True
+        pid = process_info.get('pid')
+        job_id = process_info.get('qjobid')
+        if job_id is None and pid is not None:
+            try:
+                os.kill(int(pid), 0) # Succeeds if process is running
+                return False
+            except Exception as e:
+                self.error('MFiX process %s: %s' % (pid, e))
+                try:
+                    self.warning("Removing stale file %s" % pidfile)
+                    os.unlink(pidfile)
+
+                except Exception as e:
+                    self.error('%s: %s' % (pidfile, e))
+        return True
+
 
     def try_to_connect(self, pidfile):
         """Create Job object if one does not yet exist."""
-        if self.job:
+        if self.job: # Already connected
             pass
         elif os.path.isfile(pidfile):
-            self.reset_api_error_count()
+            self.reset_error_count()
+            if self.cleanup_stale_pidfile(pidfile):
+                return
             self.job = Job(self, pidfile)
+            self.pidfile = pidfile
             self.job.connect()
-
             # connect Job signals
             self.job.sig_job_exit.connect(self.teardown_job)
             self.job.sig_update_job_status.connect(self.sig_update_job_status)
             self.job.sig_change_run_state.connect(self.sig_change_run_state)
-            self.job.sig_api_error.connect(self.increment_api_error_count)
-            self.job.sig_api_success.connect(self.reset_api_error_count)
+            self.job.sig_error.connect(self.increment_error_count)
+            self.job.sig_success.connect(self.reset_error_count)
             # TODO? handle with signal so this can be managed in gui
-        else:
-            # Nothing to do
-            self.warning("Can't start new job")
+
 
     def mfix_proc_is_alive(self):
         """Handles process existence checks"""
         # TODO: handle queued job polling
         if not self.job:
             return False
-        process_info = get_process_info(self.job.pidfile)
+        try:
+            process_info = get_process_info(self.pidfile)
+        except Exception as e:
+            self.error("%s: %s" % (self.pidfile, e))
+            return False
         # if local process
         pid = process_info.get('pid')
         if pid:
@@ -278,21 +311,19 @@ class JobManager(QObject):
             return False
         # else check queue process (TODO)
 
-    def reset_api_error_count(self):
-        """Set API connection error count to 0"""
-        self.api_error_count = 0
+    def reset_error_count(self):
+        self.error_count = 0
 
-    def increment_api_error_count(self):
-        """Increment API error count. Signal job exit if limit has been exceeded.
-        """
-        self.api_error_count += 1
-        count = self.api_error_count
-        if count >= self.API_ERROR_SOFT_LIMIT:
-            if count == self.API_ERROR_SOFT_LIMIT:
+    def increment_error_count(self):
+        """Increment API error count. Signal job exit if limit has been exceeded.        """
+        self.error_count += 1
+        count = self.error_count
+        if count >= self.ERROR_SOFT_LIMIT:
+            if count == self.ERROR_SOFT_LIMIT:
                 self.error("Soft error limit reached")
-            if count < self.API_ERROR_HARD_LIMIT:
+            if count <= self.ERROR_HARD_LIMIT:
                 self.error('MFiX process is unresponsive, retry %s (of %s)' %
-                    (self.api_error_count, self.API_ERROR_HARD_LIMIT))
+                    (self.error_count, self.ERROR_HARD_LIMIT))
                 return
             if self.mfix_proc_is_alive():
                self.error("MFiX process is running and unresponsive. Giving up.")
@@ -355,30 +386,27 @@ class JobManager(QObject):
         """Job ended or exited. Destroy Job object and remove pidfile"""
         # TODO: this handles local only, not queued jobs
         if not self.job:
-            self.error('Job is not running')
-            return
-        self.warning('Job ended or connection to running job failed')
-        pidfile = self.job.pidfile
-        try:
-            process_info = get_process_info(pidfile)
-            pid = process_info.get('pid', None)
-            job_id = process_info.get('qjobid', None)
+            self.warning('Job is not running')
+        else:
+            self.warning('Job ended or connection to running job failed')
+        pidfile = self.pidfile
+        if pidfile:
+            try:
+                process_info = get_process_info(pidfile)
+                pid = process_info.get('pid')
+                job_id = process_info.get('qjobid')
 
-        except Exception as e:
-            self.error("Cannot get PID: %s" % e)
-            pid = job_id = None
+            except Exception as e:
+                self.error("Cannot get PID: %s" % e)
+                pid = job_id = None
 
-        finally:
-            # update GUI
-            if (self.job.api_test_timer
-                and self.job.api_test_timer.isActive()):
-                self.job.api_test_timer.stop()
-            if (self.job.api_status_timer
-                and self.job.api_status_timer.isActive()):
-                self.job.api_status_timer.stop()
-            self.job = None
-            self.sig_update_job_status.emit()
-            self.sig_change_run_state.emit()
+            finally:
+                # update GUI
+                if self.job:
+                    self.job.cleanup_and_exit()
+                self.job = None
+                self.sig_update_job_status.emit()
+                self.sig_change_run_state.emit()
 
         def force_stop():
             # if mfix exited cleanly, there should be no pidfile
@@ -388,21 +416,19 @@ class JobManager(QObject):
                 try:
                     os.kill(int(pid), 0)
                 except:
-                    self.warning('MFiX process %s does not exist' % pid)
-                    return
+                    self.error('MFiX process %s does not exist' % pid)
                 try:
-                    self.warning('MFiX process %s is still running' % pid)
+                    self.error('MFiX process %s is still running' % pid)
                     os.kill(int(pid), signal.SIGKILL)
                 except Exception as e:
-                    self.warning("MFIX process %s: %s" % (pid, e))
+                    self.error("MFIX process %s: %s" % (pid, e))
+                    return
 
-            if os.path.exists(pidfile):
-                try:
-                    os.remove(pidfile)
-                except OSError as e:
-                    self.warning("could not remove %s: %s" % (pidfile, e))
-        # NOTE: this timeout needs to exceed the retry limit
-        QTimer.singleShot(1000, force_stop) # why?
+                if os.path.exists(pidfile):
+                    try:
+                        os.remove(pidfile)
+                    except OSError as e:
+                        self.error("could not remove %s: %s" % (pidfile, e))
 
 
 class Job(QObject):
@@ -414,16 +440,17 @@ class Job(QObject):
 
     # Signals
     sig_job_exit = Signal()
-    sig_api_response = Signal(str, str)
-    sig_api_error = Signal()
-    sig_api_success = Signal()
-    sig_handle_api_test = Signal(str, str)
-    sig_handle_api_test_error = Signal(str, QObject)
+    sig_response = Signal(str, str)
+    sig_error = Signal()
+    sig_success = Signal()
+    sig_handle_test = Signal(str, str)
+    sig_handle_test_error = Signal(str, QObject)
     sig_update_job_status = Signal()
     sig_change_run_state = Signal()
 
     def __init__(self, parent, pidfile):
         super(Job, self).__init__()
+        self.parent = parent
         self.warning = parent.warning
         self.error = parent.error
         self.mfix_pid = None
@@ -433,22 +460,22 @@ class Job(QObject):
         self.requests = {}
         self.api = None
         self.api_available = False
-        self.sig_api_response.connect(self.slot_api_response)
+        self.sig_response.connect(self.slot_response)
 
-        self.sig_handle_api_test.connect(self.slot_handle_api_test)
-        self.sig_handle_api_test_error.connect(self.slot_handle_api_test_error)
+        self.sig_handle_test.connect(self.slot_handle_test)
+        self.sig_handle_test_error.connect(self.slot_handle_test_error)
 
         self.api = PymfixAPI(self,
-                        self.sig_api_response,
+                        self.sig_response,
                         ignore_ssl_errors=True)
 
         self.mfix_pid = self.api.mfix_pid # ?
 
         # test API before starting status loop
-        # Timer will be stopped by slot_handle_api_test
+        # Timer will be stopped by slot_handle_test
         self.api_test_timer = QTimer()
         self.api_test_timer.setInterval(1000)
-        self.api_test_timer.timeout.connect(self.test_api_connection)
+        self.api_test_timer.timeout.connect(self.test_connection)
         self.api_test_timer.start()
         # don't start status timer here, it is started once API is responsive
         self.api_status_timer = QTimer()
@@ -456,7 +483,7 @@ class Job(QObject):
         self.api_status_timer.timeout.connect(self.update_job_status)
 
     def connect(self):
-        self.test_api_connection()
+        self.test_connection()
 
     def cleanup_and_exit(self):
         if self.api_test_timer and self.api_test_timer.isActive():
@@ -466,41 +493,41 @@ class Job(QObject):
         self.api_available = False
         self.sig_job_exit.emit()
 
-    def test_api_connection(self):
+    def test_connection(self):
         """Test API connection.
         Start API test timer if it is not already running. Check current test
         count and signal job exit if timeout has been exceeded."""
         try:
-            self.api.get('status', handlers={'response':self.sig_handle_api_test})
+            self.api.get('status', handlers={'response':self.sig_handle_test})
         except Exception as e:
-            self.error("test_api_connection: %s" % e)
-            self.sig_api_error.emit()
+            self.sig_error.emit()
 
-    def slot_handle_api_test_error(self, req_id, response_object):
+    def slot_handle_test_error(self, req_id, response_object):
         # this can be hit multiple times: until JobManager
         # error limit is reached
-        self.warning('API network error - req id %s' % req_id)
+        self.error('Network error: request id %s' % req_id)
 
-    def slot_handle_api_test(self, req_id, response_string):
+
+    def slot_handle_test(self, req_id, response_string):
         """Parse response data from API test call. If response is in JSON
         format and does not contain an error message, then stop API test timer
         and start API status timer.
 
         If API response includes a permenant failure or is not well formed,
-        emit :class:`Job.sig_api_error` signal.
+        emit :class:`Job.sig_error` signal.
         """
         # this can be hit multiple times: until we hit JobManager error limit
         try:
             response_json = json.loads(response_string)
-            if response_json.get('internal_api_error'):
-                self.warning('Internal error %s' % response_string)
-                self.sig_api_error.emit()
+            if response_json.get('internal_error'):
+                self.error('Internal error %s' % response_string)
+                self.sig_error.emit()
                 return
         except Exception as e:
             # response was not parsable, API is not functional
-            self.warning('API response format error: %s, response=%s' %
+            self.error('Response format error: %s, response=%s' %
                          (e, response_string))
-            self.sig_api_error.emit()
+            self.sig_error.emit()
             return
 
         # reset error count and mark API as available
@@ -517,25 +544,25 @@ class Job(QObject):
         registered_requests.add(handler)
         self.requests[req_id] = registered_requests
 
-    def slot_api_response(self, req_id, response_string):
+    def slot_response(self, req_id, response_string):
         try:
             response_json = json.loads(response_string)
         except Exception as e:
-            self.warning("API response parsing error: %s" % e)
-            self.sig_api_error.emit()
+            self.error("Response parsing error: %s" % e)
+            self.sig_error.emit()
             return
-        if response_json.get('internal_api_error'):
-            self.warning("Internal error: response=%s" % response_string)
-            self.sig_api_error.emit()
+        if response_json.get('internal_error'):
+            self.error("Internal error: response=%s" % response_string)
+            self.sig_error.emit()
             return
-        self.sig_api_success.emit()
+        self.sig_success.emit()
         handlers = self.requests.get(req_id, set())
         for slot in handlers:
             slot(req_id=req_id, response_string=response_string)
         try:
             self.requests.pop(req_id)
         except KeyError as e:
-            self.warning("No known handler for request %s" % req_id)
+            self.error("No handler for request %s" % req_id)
 
     def reinit(self, project_file_contents):
         """reinitialize job. Sanity checks (paused, gui.unsaved_flag, etc)
@@ -581,7 +608,7 @@ class Job(QObject):
         self.pretty_status = pprint.PrettyPrinter(indent=4,
             width=50).pformat(self.status)
         self.sig_update_job_status.emit()
-        # remove once state handlers process API response directly:
+        # remove once state handlers process response directly:
         self.sig_change_run_state.emit()
 
     def set_pymfix_output(self, state):
@@ -589,10 +616,10 @@ class Job(QObject):
         state = 'enable' if state else 'disable'
         arg = 'logging/%s' % state
         req_id = self.api.post(arg, data=b'')
-        self.register_request(req_id, self.handle_set_api_output)
+        self.register_request(req_id, self.handle_set_output)
 
-    def handle_set_api_output(self, req_id, response_string):
-        """Handler for responses to `set_pymfix_output` API requests"""
+    def handle_set_output(self, req_id, response_string):
+        """Handler for responses to `set_pymfix_output` requests"""
         self.handle_status(req_id, response_string)
         self.sig_change_run_state.emit()
 
@@ -602,7 +629,7 @@ class Job(QObject):
         self.register_request(req_id, self.handle_stop_mfix)
 
     def handle_stop_mfix(self, req_id, response_string):
-        """Handler for responses to `stop_mfix` API requests"""
+        """Handler for responses to `stop_mfix` requests"""
         self.api_available = False
         self.api_status_timer.stop()
         self.handle_status(req_id, response_string)
