@@ -3,6 +3,7 @@ by setup.py when building the mfix distribution package, and is run as a
 standalone command to build the custom mfixsolvers. """
 
 import atexit
+import glob
 import os
 import platform
 import shutil
@@ -41,15 +42,25 @@ def make_mfixsolver():
     configure_args_dirname = configure_args_dirname.replace('__', '_').strip('_')
     build_dir = os.path.join('build', configure_args_dirname)
 
+    udfs = []
+    for root, dirnames, filenames in os.walk('.'):
+        for filename in glob.glob(os.path.join(root, '*.f')):
+            udfs.append(filename)
+
+    udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs ]
+    udfs = [ f for f in udfs if os.path.exists(f) ]
+
+    extra_objects = udfs + [
+        '.build/read_database.o',
+        '.build/read_namelist.o',
+        os.path.join(build_dir, 'build-aux/libmfix.a') ,
+    ]
+
     return Extension(name='mfixsolver',
                      sources=get_pymfix_src(),
                      extra_f90_compile_args=['-cpp'],
                      module_dirs=[os.path.join(build_dir, 'model')],
-                     extra_objects=[
-                         '.build/read_database.o',
-                         '.build/read_namelist.o',
-                         os.path.join(build_dir, 'build-aux/libmfix.a'),
-                     ])
+                     extra_objects=extra_objects)
 
 
 def get_pymfix_src():
