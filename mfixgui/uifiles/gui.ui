@@ -826,9 +826,9 @@ QPushButton:disabled {
                 </property>
                </layout>
               </widget>
-              <widget class="QWidget" name="api_response">
+              <widget class="QWidget" name="mfix_response">
                <attribute name="title">
-                <string>api response</string>
+                <string>MFiX response</string>
                </attribute>
                <layout class="QGridLayout" name="gridLayout_47">
                 <item row="0" column="0">
