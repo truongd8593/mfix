@@ -238,6 +238,7 @@ class JobManager(QObject):
         super(JobManager, self).__init__()
         self.job = None
         self.parent = parent
+        self.pidfile = None
         self.warning = parent.warning
         self.error = parent.error
         self.error_count = 0
@@ -406,7 +407,7 @@ class JobManager(QObject):
             finally:
                 # update GUI
                 if self.job:
-                    self.job.cleanup_and_exit()
+                    self.job.stop_timers() # cleanup_and_exit recurses
                 self.job = None
                 self.sig_update_job_status.emit()
                 self.sig_change_run_state.emit()
@@ -488,11 +489,14 @@ class Job(QObject):
     def connect(self):
         self.test_connection()
 
-    def cleanup_and_exit(self):
+    def stop_timers(self):
         if self.api_test_timer and self.api_test_timer.isActive():
             self.api_test_timer.stop()
         if self.api_status_timer and self.api_status_timer.isActive():
             self.api_status_timer.stop()
+
+    def cleanup_and_exit(self):
+        self.stop_timers()
         self.api_available = False
         self.sig_job_exit.emit()
 
