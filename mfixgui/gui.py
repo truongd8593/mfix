@@ -884,9 +884,6 @@ class MfixGui(QtWidgets.QMainWindow,
         unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
 
-        log.debug("UPDATE RUN OPTIONS: pending=%s paused=%s resumable=%s",
-                   pending, paused, resumable)
-
         self.update_window_title() # put run state in window titlebar
 
         self.enable_input(editable=project_open and not (pending or unpaused or paused or resumable),
