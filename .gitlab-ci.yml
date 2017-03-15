@@ -59,13 +59,13 @@ linux_py3_conda:
   tags:
     - docker
 
-# build:py2 stage builds python2 wheel packages
-
 linux_py2_whl:
   variables:
     CONDA_BIN: "/nfs/home/0/users/jenkins/miniconda2/bin"
+    GCC_BIN: "/nfs/apps/Compilers/GNU/6.1.0/bin"
+    AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin/autoconf"
   script:
-    - env PATH="$CONDA_BIN:$PATH" python2.7 setup.py bdist_wheel
+    - env PATH="$AC_BIN:$CONDA_BIN:$GCC_BIN:$PATH" python2.7 setup.py bdist_wheel
   stage: build
   only:
     - ci_reorg
