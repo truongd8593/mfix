@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy import QtCore, QtWidgets
 from qtpy.QtWidgets import QLabel, QPushButton, QWidget
 from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
 
@@ -317,10 +317,7 @@ class ICS(object):
     def fixup_ics_table(self, tw, stretch_column=0):
         ui = self.ui.initial_conditions
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

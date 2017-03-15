@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 from copy import deepcopy
 
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 from qtpy.QtWidgets import QCheckBox, QComboBox
 
 from qtpy.QtGui import QValidator
@@ -661,10 +661,7 @@ class Chemistry(object):
     def fixup_chemistry_table(self, tw, stretch_column=1): # species column, for reactant/product tables
         ui = self.ui.chemistry
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
 
         for n in range(0, ncols):

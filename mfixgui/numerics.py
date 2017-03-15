@@ -4,7 +4,7 @@ import logging
 log = logging.getLogger(__name__)
 
 #import Qt
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 
 #local imports
 from mfixgui.constants import *
@@ -83,12 +83,6 @@ class Numerics(object):
         self.add_tooltip(tw.horizontalHeaderItem(COL_SCHEME), key)
         key = 'ur_fac'
         self.add_tooltip(tw.horizontalHeaderItem(COL_RELAX), key)
-
-        #hv = QtWidgets.QHeaderView
-        #if PYQT5:
-        #    resize = tw.verticalHeader().setSectionResizeMode
-        #else:
-        #    resize = tw.verticalalHeader().setResizeMode
 
         # Populate table with combobox and lineedit widgets
 
@@ -270,10 +264,7 @@ class Numerics(object):
         # TODO catch resize & call fixup
         ui = self.ui.numerics
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

@@ -19,8 +19,21 @@ import subprocess
 import sys
 
 from collections import OrderedDict
+from pdb import set_trace
 
-from qtpy import QtGui, QtWidgets, QtCore
+from qtpy.QtCore import (
+    pyqtRemoveInputHook,
+    Qt,
+)
+from qtpy.QtGui import (
+    QColor,
+    QIcon,
+    QPixmap,
+)
+
+from qtpy.QtWidgets import (
+    QFrame,
+)
 
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
@@ -28,22 +41,22 @@ PY3 = sys.version_info.major == 3
 from mfixgui.tools.util import SCRIPT_DIRECTORY
 
 def set_item_noedit(item):
-    item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
 
 
 def set_item_enabled(item, enabled):
     """Enable/disable items which do not have a setEnabled method, like menu items"""
     flags = item.flags()
     if enabled:
-        flags |= QtCore.Qt.ItemIsEnabled
+        flags |= Qt.ItemIsEnabled
     else:
-        flags &= ~QtCore.Qt.ItemIsEnabled
+        flags &= ~Qt.ItemIsEnabled
     item.setFlags(flags)
 
 
 def item_enabled(item):
     flags = item.flags()
-    return bool(flags & QtCore.Qt.ItemIsEnabled)
+    return bool(flags & Qt.ItemIsEnabled)
 
 
 def get_combobox_item(combobox, n):
@@ -117,8 +130,8 @@ pixmap_cache = {}
 def get_pixmap(name, width, height):
     pixmap = pixmap_cache.get((name, width, height))
     if pixmap is None:
-        pixmap = QtGui.QPixmap(get_image_path(name)).scaled(
-            width, height, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pixmap = QPixmap(get_image_path(name)).scaled(
+            width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         pixmap_cache[(name, width, height)] = pixmap
     return pixmap
 
@@ -137,14 +150,14 @@ def get_icon(name, default=None, resample=False):
         return icon
 
     if default is None:
-        icon = QtGui.QIcon(get_image_path(name))
-    elif isinstance(default, QtGui.QIcon):
+        icon = QIcon(get_image_path(name))
+    elif isinstance(default, QIcon):
         icon_path = get_image_path(name)
-        icon = default if icon_path is None else QtGui.QIcon(icon_path)
+        icon = default if icon_path is None else QIcon(icon_path)
     else:
-        icon = QtGui.QIcon(get_image_path(name, default))
+        icon = QIcon(get_image_path(name, default))
     if resample:
-        icon0 = QtGui.QIcon()
+        icon0 = QIcon()
         for size in (16, 24, 32, 48, 96, 128, 256, 512):
             icon0.addPixmap(icon.pixmap(size, size))
         icon_cache[(name, default, resample)] = icon0
@@ -188,8 +201,6 @@ def safe_shlex_split(string):
 # Debugging hooks
 def debug_trace():
     """Set a tracepoint in the Python debugger that works with Qt"""
-    from qtpy.QtCore import pyqtRemoveInputHook
-    from pdb import set_trace
     pyqtRemoveInputHook()
     set_trace()
 
@@ -305,9 +316,9 @@ class CellColor(object):
     def __init__(self, color=[1, 0, 0], text=''):
 
         if isinstance(color, (list, tuple)):
-            self.color = QtGui.QColor(*color)
+            self.color = QColor(*color)
         else:
-            self.color = QtGui.QColor(color)
+            self.color = QColor(color)
         self.text = text
 
     @property
@@ -392,7 +403,7 @@ def drop_row_column_triangular(a, n, r):
             j = i
     return ret
 
-def append_row_column_triangular(a, n, fill_value = None):
+def append_row_column_triangular(a, n, fill_value=None):
     # Append a row and column to an upper-triangular rank-n matrix
     ret = []
     i = j = 1
@@ -411,10 +422,10 @@ def sort_dict(dict_, key, start=0):
     """given an dict of dicts and a key, sort the outside dict based on the
     value of one of the the internal dict's keys and return the sorted
     OrderedDict"""
+    sorted_enum = enumerate(sorted([(k, v[key])
+                                    for k, v in dict_.items()], key=operator.itemgetter(1)), start)
     return OrderedDict(
-        [(k, dict_[old_k])
-         for k, (old_k, v) in enumerate(sorted([(k, v[key])
-         for k, v in dict_.items()], key=operator.itemgetter(1)), start)])
+        [(k, dict_[old_k]) for k, (old_k, v) in sorted_enum])
 
 def clear_layout(layout):
     """given a layout, clear all widgets"""
@@ -464,7 +475,7 @@ def is_vnc():
 
 def get_separator(vertical=True):
     """create a QFrame that looks like a separator"""
-    f = QtWidgets.QFrame
+    f = QFrame
     line = f()
     if vertical:
         line.setFrameShape(f.VLine)
@@ -501,7 +512,7 @@ def convert_string_to_python(string):
     # lower-case version of string
     s_low = string.lower()
 
-    if s_low in ('.t.',  '.true.'):
+    if s_low in ('.t.', '.true.'):
         return True
     elif s_low in ('.f.', '.false.'):
         return False
@@ -545,12 +556,12 @@ def deepcopy_dict(dirty_dict, qobjects=False):
     for key, value in dirty_dict.items():
         if isinstance(value, (dict, OrderedDict)):
             clean_dict[key] = deepcopy_dict(value, qobjects)
-        elif isinstance(value, QtGui.QPixmap):
+        elif isinstance(value, QPixmap):
             if qobjects:
-                clean_dict[key] = QtGui.QPixmap(value)
-        elif isinstance(value, QtGui.QColor):
+                clean_dict[key] = QPixmap(value)
+        elif isinstance(value, QColor):
             if qobjects:
-                clean_dict[key] = QtGui.QColor(value)
+                clean_dict[key] = QColor(value)
         else:
             clean_dict[key] = copy.deepcopy(value)
     return clean_dict
@@ -565,7 +576,11 @@ if __name__ == '__main__':
 
         l = list(recurse_dict(d))
         l.sort()
-        assert l == [((1,2), 3), ((1,4,5), 6), ((1,5,7), 8)]
+        assert l == [
+            ((1, 2), 3),
+            ((1,4,5), 6),
+            ((1,5,7), 8)
+        ]
 
     test_recurse_dict()
 
@@ -578,7 +593,14 @@ if __name__ == '__main__':
 
         l = list(recurse_dict_empty(d))
         l.sort()
-        assert l == [((1,2), 3), ((1,3), {}), ((1,4,5), 6), ((1,5,6), {}), ((1,5,7), 8), ((2,), {})]
+        assert l == [
+            ((1, 2), 3),
+            ((1, 3), {}),
+            ((1, 4, 5), 6),
+            ((1, 5, 6), {}),
+            ((1, 5, 7), 8),
+            ((2, ), {}),
+        ]
 
 
     test_recurse_dict_empty()

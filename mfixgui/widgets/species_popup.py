@@ -1,13 +1,11 @@
- #!/usr/bin/env python
-from __future__ import print_function, absolute_import, unicode_literals, division
-
 """Species selector dialog for MFIX GUI, includes stand-alone test"""
+
+from __future__ import print_function, absolute_import, unicode_literals, division
 
 # 2016-11-20  Species/alias unification
 #  we will only expose 'alias' to the user.  'species' is only used
 #  as a key into Burcat/THERMO_DATA, and we're going to inline all
 #  of the thermodynamic data - cgw
-
 
 import os
 import sys
@@ -16,7 +14,7 @@ from collections import OrderedDict
 import pickle
 from copy import deepcopy
 
-from qtpy import PYQT5, uic
+from qtpy import uic
 from qtpy.QtWidgets import (
     QApplication,
     QDialog,

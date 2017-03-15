@@ -6,7 +6,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 import os
 import glob
 from collections import OrderedDict
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 
 from qtpy import uic
 
@@ -656,10 +656,7 @@ class RegionsWidget(QtWidgets.QWidget):
     def fixup_regions_table(self, tw, stretch_column=3):
         ui = self # !!
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.model().columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

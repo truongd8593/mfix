@@ -4,29 +4,32 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-import logging
-log = logging.getLogger(__name__)
-
-#import Qt
-from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QPushButton, QWidget
-
-from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
-UserRole = QtCore.Qt.UserRole
-
 # We don't need extended JSON here
 from json import JSONDecoder, JSONEncoder
 
+from qtpy.QtCore import (
+    Qt,
+)
+from qtpy.QtWidgets import (
+    QTableWidgetItem,
+    QHeaderView,
+    QPushButton,
+    QWidget,
+)
+
+from qtpy.QtGui import QPixmap # QPicture doesn't work with Qt4
+
 #local imports
-from mfixgui.constants import *
-from mfixgui.tools import keyword_args
-from mfixgui.tools.general import (widget_iter,
-                                   get_selected_row,
-                                   get_combobox_item,
-                                   set_item_noedit,
-                                   set_item_enabled,
-                                   safe_float)
+from mfixgui.constants import (
+    DES_OUTPUT_TYPES,
+)
+from mfixgui.tools.general import (
+    get_combobox_item,
+    get_selected_row,
+    set_item_enabled,
+    set_item_noedit,
+    widget_iter,
+)
 
 from mfixgui.widgets.base import (BaseWidget, LineEdit, CheckBox)
 
@@ -86,9 +89,9 @@ class Output(object):
             btn_layout=ui.gridlayout_tab_btns)
         self.setup_output_tab(tabnum)
         for btn in self.output_pushbuttons:
-            btn.setChecked(btn==to_btn)
+            btn.setChecked(btn == to_btn)
             font = btn.font()
-            font.setBold(btn==to_btn)
+            font.setBold(btn == to_btn)
             btn.setFont(font)
 
 
@@ -131,10 +134,10 @@ class Output(object):
 
         self.output_current_subtab = FLUID_TAB # #  If fluid is disabled, we will switch
         self.vtk_current_solid = self.P = None
-        ui.pushbutton_fluid.pressed.connect(lambda: self.output_change_subtab(FLUID_TAB,None))
-        ui.pushbutton_scalar.pressed.connect(lambda: self.output_change_subtab(SCALAR_TAB,None))
-        ui.pushbutton_reactions.pressed.connect(lambda: self.output_change_subtab(REACTIONS_TAB,None))
-        ui.pushbutton_other.pressed.connect(lambda: self.output_change_subtab(OTHER_TAB,None))
+        ui.pushbutton_fluid.pressed.connect(lambda: self.output_change_subtab(FLUID_TAB, None))
+        ui.pushbutton_scalar.pressed.connect(lambda: self.output_change_subtab(SCALAR_TAB, None))
+        ui.pushbutton_reactions.pressed.connect(lambda: self.output_change_subtab(REACTIONS_TAB, None))
+        ui.pushbutton_other.pressed.connect(lambda: self.output_change_subtab(OTHER_TAB, None))
 
         # Trim width of "Fluid" and "Scalar" buttons, like we do for
         # dynamically-created "Solid #" buttons
@@ -142,11 +145,11 @@ class Output(object):
             w = b.fontMetrics().boundingRect(b.text()).width() + 20
             b.setMaximumWidth(w)
 
-        #Icons and table similar to IC/BC/PS/IS for adding VTK regions. This section requires
-        #WRITE_VTK_FILES = .TRUE.
-        #Icons to add/remove/duplicate regions are given at the top
-        #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
-        #a VTK region.
+        # Icons and table similar to IC/BC/PS/IS for adding VTK regions. This
+        # section requires WRITE_VTK_FILES = .TRUE. Icons to
+        # add/remove/duplicate regions are given at the top Clicking the 'add'
+        # and 'duplicate' buttons triggers a popup window where the user must
+        # select a VTK region.
 
         ui.toolbutton_add.clicked.connect(self.output_show_regions_popup)
         ui.toolbutton_delete.clicked.connect(self.output_delete_regions)
@@ -171,10 +174,10 @@ class Output(object):
 
     def output_change_subtab(self, subtab, solid):
         ui = self.ui.output
-        index = (0 if subtab==FLUID_TAB
-                 else len(self.solids)+1 if subtab==SCALAR_TAB
-                 else len(self.solids)+2 if subtab==REACTIONS_TAB
-                 else len(self.solids)+3 if subtab==OTHER_TAB
+        index = (0 if subtab == FLUID_TAB
+                 else len(self.solids)+1 if subtab == SCALAR_TAB
+                 else len(self.solids)+2 if subtab == REACTIONS_TAB
+                 else len(self.solids)+3 if subtab == OTHER_TAB
                  else solid)
 
         for i in range(ui.bottom_tab_layout.columnCount()):
@@ -185,7 +188,7 @@ class Output(object):
             if not widget:
                 continue
             font = widget.font()
-            font.setBold(i==index)
+            font.setBold(i == index)
             widget.setFont(font)
 
         current_index = ui.stackedwidget_cell.currentIndex()
@@ -211,7 +214,7 @@ class Output(object):
             ui.stackedwidget_cell.setCurrentIndex(dummy_tab)
 
         self.output_current_subtab = subtab
-        self.vtk_current_solid = self.P = solid if subtab==SOLIDS_TAB else None
+        self.vtk_current_solid = self.P = solid if subtab == SOLIDS_TAB else None
         self.setup_output_current_subtab()
 
         # change stackedwidget contents
@@ -220,9 +223,9 @@ class Output(object):
             ui.stackedwidget_cell.currentIndex(),
             subtab,
             direction='horizontal',
-            line = ui.line_subtab,
-            to_btn = ui.bottom_tab_layout.itemAtPosition(0, index),
-            btn_layout = ui.bottom_tab_layout)
+            line=ui.line_subtab,
+            to_btn=ui.bottom_tab_layout.itemAtPosition(0, index),
+            btn_layout=ui.bottom_tab_layout)
         # Scroll to top
         ui.scrollarea_cell.ensureVisible(0, 0)
 
@@ -235,7 +238,7 @@ class Output(object):
             indices = []
             regions = []
         else:
-            (indices, regions) = tw.item(row,0).data(UserRole)
+            (indices, regions) = tw.item(row, 0).data(Qt.UserRole)
         self.vtk_current_indices, self.vtk_current_regions = indices, regions
         enabled = (row is not None)
         ui.toolbutton_delete.setEnabled(enabled)
@@ -253,14 +256,11 @@ class Output(object):
 
     def fixup_output_table(self, tw, stretch_column=0):
         ui = self.ui.output
-        hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        hv = QHeaderView
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
-            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+            resize(n, hv.Stretch if n == stretch_column else hv.ResizeToContents)
 
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
@@ -269,15 +269,15 @@ class Output(object):
         # Do we need to call this everytime window geometry changes?
         scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
         nrows = tw.rowCount()
-        if nrows==0:
+        if nrows == 0:
             row_height = 0
             height = header_height+scrollbar_height
         else:
             row_height = tw.rowHeight(0)
-            height =  (header_height+scrollbar_height
-                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
+            height = (header_height+scrollbar_height
+                      + nrows*row_height + 4) # extra to avoid unneeded scrollbar (?)
         ui.top_frame.setMaximumHeight(height+24)
-        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
+        ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows, 5))
         ui.top_frame.updateGeometry()
         tw.setMaximumHeight(height)
         tw.setMinimumHeight(header_height)
@@ -291,7 +291,7 @@ class Output(object):
         ui = self.ui.output
         rp = self.regions_popup
         rp.clear()
-        for (name,data) in self.output_region_dict.items():
+        for (name, data) in self.output_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
             available = (data.get('available', True)
@@ -321,7 +321,7 @@ class Output(object):
                      ui.toolbutton_delete):
             item.setEnabled(False)
         rp.popup('Select region for VTK output')
-        set_item_enabled(get_combobox_item(rp.combobox,1), enabled)
+        set_item_enabled(get_combobox_item(rp.combobox, 1), enabled)
 
 
     def output_delete_solids_phase(self, phase):
@@ -369,7 +369,7 @@ class Output(object):
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
         def make_item(val):
-            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            item = QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
         item = make_item('+'.join(selections))
@@ -391,10 +391,10 @@ class Output(object):
                 continue
             self.output_set_region_keys(region_name, idx, region_data, output_type)
             self.output_region_dict[region_name]['available'] = False # Mark as in-use
-        item.setData(UserRole, (tuple(indices), tuple(selections)))
+        item.setData(Qt.UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
-        name = 'Cell data' if output_type=='C' else 'Particle data' if output_type=='P' else '???'
+        name = 'Cell data' if output_type == 'C' else 'Particle data' if output_type == 'P' else '???'
         item = make_item(name)
         if output_type == 'C':
             item.setToolTip('Cell data (VTU file)')
@@ -444,14 +444,12 @@ class Output(object):
         #self.fixup_output_table(tw)
         self.setup_output_vtk_tab()
         #self.update_nav_tree()
-        pass
-
 
     def vtk_regions_to_str(self):
         """convert VTK output region definitions to savable form"""
         ui = self.ui.output
         tw = ui.tablewidget_regions
-        data = [tw.item(i,0).data(UserRole)
+        data = [tw.item(i, 0).data(Qt.UserRole)
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
 
@@ -487,8 +485,8 @@ class Output(object):
         for vtk in self.project.vtks:
 
             d = vtk.keyword_dict
-            extent = [d.get('vtk_'+k,None) for k in ('x_w', 'y_s', 'z_b',
-                                                    'x_e', 'y_n', 'z_t')]
+            extent = [d.get('vtk_'+k, None) for k in ('x_w', 'y_s', 'z_b',
+                                                      'x_e', 'y_n', 'z_t')]
             extent = [0 if x is None else x.value for x in extent]
             #if any (x is None for x in extent):
             #    self.warn("vtk output %s: invalid extents %s" %
@@ -507,7 +505,7 @@ class Output(object):
 
             for (region_name, data) in self.output_region_dict.items():
                 ext2 = [0 if x is None else x for x in
-                        (data.get('from',[]) + data.get('to',[]))]
+                        (data.get('from', []) + data.get('to', []))]
                 if ext2 == extent: # Don't need to check 'available' here since
                             # Regions can define multiple VTK regions.
                     self.output_add_regions_1([region_name], indices=[vtk.ind],
@@ -522,8 +520,8 @@ class Output(object):
     def init_output_spx_tab(self):
         ui = self.ui.output
         gb = ui.groupbox_print_des_data # aka "Write ASCII particle data"
-        gb.clicked.connect(lambda val:  self.update_keyword('print_des_data', val))
-        self.add_tooltip(gb, key = 'print_des_data')
+        gb.clicked.connect(lambda val: self.update_keyword('print_des_data', val))
+        self.add_tooltip(gb, key='print_des_data')
 
         cb = ui.combobox_des_output_type
         cb.currentIndexChanged.connect(lambda val: self.update_keyword('des_output_type', DES_OUTPUT_TYPES[val]))
@@ -538,8 +536,8 @@ class Output(object):
                 w.post_update = self.output_handle_bwrite_netcdf
 
         gb = ui.groupbox_print_des_data_2 # aka "Write ASCII particle data"
-        gb.clicked.connect(lambda val:  self.update_keyword('print_des_data', val))
-        self.add_tooltip(gb, key = 'print_des_data')
+        gb.clicked.connect(lambda val: self.update_keyword('print_des_data', val))
+        self.add_tooltip(gb, key='print_des_data')
 
         cb = ui.combobox_des_output_type_2
         cb.currentIndexChanged.connect(lambda val: self.update_keyword('des_output_type', DES_OUTPUT_TYPES[val]))
@@ -652,7 +650,7 @@ class Output(object):
 
         # Association of bwrite flags to spx_dt flags, see comments above
         index_map = [1, 2, 4, 5, 6, 7, 9, 11, 12, 13, 14]
-        for spx_idx, bwrite_idx in enumerate(index_map,1):
+        for spx_idx, bwrite_idx in enumerate(index_map, 1):
             enabled = bwrite_netcdf[bwrite_idx]
             enable_input(spx_idx, enabled)
             # Why do we have to do this?  Setting keyword should update checkbox
@@ -731,9 +729,9 @@ class Output(object):
         #    Backwards compatibility: Enabled if any SPx time values are specified
 
         spx_dt_specified = any(self.project.get_value('spx_dt', args=[i]) is not None
-                               for i in range(1,MAX_SP+1)) # Note, enabled in template! XXX Jordan?
+                               for i in range(1, MAX_SP+1)) # Note, enabled in template! XXX Jordan?
         bwrite_netcdf_specified = any(bool(self.project.get_value('bwrite_netcdf', args=[i]))
-                                           for i in range(1, MAX_BWRITE_NETCDF+1))
+                                      for i in range(1, MAX_BWRITE_NETCDF+1))
 
         enable_spx = not bwrite_netcdf_specified # Enables checkbox but does not check it
         activate_spx = enable_spx and spx_dt_specified
@@ -747,7 +745,7 @@ class Output(object):
         #    Enables NetCDF tab
 
         enable_netcdf = not activate_spx
-        activate_netcdf =  bwrite_netcdf_specified
+        activate_netcdf = bwrite_netcdf_specified
         ui.checkbox_netcdf.setEnabled(enable_netcdf)
         ui.checkbox_netcdf.setChecked(activate_netcdf)
         ui.pushbutton_netcdf.setEnabled(activate_netcdf)
@@ -868,7 +866,7 @@ class Output(object):
         #for item in (ui.label_vtu_dir, ui.lineedit_keyword_vtu_dir):
         #    item.setEnabled(enabled)        #(handled by checkable groupbox)
         if enabled:
-            if value is None or value=='':
+            if value is None or value == '':
                 value = ui.lineedit_keyword_vtu_dir.value # saved value in GUI
                 if value is None:
                     value = default
@@ -881,12 +879,16 @@ class Output(object):
 
 
     def setup_output_spx_tab(self):
+        """SPx (tab) Note: Technically, MFiX will now permit a user to mix-and-match
+        the SPx output files meaning that some can be written and others not.
+        However, this is likely to break the ParaView reader. Therefore, if the
+        “Write binary SPx” checkbox is enabled, output is required for all SPx
+        files. Otherwise, all should remain unspecified to skip writing the SPx
+        files.
+
+        """
+
         ui = self.ui.output
-        #SPx (tab)
-        #Note: Technically, MFiX will now permit a user to mix-and-match the SPx output files meaning that
-        #some can be written and others not. However, this is likely to break the ParaView reader.
-        #Therefore, if the “Write binary SPx” checkbox is enabled, output is required for all SPx files.
-        #Otherwise, all should remain unspecified to skip writing the SPx files.
 
         #Write interval for gas volume fraction
         #    Sets keyword SPX_DT(1)
@@ -1010,16 +1012,19 @@ class Output(object):
 
 
     def setup_output_netcdf_tab(self):
-        #NetCDF (tab)
-	# Note: NetCDF support 'piggy-backs' off of the SPx keywords. The output time values are specified
-        # via SPX_DT while NetCDF output is triggered by a BWRITE_NETCDF flag. To make this less
-        # opaque to users, both SPx and netCDF output cannot be enabled at the same time.
+        """NetCDF (tab) Note: NetCDF support 'piggy-backs' off of the SPx keywords.
+        The output time values are specified via SPX_DT while NetCDF output is
+        triggered by a BWRITE_NETCDF flag. To make this less opaque to users,
+        both SPx and netCDF output cannot be enabled at the same time.
+
+        """
+
         ui = self.ui.output
         self.output_handle_bwrite_netcdf()
 
         #This is the same particle section as the SPx section.
 
-	#Write ASCII particle data
+    #Write ASCII particle data
         #    Selection only available if DEM or PIC solids
         #    Sets keyword PRINT_DES_DATA
         #    DEFAULT value of .TRUE.
@@ -1186,14 +1191,14 @@ class Output(object):
                 b.setMaximumWidth(w)
                 b.setFlat(True)
                 font = b.font()
-                font.setBold(self.output_current_subtab==SOLIDS_TAB and i==self.vtk_current_solid)
+                font.setBold(self.output_current_subtab == SOLIDS_TAB and i == self.vtk_current_solid)
                 b.setFont(font)
                 b.pressed.connect(lambda i=i: self.output_change_subtab(SOLIDS_TAB, i))
                 ui.bottom_tab_layout.addWidget(b, 0, i)
 
         # Move the 'Scalar' and other buttons to the right of all solids, if needed
         if len(self.solids) != len(self.output_saved_solids_names):
-            for (i,b) in enumerate(self.output_pushbuttons_bottom):
+            for (i, b) in enumerate(self.output_pushbuttons_bottom):
                 if b == ui.pushbutton_fluid:
                     continue
                 ui.bottom_tab_layout.removeWidget(b)
@@ -1201,7 +1206,7 @@ class Output(object):
 
         b = ui.pushbutton_scalar
         font = b.font()
-        font.setBold(self.output_current_subtab==SCALAR_TAB)
+        font.setBold(self.output_current_subtab == SCALAR_TAB)
         b.setFont(font)
         nscalar = self.project.get_value('nscalar', default=0)
         enabled = (nscalar > 0)
@@ -1209,7 +1214,7 @@ class Output(object):
 
         b = ui.pushbutton_reactions
         font = b.font()
-        font.setBold(self.output_current_subtab==REACTIONS_TAB)
+        font.setBold(self.output_current_subtab == REACTIONS_TAB)
         b.setFont(font)
         nrr = self.project.get_value('nrr', default=0)
         enabled = (nrr > 0)
@@ -1217,14 +1222,14 @@ class Output(object):
 
         b = ui.pushbutton_other
         font = b.font()
-        font.setBold(self.output_current_subtab==SCALAR_TAB)
+        font.setBold(self.output_current_subtab == SCALAR_TAB)
         b.setFont(font)
         enabled = True
         b.setEnabled(enabled)
 
         self.output_saved_solids_names = solids_names
 
-        for (i, solid_name) in enumerate(self.solids.keys(),1):
+        for (i, solid_name) in enumerate(self.solids.keys(), 1):
             model = self.project.get_value('solids_model', args=[i])
             # All vtk solids keywords require TFM solids, so disable tab completely if not applicabl
             b = ui.bottom_tab_layout.itemAtPosition(0, i).widget()
@@ -1239,10 +1244,10 @@ class Output(object):
         # have changed (lifted from animate_stacked_widget, which we
         # don't want to call here)
         tab = self.output_current_subtab
-        line_to = (0 if tab==FLUID_TAB
-                   else len(self.solids)+1 if tab==SCALAR_TAB
-                   else len(self.solids)+2 if tab==REACTIONS_TAB
-                   else len(self.solids)+3 if tab==OTHER_TAB
+        line_to = (0 if tab == FLUID_TAB
+                   else len(self.solids)+1 if tab == SCALAR_TAB
+                   else len(self.solids)+2 if tab == REACTIONS_TAB
+                   else len(self.solids)+3 if tab == OTHER_TAB
                    else self.vtk_current_solid)
         line = ui.line_subtab
         btn_layout = ui.bottom_tab_layout
@@ -1266,15 +1271,15 @@ class Output(object):
 
 
     def setup_output_subtab(self, subtab, solid):
-        if subtab==FLUID_TAB:
+        if subtab == FLUID_TAB:
             self.setup_output_fluid_subtab()
-        elif subtab==SOLIDS_TAB:
+        elif subtab == SOLIDS_TAB:
             self.setup_output_solids_subtab(solid)
-        elif subtab==SCALAR_TAB:
+        elif subtab == SCALAR_TAB:
             self.setup_output_scalar_subtab()
-        elif subtab==REACTIONS_TAB:
+        elif subtab == REACTIONS_TAB:
             self.setup_output_reactions_subtab()
-        elif subtab==OTHER_TAB:
+        elif subtab == OTHER_TAB:
             self.setup_output_other_subtab()
         else:
             raise ValueError(subtab)
@@ -1360,7 +1365,7 @@ class Output(object):
             cb.setChecked(val)
 
         # disable temp if energy_eq disabled
-        cb =  ui.checkbox_keyword_vtk_t_g_args_V
+        cb = ui.checkbox_keyword_vtk_t_g_args_V
         key = 'vtk_t_g'
         enabled = self.project.get_value('energy_eq', default=True)
         cb.setEnabled(enabled)
@@ -1425,7 +1430,7 @@ class Output(object):
         for (i, cb) in enumerate(cbs, 1):
             cb.setEnabled(enabled)
             if enabled:
-                val = False if V0 is None else self.project.get_value(key, args=[V0,i], default=False)
+                val = False if V0 is None else self.project.get_value(key, args=[V0, i], default=False)
                 cb.setChecked(bool(val))
             else:
                 cb.setChecked(False)
@@ -1488,7 +1493,7 @@ class Output(object):
 
         # Set checkboxes to correct state
         for (i, cb) in enumerate(cbs, 1):
-            val = self.project.get_value(key, args=[V0,i], default=False)
+            val = self.project.get_value(key, args=[V0, i], default=False)
             cb.setChecked(bool(val))
 
 
@@ -1534,14 +1539,14 @@ class Output(object):
         # Sets keyword VTK_S_G(#,#)  # VTK_T_S
         # DEFAULT value .FALSE.
         key = 'vtk_t_s'
-        cb =   ui.checkbox_keyword_vtk_t_s_args_V_P
+        cb = ui.checkbox_keyword_vtk_t_s_args_V_P
         energy_eq = self.project.get_value('energy_eq', default=True)
         enabled = bool(energy_eq)
         cb.setEnabled(enabled)
         if not enabled:
             cb.setChecked(False)
             for V in self.vtk_current_indices:
-                self.unset_keyword(key, args=[V,P])
+                self.unset_keyword(key, args=[V, P])
 
         #Enable writing solids phase granular temperature
         # Requires TFM solids and KT_TYPE /= “ALGEBRAIC”
@@ -1555,12 +1560,12 @@ class Output(object):
         if not enabled:
             cb.setChecked(False)
             for V in self.vtk_current_indices:
-                self.unset_keyword(key, args=[V,P])
+                self.unset_keyword(key, args=[V, P])
 
         for key in ('vtk_vel_s', 'vtk_u_s', 'vtk_v_s', 'vtk_w_s',
                     'vtk_rop_s', 'vtk_t_s', 'vtk_theta_m'):
             cb = getattr(ui, 'checkbox_keyword_%s_args_V_P'%key)
-            val = self.project.get_value(key, default=False, args=[V0,P])
+            val = self.project.get_value(key, default=False, args=[V0, P])
             cb.setChecked(bool(val))
 
         # Dynamically created GUI items - need to remove and re-add spacer
@@ -1585,7 +1590,7 @@ class Output(object):
         if key not in self.output_checkboxes:
             self.output_checkboxes[key] = []
         cbs = self.output_checkboxes[key]
-        solids_species_names = list(self.solids_species.get(P,{}).keys())
+        solids_species_names = list(self.solids_species.get(P, {}).keys())
         if self.output_saved_solids_species_names != solids_species_names:
             self.output_saved_solids_species_names = solids_species_names
             n_solids_species = len(solids_species_names)
@@ -1623,12 +1628,12 @@ class Output(object):
         for (i, cb) in enumerate(cbs, 1):
             cb.setEnabled(enable)
             if enable:
-                val = self.project.get_value(key, args=[V0,P,i], default=False)
+                val = self.project.get_value(key, args=[V0, P, i], default=False)
                 cb.setChecked(bool(val))
             else:
                 cb.setChecked(False)
                 for V in self.vtk_current_indices:
-                    self.unset_keyword(key, args=[V,P,i])
+                    self.unset_keyword(key, args=[V, P, i])
 
 
 
@@ -1689,7 +1694,7 @@ class Output(object):
 
         # Set checkboxes to correct state
         for (i, cb) in enumerate(cbs, 1):
-            val = False if V0 is None else self.project.get_value(key, args=[V0,i], default=False)
+            val = False if V0 is None else self.project.get_value(key, args=[V0, i], default=False)
             cb.setChecked(bool(val))
 
 
@@ -1752,10 +1757,12 @@ class Output(object):
 
 
     def setup_output_vtk_particle(self):
-        #Particle data sub-pane
-        #There is a need for some hand waving here. Many mfix.dat files may use a different specification
-        #for VTK input. There will need to be a way of catching the 'old' format and converting it to this
-        #input style.
+        """Particle data sub-pane There is a need for some hand waving here. Many
+        mfix.dat files may use a different specification for VTK input. There
+        will need to be a way of catching the 'old' format and converting it to
+        this input style.
+
+        """
 
         # Note 1, filebase through nzs are common to cell/particle
         # Note 2, this groupbox is disabled completely if not DEM or PIC
@@ -1815,7 +1822,7 @@ class Output(object):
             cb.setChecked(val)
 
         # disable temp if energy_eq disabled
-        cb =  ui.checkbox_keyword_vtk_part_temp_args_V
+        cb = ui.checkbox_keyword_vtk_part_temp_args_V
         key = 'vtk_part_temp'
         enabled = self.project.get_value('energy_eq', default=True)
         cb.setEnabled(enabled)
@@ -1872,7 +1879,7 @@ class Output(object):
             layout.addWidget(cb)
         # Set checkboxes to correct state
         for (i, cb) in enumerate(cbs, 1):
-            val = self.project.get_value(key, args=[V0,i], default=False)
+            val = self.project.get_value(key, args=[V0, i], default=False)
             cb.setChecked(bool(val))
 
         #Enable writing particle species composition
@@ -1914,7 +1921,7 @@ class Output(object):
 
         # Set checkboxes to correct state
         for (i, cb) in enumerate(cbs, 1):
-            val = self.project.get_value(key, args=[V0,i], default=False)
+            val = self.project.get_value(key, args=[V0, i], default=False)
             cb.setChecked(bool(val))
 
         if spacer_moved:
@@ -1937,7 +1944,7 @@ class Output(object):
 
 
     def output_check_region_in_use(self, name):
-        return any(data.get('region')==name for data in self.outputs.values())
+        return any(data.get('region') == name for data in self.outputs.values())
 
 
     def output_update_region(self, name, data):
@@ -1953,12 +1960,12 @@ class Output(object):
                 self.outputs[key]['region'] = new_name
                 tw = ui.tablewidget_regions
                 for i in range(tw.rowCount()):
-                    data = tw.item(i,0).data(UserRole)
+                    data = tw.item(i, 0).data(Qt.UserRole)
                     indices, names = data
                     if key in indices:
-                        item = tw.item(i,0)
-                        new_names = [new_name if n==old_name else n for n in names]
-                        item.setData(UserRole, (indices, new_names))
+                        item = tw.item(i, 0)
+                        new_names = [new_name if n == old_name else n for n in names]
+                        item.setData(Qt.UserRole, (indices, new_names))
                         item.setText('+'.join(new_names))
                         # Also update vtk_filebase, if it is at the default setting
                         vtk_filebase = self.project.get_value('vtk_filebase', args=[key])
