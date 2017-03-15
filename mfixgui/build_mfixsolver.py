@@ -20,7 +20,7 @@ from numpy.distutils.core import Extension, setup
 
 from mfixgui.tools.general import get_mfix_home
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = 'mfix'
@@ -183,7 +183,7 @@ def main():
             'build_mfix': BuildMfixCommand,
         },
 
-        version=get_version(),
+        version=__version__,
 
         description='MFiX computational fluid dynamics solver',
 

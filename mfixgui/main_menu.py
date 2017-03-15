@@ -40,7 +40,7 @@ except ImportError:
 
 from mfixgui.tools.general import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
                                    get_pixmap, get_separator)
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 
@@ -524,7 +524,7 @@ class MainMenu(object):
         aw_layout.addItem(QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum,), 3, 0)
 
         self.version_labels = [
-            '<b>MFiX GUI version:</b> {}'.format(get_version()),
+            '<b>MFiX GUI version:</b> {}'.format(__version__),
             '<b>Python version:</b> {}'.format(sys.version),
             '<b>Qt Wrapper:</b> {}'.format(API_NAME),
             '<b>Qt Version:</b> {}'.format(QT_VERSION),

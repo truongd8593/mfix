@@ -1,25 +1,22 @@
-""" version module stores three ways of getting the version: pip (setuptools), git describe, and fallback __version__ """
+"""This module has the __version__ string imported by other code both at
+buildtime and runtime. version numbering from PEP 440"""
 
-
+import os
 import subprocess
 import pkg_resources
 
 
-# version numbering from PEP 440
-__version__ = u"17.1dev"
+GIT_DESCRIBE_TAG = os.environ.get('GIT_DESCRIBE_TAG', None)
+GIT_DESCRIBE_NUMBER = os.environ.get('GIT_DESCRIBE_NUMBER', None)
 
-
-def get_version():
-    """ return the pip installed version if running from installed package, otherwise default """
+if GIT_DESCRIBE_TAG and GIT_DESCRIBE_NUMBER:
+    __version__ = '%s-%s' % (GIT_DESCRIBE_TAG, GIT_DESCRIBE_NUMBER)
+else:
     try:
-        return get_pkg_version()
+        # return the pip installed version if running from installed package, otherwise default
+        __version__ = pkg_resources.get_distribution("mfix").version
     except pkg_resources.DistributionNotFound:
-        return __version__
-
-
-def get_pkg_version():
-    """ return currently installed mfix version found by pip/setuptools """
-    return pkg_resources.get_distribution("mfix").version
+        __version__ = u"17.1dev0"
 
 
 def get_git_revision_short_hash():
@@ -27,6 +24,8 @@ def get_git_revision_short_hash():
     try:
         git_hash = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
     except subprocess.CalledProcessError:
+        git_hash = __version__
+    except OSError:
         git_hash = __version__
 
     return git_hash

@@ -59,7 +59,7 @@ from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.species_popup import SpeciesPopup
 
-from .version import get_version
+from mfixgui.version import __version__
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
@@ -940,7 +940,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % get_version(),
+        self.print_internal("MFiX-GUI version %s" % __version__,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1912,7 +1912,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = get_version()
+        self.project.mfix_gui_comments['gui_version'] = __version__
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2732,7 +2732,7 @@ def main():
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
         help="Create thumbnails in test mode.")
-    ARG('-v', '--version', action='version', version=get_version())
+    ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 

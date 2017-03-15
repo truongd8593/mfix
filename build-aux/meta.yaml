@@ -1,0 +1,84 @@
+package:
+  name: mfix
+  version: {{ GIT_DESCRIBE_TAG }}
+
+build:
+  number: {{ GIT_DESCRIBE_NUMBER }}
+
+source:
+  path: ..
+  # git_url: https://mfix.netl.doe.gov/gitlab/develop/mfix
+  # git_tag: develop
+#  patches:
+   # List any patch files here
+   # - fix.patch
+
+# entry_points:
+#     # Put any entry points (scripts to be generated automatically) here. The
+#     # syntax is module:function.  For example
+#     #
+#   - mfixgui = mfixgui.gui:main
+#   - pymfix = mfixgui.pymfix:main
+#   - build_mfixsolver = mfixgui.build_mfixsolver:main
+
+#   # If this is a new build for the same version, increment the build
+#   # number. If you do not include this key, it defaults to 0.
+#   # number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - pip >=8.1.0
+    - wheel >=0.25.0
+    - numpy ==1.11.3
+    - pyqt
+    - qtpy >=1.2.1
+    - flask
+    - pandoc
+    - libpython # [win]
+
+  run:
+    - python
+    - setuptools
+    - pip >=8.1.0
+    - wheel >=0.25.0
+    - numpy ==1.11.3
+    - pyqt
+    - qtpy >=1.2.1
+    - flask
+    - pandoc
+    - vtk
+
+#### Uncomment to build as .whl packge instead of conda package
+# outputs:
+#   - type: wheel
+
+# test:
+#   # Python imports
+#   imports:
+#     - mfixgui
+
+#   commands:
+#     # You can put test commands to be run here.  Use this to test that the
+#     # entry points work.
+#     # pymfix -h
+#     mfix -h
+
+
+#   # You can also put a file called run_test.py in the recipe that will be run
+#   # at test time.
+
+#   # requires:
+#     # Put any additional test requirements here.  For example
+#     # - nose
+
+about:
+  home: https://mfix.netl.doe.gov/mfix
+  license: NONE
+  summary: 'Multiphase Fluid Solver'
+  license_family: NONE
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml
