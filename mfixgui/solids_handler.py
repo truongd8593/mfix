@@ -9,7 +9,7 @@ import logging
 log = logging.getLogger(__name__)
 
 #import Qt
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
 #local imports
@@ -343,10 +343,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # Should we just hide the entire table (including header) if no rows?
         ui = self.ui.solids
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
