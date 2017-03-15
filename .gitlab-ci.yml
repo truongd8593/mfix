@@ -29,7 +29,7 @@ variables:
 
 build:src:
   script:
-    - env PATH="$MINICONDA_BIN:$PATH" python2.7 setup.py sdist
+    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py sdist
   stage: build:src
   only:
     - develop
