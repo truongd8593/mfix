@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -24,7 +23,7 @@ import os
 import re
 from collections import OrderedDict
 
-from mfixgui.tools.general import SCRIPT_DIRECTORY, get_mfix_home
+from mfixgui.tools.util import get_mfix_home
 
 PACKAGE = os.path.dirname(__file__)
 KEYWORDDOC_JSON = os.path.join(PACKAGE, 'keywordDoc.json')
@@ -112,15 +111,15 @@ def findNamePath(path):
 
 def insensitiveGlobPattern(pattern):
     def either(c):
-        return '[%s%s]'%(c.lower(),c.upper()) if c.isalpha() else c
-    return ''.join(map(either,pattern))
+        return '[%s%s]'%(c.lower(), c.upper()) if c.isalpha() else c
+    return ''.join(map(either, pattern))
 
 def cleanString(string):
     string = string.strip()
     if string:
         strings = string.split('!')
         strings = [s.strip() for s in strings]
-        string =  ' '.join(strings)
+        string = ' '.join(strings)
 
     # Some of the 'valids' are lower-case, which breaks our tooltip setter
     if string in ('.false.', '.true.'):

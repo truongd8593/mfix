@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+""" Dialog in the GUI for starting an MFIX solver job """
 
 import logging
 import os
@@ -19,20 +19,27 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
+try: #2.7
+    import ConfigParser as configparser
+except: # 3
+    import configparser
+
 from qtpy import PYQT5, uic
 from qtpy.QtCore import Signal, QProcess, QProcessEnvironment
 from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
                             QLabel, QComboBox, QSpinBox,
                             QDoubleSpinBox, QCheckBox)
 
-from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
+from mfixgui.tools.general import (
+    clear_layout,
+    extract_config,
+    replace_with_dict
+    )
+from mfixgui.tools.util import (
+    get_mfix_home,
+)
+
 from mfixgui.widgets.base import BASE_WIDGETS
-
-try: #2.7
-    import ConfigParser as configparser
-except: # 3
-    import configparser
-
 
 log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
 

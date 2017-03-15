@@ -94,7 +94,6 @@ class Interpreter(object):
             self.handle_interp_line()
 
     def capture_output(self, enable):
-        import sys
         if enable:
             sys.stdout = self.stdout
             sys.stderr = self.stderr

@@ -6,8 +6,6 @@ This module contains the work flow widget.
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 
-from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtCore import Signal
 from collections import OrderedDict
 import copy
 import os
@@ -15,8 +13,10 @@ import shutil
 import glob
 import subprocess
 import json
-import sys
 import re
+
+from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy.QtCore import Signal
 
 try:
     from pyqtnode import NodeWidget, Node, tools
@@ -29,7 +29,12 @@ except ImportError:
 # local imports
 from mfixgui.widgets.base import Table
 from mfixgui.widgets.run_popup import RunPopup
-from mfixgui.tools.general import get_icon, SCRIPT_DIRECTORY, is_vnc, replace_with_dict
+from mfixgui.tools.general import (
+    get_icon,
+    is_vnc,
+    replace_with_dict,
+)
+from mfixgui.tools.util import SCRIPT_DIRECTORY
 from mfixgui.constants import PARAMETER_DICT
 from mfixgui.job import JobManager
 from mfixgui.project import Project
@@ -41,25 +46,31 @@ class TestNode(Node):
 
     def __init__(self):
         self.terminalOpts = OrderedDict([
-            ('used parameters', {'widget': 'pushbutton',
-                      'in': False,
-                      'out': False,
-                      'showlabel': False,
-                      'dtype': bool,
-                      }),
-            ('export', {'widget': 'pushbutton',
-                        'in': False,
-                        'out': False,
-                        'showlabel': False,
-                        'dtype': bool,
-                        }),
-            ('run', {'widget': 'pushbutton',
-                        'in': False,
-                        'out': False,
-                        'showlabel': False,
-                        'dtype': bool,
-                        }),
-             ])
+            ('used parameters',
+             {
+                 'widget': 'pushbutton',
+                 'in': False,
+                 'out': False,
+                 'showlabel': False,
+                 'dtype': bool,
+             }),
+            ('export',
+             {
+                 'widget': 'pushbutton',
+                 'in': False,
+                 'out': False,
+                 'showlabel': False,
+                 'dtype': bool,
+             }),
+            ('run',
+             {
+                 'widget': 'pushbutton',
+                 'in': False,
+                 'out': False,
+                 'showlabel': False,
+                 'dtype': bool,
+             }),
+        ])
 
         Node.__init__(self)
 
@@ -99,20 +110,22 @@ class ExportNode(Node):
 
     def __init__(self):
         self.terminalOpts = OrderedDict([
-            ('path', {'widget': 'browse',
-                      'in': True,
-                      'out': True,
-                      'showlabel': True,
-                      'dtype': str,
-                      }),
-            ('parameters', {'widget': None,
-                        'in': True,
-                        'out': False,
-                        'showlabel': True,
-                        'dtype': dict,
-                        'default':{}
-                        }),
-             ])
+            ('path', {
+                'widget': 'browse',
+                'in': True,
+                'out': True,
+                'showlabel': True,
+                'dtype': str,
+            }),
+            ('parameters', {
+                'widget': None,
+                'in': True,
+                'out': False,
+                'showlabel': True,
+                'dtype': dict,
+                'default':{}
+            }),
+        ])
 
         Node.__init__(self)
 
@@ -130,8 +143,10 @@ class ExportNode(Node):
 
 # --- Mock Parent for job submission ---
 class Mock(object):
+
     def noop(self, *args, **kwargs):
         return False
+
     def __getattr__(self, name):
         return self.noop
 
@@ -201,6 +216,7 @@ class FakeJob(object):
 
 # --- Workflow Widget ---
 class WorkflowWidget(QtWidgets.QWidget):
+
     def __init__(self, project, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
@@ -338,9 +354,9 @@ class WorkflowWidget(QtWidgets.QWidget):
                                       'job id': None}
                     run_data_path = os.path.join(root, '.workflow_run_cmd.json')
                     if os.path.exists(run_data_path):
-                        with open(run_data_path) as f:
-                            d = json.load(f)
-                        data[dir_base].update(d)
+                        with open(run_data_path) as json_file:
+                            json_obj = json.load(json_file)
+                        data[dir_base].update(json_obj)
                     self.create_job_manager(root)
                     self.watch_dir_paths.append(root)
 
@@ -468,22 +484,22 @@ class WorkflowWidget(QtWidgets.QWidget):
         job_id = self._run(proj_dir, mfx_file)
 
         # save some info on the run
-        c = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
-        s = data[dir_base]['submit'] = copy.deepcopy(self.submit_cmd)
+        cmd = data[dir_base]['cmd'] = copy.deepcopy(self.run_cmd)
+        submit = data[dir_base]['submit'] = copy.deepcopy(self.submit_cmd)
         data[dir_base]['queue'] = self.queue
         data[dir_base]['file'] = mfx_file
         self.job_status_table.set_value(data)
 
         save_data = {
-            'cmd': c,
-            'submit': s,
+            'cmd': cmd,
+            'submit': submit,
             'queue': self.queue,
             'file': mfx_file,
             'job id': job_id,
         }
 
-        with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as f:
-            json.dump(save_data, f)
+        with open(os.path.join(proj_dir, '.workflow_run_cmd.json'), 'w') as json_file:
+            json.dump(save_data, json_file)
 
         if not self.update_timer.isActive():
             self.update_timer.start(1000)
@@ -522,8 +538,8 @@ class WorkflowWidget(QtWidgets.QWidget):
         script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict = self.submit_cmd
 
         # write the script
-        with open(os.path.join(project_dir, script_name), 'w') as f:
-            f.write(script)
+        with open(os.path.join(project_dir, script_name), 'w') as script_file:
+            script_file.write(script)
 
         replace_dict['SCRIPT'] = script_name
 
@@ -531,7 +547,7 @@ class WorkflowWidget(QtWidgets.QWidget):
 
         # submit the job
         self.mfixgui.print_internal("Job submit CMD: {}".format(submit_cmd),
-                                   color='blue')
+                                    color='blue')
 
         proc = subprocess.Popen(submit_cmd, shell=True, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
@@ -545,7 +561,7 @@ class WorkflowWidget(QtWidgets.QWidget):
         if job_id:
             job_id = job_id[0]
             self.mfixgui.print_internal("Job successfully submitted with job id: {}".format(job_id),
-                                       color='blue')
+                                        color='blue')
         else:
             self.mfixgui.error('Could not determine job id')
             job_id = None
@@ -648,7 +664,8 @@ class WorkflowWidget(QtWidgets.QWidget):
     def get_selected_jobs(self):
         """get the currently selected jobs"""
         projs = list(self.job_status_table.value.keys())
-        return [self.job_dict[projs[i]] for i in self.job_status_table.current_rows() if self.job_dict[projs[i]].job is not None]
+        rows = self.job_status_table.current_rows()
+        return [self.job_dict[projs[i]] for i in rows if self.job_dict[projs[i]].job is not None]
 
     def get_selected_projects(self):
         """get the currently selected project names"""
