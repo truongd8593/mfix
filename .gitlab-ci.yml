@@ -60,8 +60,10 @@ linux_py3_conda:
 # build:py2 stage builds python2 wheel packages
 
 linux_py2_whl:
+  variables:
+    PATH: "/nfs/home/0/users/jenkins/miniconda2/bin:$PATH"
   script:
-    - /nfs/home/0/users/jenkins/miniconda2/bin/python2.7 setup.py bdist_wheel
+    - python2.7 setup.py bdist_wheel
   stage: build
   only:
     - ci_reorg
