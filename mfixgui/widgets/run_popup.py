@@ -5,10 +5,13 @@ import os
 import signal
 import sys
 import tempfile
+
 try: #2.7
     from StringIO import StringIO
 except ImportError: # 3
     from io import StringIO
+
+import errno
 import multiprocessing
 import json
 
@@ -648,10 +651,8 @@ class RunPopup(QDialog):
         self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
-            # Keep a copy because it gets reset
             msg = "MFiX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFiX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
@@ -662,8 +663,21 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
-            msg = "MFiX process has stopped"
-            self.parent.signal_update_runbuttons.emit(msg)
+
+            if self.parent.job_manager.pidfile:
+                try:
+                    os.unlink(self.parent.job_manager.pidfile)
+                    self.parent.job_manager.pidfile = None
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        raise
+                finally:
+                    # Turn off timers!
+                    if self.parent.job_manager.job:
+                        self.parent.job_manager.job.cleanup_and_exit()
+                    self.parent.job_manager.job = None
+                    msg = "MFiX process has stopped"
+                    self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_error(error):
             if error == QProcess.FailedToStart:

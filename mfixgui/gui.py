@@ -167,6 +167,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.mfix_available = False
         self.open_succeeded = False
         self.unsaved_flag = False
+        self.last_line = None
         self.run_dialog = None
         if set_splash_text is not None:
             self.set_splash_text = set_splash_text
@@ -466,7 +467,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
         self.job_manager.sig_update_job_status.connect(self.slot_update_residuals)
         self.watch_run_dir_timer = QtCore.QTimer()# Move to monitor class
-        self.watch_run_dir_timer.timeout.connect(self.slot_rundir_changed)
+        self.watch_run_dir_timer.timeout.connect(self.slot_rundir_timer)
         self.watch_run_dir_timer.start(1000)
 
         self.monitor = Monitor(self)
@@ -575,7 +576,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.project.reset() # Clears all keywords & collections
 
-        self.slot_rundir_changed()
+        self.slot_rundir_timer()
 
         self.reset_model_setup()
         self.reset_fluid()
@@ -776,14 +777,11 @@ class MfixGui(QtWidgets.QMainWindow,
         if 'running' not in message.lower():
             self.progress_bar.hide()
 
-    def slot_rundir_changed(self):
+    def slot_rundir_timer(self):
         # Note: since log files get written to project dirs, this callback
         # is triggered frequently during a run.
-        log.debug("entering slot_rundir_changed")
         runname_pid = self.get_pid_name()
-        log.debug('job_manager.job: %s' % self.job_manager.job)
         if self.get_project_dir() and not self.job_manager.job:
-            log.debug("slot_rundir_changed was called, pid {}".format(runname_pid))
             full_runname_pid = os.path.join(self.get_project_dir(), runname_pid)
             self.job_manager.try_to_connect(full_runname_pid)
 
@@ -887,9 +885,6 @@ class MfixGui(QtWidgets.QMainWindow,
         unpaused = self.job_manager.job and not paused
         resumable = bool(self.monitor.get_res_files()) and not self.job_manager.job
 
-        log.debug("UPDATE RUN OPTIONS: pending=%s paused=%s resumable=%s",
-                   pending, paused, resumable)
-
         self.update_window_title() # put run state in window titlebar
 
         self.enable_input(editable=project_open and not (pending or unpaused or paused or resumable),
@@ -898,8 +893,6 @@ class MfixGui(QtWidgets.QMainWindow,
         #handle buttons in order:  RESET RUN PAUSE STOP
 
         if pending:
-            # This message is printed after the app exits, sigh
-            #self.status_message("MFiX starting up, process %s" % self.job_manager.job.mfix_pid)
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -907,7 +900,6 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif unpaused:
-            #self.status_message("MFiX running, process %s" % self.job_manager.job.mfix_pid) take care of this slot_update_residuals
             # also disable spinboxes for dt, tstop unless interactive
             self.set_reset_button(enabled=False)
             self.set_run_button(enabled=False)
@@ -1621,7 +1613,6 @@ class MfixGui(QtWidgets.QMainWindow,
         for line in lines:
             if self.can_skip(line):
                 continue
-
             self.print_internal(line, color=color, font='Courier')
         self.scan_errors(lines)
 
@@ -1639,6 +1630,10 @@ class MfixGui(QtWidgets.QMainWindow,
         self.scan_errors(lines)
 
     def print_internal(self, line, color=None, font=None):
+        if line == self.last_line: # Avoid repeated output lines
+            return
+        self.last_line = line
+
         qtextbrowser = self.ui.command_output
         stripped = line.strip()
         if not stripped:
@@ -1666,7 +1661,7 @@ class MfixGui(QtWidgets.QMainWindow,
         char_format = QtGui.QTextCharFormat()
 
         # HACK is this going too far?  we should define message types, not infer from messages
-        if any(x in lower for x in ('error', 'warn', 'fail')) and not 'error%' in lower:
+        if any(x in lower for x in ('error', 'warn', 'fail')) and 'error%' not in lower:
             color='red'
         if color:
             char_format.setForeground(QtGui.QColor(color))
@@ -1986,7 +1981,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.save_project()
 
         # change file watcher
-        self.slot_rundir_changed()
+        self.slot_rundir_timer()
         self.signal_update_runbuttons.emit('')
         self.handle_main_menu_hide()
 
@@ -2391,7 +2386,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_source_view()
 
         # set up rundir watcher
-        self.slot_rundir_changed()
+        self.slot_rundir_timer()
 
         ### Geometry
         # Look for geometry.stl and load automatically

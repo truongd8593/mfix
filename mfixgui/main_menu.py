@@ -758,9 +758,10 @@ class MainMenu(object):
         self.ui.pushButtonDeveloper.setVisible(enable)
         self.ui.pushButtonInterpreter.setVisible(enable)
         if enable:
-            self.ui.tabWidgetGraphics.addTab(self.ui.api_response, 'api response')
+            self.ui.tabWidgetGraphics.addTab(self.ui.mfix_response, 'MFiX responses')
         else:
-            self.ui.tabWidgetGraphics.removeTab(self.ui.tabWidgetGraphics.indexOf(self.ui.api_response))
+            self.ui.tabWidgetGraphics.removeTab(
+                self.ui.tabWidgetGraphics.indexOf(self.ui.mfix_response))
 
         self.settings.setValue('developer_mode', int(enable))
 
@@ -768,7 +769,10 @@ class MainMenu(object):
         self.main_menu_new_enable_list[idx] = checked
         for r in range(self.ui.main_menu_new_list.count()):
             item = self.ui.main_menu_new_list.item(r)
-            show = any(e==True and i==True for e, i in zip(self.main_menu_new_enable_list, item.enable_list))
+            show = any(e==True and i==True
+                       for (e,i) in zip(
+                               self.main_menu_new_enable_list,
+                               item.enable_list))
             item.setHidden(not show)
 
     def collect_template_files(self):
