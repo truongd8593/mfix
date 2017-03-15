@@ -25,6 +25,8 @@ from qtpy import QtGui, QtWidgets, QtCore
 PY2 = sys.version_info.major == 2
 PY3 = sys.version_info.major == 3
 
+from mfixgui.tools.util import SCRIPT_DIRECTORY
+
 def set_item_noedit(item):
     item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
 

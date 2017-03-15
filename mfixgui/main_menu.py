@@ -37,9 +37,15 @@ try:
 except ImportError:
     VTK_VERSION = 'Import Failed'
 
-
-from mfixgui.tools import (SCRIPT_DIRECTORY, get_icon, get_mfix_home,
-                                   get_pixmap, get_separator)
+from mfixgui.tools.general import (
+    get_icon,
+    get_pixmap,
+    get_separator,
+)
+from mfixgui.tools.util import (
+    SCRIPT_DIRECTORY,
+    get_mfix_home,
+)
 from mfixgui.version import get_version
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 

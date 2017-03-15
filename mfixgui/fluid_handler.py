@@ -6,17 +6,28 @@ from copy import deepcopy
 from collections import OrderedDict
 
 import logging
-log = logging.getLogger(__name__)
 
 #import Qt
 from qtpy import QtWidgets, PYQT5
 
 #local imports
-from mfixgui.constants import *
-from mfixgui.tools import set_item_noedit, get_selected_row, format_key_with_args
+from mfixgui.constants import (
+    AIR,
+    CONSTANT,
+    UDF,
+)
+from mfixgui.tools.util import (
+    format_key_with_args,
+)
+from mfixgui.tools.general import (
+    get_selected_row,
+    set_item_noedit,
+    )
 from mfixgui.tools import keyword_args
 
 from mfixgui.species_handler import SpeciesHandler
+
+log = logging.getLogger(__name__)
 
 class FluidHandler(SpeciesHandler):
     # Defaults
