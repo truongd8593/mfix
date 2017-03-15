@@ -34,38 +34,38 @@ variables:
 #   tags:
 #     - linux
 
-# build:py2 stage builds python2 wheel packages
-linux_py3_conda:
-  image: mwm126/mfix:latest
-  variables:
-    CONDA_BIN: "/opt/miniconda/bin"
-    CONDA_BLD: "/opt/miniconda/conda-bld"
-  script:
-    - env PATH="$CONDA_BIN:$PATH" conda build --python 3.6 build-aux/meta.yaml
-    - rm -rf dist
-    - mkdir -p dist
-    - ls -t "$CONDA_BLD/win-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
-    - ls dist
+# linux_py3_conda:
+#   image: mwm126/mfix:latest
+#   variables:
+#     CONDA_BIN: "/opt/miniconda/bin"
+#     CONDA_BLD: "/opt/miniconda/conda-bld"
+#   script:
+#     - env PATH="$CONDA_BIN:$PATH" conda build --python 3.6 build-aux/meta.yaml
+#     - rm -rf dist
+#     - mkdir -p dist
+#     - ls -t "$CONDA_BLD/win-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
+#     - ls dist
 
-  stage: build
-  only:
-    - ci_reorg
-    - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-      - dist/mfix*.bz2
-  tags:
-    - docker
+  # stage: build
+  # only:
+  #   - ci_reorg
+  #   - tags
+  # artifacts:
+  #   name: "$CI_BUILD_NAME"
+  #   expire_in: 1 week
+  #   paths:
+  #     - dist/mfix*.bz2
+  # tags:
+  #   - docker
 
 linux_py2_whl:
   variables:
     CONDA_BIN: "/nfs/home/0/users/jenkins/miniconda2/bin"
     GCC_BIN: "/nfs/apps/Compilers/GNU/6.1.0/bin"
-    AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin/autoconf"
+    AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin"
   script:
-    - env PATH="$AC_BIN:$CONDA_BIN:$GCC_BIN:$PATH" python2.7 setup.py bdist_wheel
+    - env PATH="$AC_BIN:$CONDA_BIN:$GCC_BIN:$PATH" which autoconf # python2.7 setup.py bdist_wheel
+    - env PATH="$AC_BIN:$CONDA_BIN:$GCC_BIN:$PATH" autoconf --version # python2.7 setup.py bdist_wheel
   stage: build
   only:
     - ci_reorg
@@ -127,25 +127,25 @@ linux_py2_whl:
 #   tags:
 #     - windows
 
-windows_py3_conda:
-  script:
-    - conda build --python 3.4 build-aux/meta.yaml
-    - rm -rf dist
-    - mkdir dist
-    # - cp $(conda build --output --python 3.4 build-aux/meta.yaml) dist
-    - ls -t /c/miniconda3/conda-bld/win-64/mfix*.bz2 | head -n 1 | xargs -i cp {} dist
-    - ls dist
-  stage: build
-  only:
-    - ci_reorg
-    - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-      - dist/mfix*.bz2
-  tags:
-    - windows
+# windows_py3_conda:
+#   script:
+#     - conda build --python 3.4 build-aux/meta.yaml
+#     - rm -rf dist
+#     - mkdir dist
+#     # - cp $(conda build --output --python 3.4 build-aux/meta.yaml) dist
+#     - ls -t /c/miniconda3/conda-bld/win-64/mfix*.bz2 | head -n 1 | xargs -i cp {} dist
+#     - ls dist
+#   stage: build
+#   only:
+#     - ci_reorg
+#     - tags
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#       - dist/mfix*.bz2
+#   tags:
+#     - windows
 
 # install stage installs python2 linux package on Joule
 
