@@ -2,7 +2,7 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
 
-from qtpy import QtCore, QtWidgets, PYQT5
+from qtpy import QtCore, QtWidgets
 from qtpy.QtWidgets import (QComboBox, QGridLayout, QGroupBox, QHBoxLayout,
                             QLabel, QPushButton, QWidget)
 
@@ -619,10 +619,7 @@ class BCS(object):
     def fixup_bcs_table(self, tw, stretch_column=0):
         ui = self.ui.boundary_conditions
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

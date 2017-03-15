@@ -1,38 +1,68 @@
-from __future__ import print_function, absolute_import, unicode_literals, division
-
 """Regions popup for MFIX-GUI
 used for initial & boundary conditions"""
 
 # Note, throughout this module, the abbreviation 'is_' means "internal surface", not "is"
 
+from __future__ import print_function, absolute_import, unicode_literals, division
+
 import os
-import sys
-import signal
 from collections import OrderedDict
-import pickle
 
-from qtpy import QtCore, QtWidgets, PYQT5, uic
-from qtpy.QtWidgets import QTableWidgetItem, QLineEdit, QAbstractItemView
+from qtpy import uic
 
-UserRole = QtCore.Qt.UserRole
+from qtpy.QtCore import (
+    Qt,
+    Signal,
+)
 
-from mfixgui.constants import *
+from qtpy.QtWidgets import (
+    QHeaderView,
+    QTableWidgetItem,
+    QAbstractItemView,
+    QLineEdit,
+    QTableWidgetItem,
+    QDialog,
+)
 
-from mfixgui.tools.general import (set_item_noedit, set_item_enabled, item_enabled,
-                           get_combobox_item, get_selected_rows)
+from mfixgui.constants import (
+    IMPERMEABLE,
+    IS_NAMES,
+    BC_TYPES,
+    BC_NAMES,
+    DEFAULT_IS_TYPE,
+    DEFAULT_BC_TYPE,
+    IS_TYPES,
+    MASS_INFLOW,
+    MASS_OUTFLOW,
+    PRESSURE_INFLOW,
+    PRESSURE_OUTFLOW,
+    SEMIPERMEABLE,
+    X_IMPERMEABLE,
+    X_SEMIPERMEABLE,
+    Y_IMPERMEABLE,
+    Y_SEMIPERMEABLE,
+    Z_IMPERMEABLE,
+    Z_SEMIPERMEABLE,
+)
 
-if PYQT5:
-    def resize_column(table, col, flags):
-        table.horizontalHeader().setSectionResizeMode(col, flags)
-else:
-    def resize_column(table, col, flags):
-        table.horizontalHeader().setResizeMode(col, flags)
+from mfixgui.tools.general import (
+    get_combobox_item,
+    get_selected_rows,
+    item_enabled,
+    set_item_enabled,
+    set_item_noedit,
+)
+
+USER_ROLE = Qt.UserRole
+
+def resize_column(table, col, flags):
+    table.horizontalHeader().setSectionResizeMode(col, flags)
 
 
-class RegionsPopup(QtWidgets.QDialog):
+class RegionsPopup(QDialog):
 
-    save = QtCore.Signal()
-    cancel = QtCore.Signal()
+    save = Signal()
+    cancel = Signal()
 
     def handle_regions_selection(self):
         tw = self.ui.table
@@ -42,7 +72,7 @@ class RegionsPopup(QtWidgets.QDialog):
         buttonbox = self.ui.buttonbox
         buttonbox.button(buttonbox.Ok).setEnabled(bool(selections))
 
-        region_types = [tw.item(x,1).text() for x in selections]
+        region_types = [tw.item(x, 1).text() for x in selections]
         types_match = len(set(region_types)) < 2
 
         if self.boundary:
@@ -56,7 +86,7 @@ class RegionsPopup(QtWidgets.QDialog):
             set_item_enabled(item, not disable)
 
             # Volume BCs are only allowed for walls
-            disable = any(x=='box' for x in region_types) or not types_match
+            disable = any(x == 'box' for x in region_types) or not types_match
             for idx in (MASS_INFLOW, PRESSURE_OUTFLOW, MASS_OUTFLOW):
                 item = get_combobox_item(cb, idx)
                 set_item_enabled(item, not disable)
@@ -72,11 +102,11 @@ class RegionsPopup(QtWidgets.QDialog):
             # For inflows/outflows, only allow compatible orientation
             else:
                 if len(selections) == 1:
-                    region_type = tw.item(selections[0],1).text()
+                    region_type = tw.item(selections[0], 1).text()
                     for i in range(0, tw.rowCount()):
                         if i == selections[0]:
                             continue
-                        enable = (tw.item(i,1).text() == region_type)
+                        enable = (tw.item(i, 1).text() == region_type)
                         self.enable_row(i, enable)
                 elif len(selections) == 0:
                     self.handle_type(self.ui.combobox.currentIndex())
@@ -89,7 +119,7 @@ class RegionsPopup(QtWidgets.QDialog):
             #  (would be nicer if this were in iss.py)
             # IS regions can be planes or volumes (not points or STLs)
             # *-Axis permeable/semipermeable not available for planes
-            disable = selections and any('plane' in tw.item(x,1).text()
+            disable = selections and any('plane' in tw.item(x, 1).text()
                                          for x in selections)
             for index in (X_SEMIPERMEABLE, Y_SEMIPERMEABLE, Z_SEMIPERMEABLE,
                           X_IMPERMEABLE, Y_IMPERMEABLE, Z_IMPERMEABLE):
@@ -122,13 +152,14 @@ class RegionsPopup(QtWidgets.QDialog):
             is_type = IS_TYPES[cb.currentIndex()]
 
             if len(selections) == 1:
-                region_type = tw.item(selections[0],1).text()
+                region_type = tw.item(selections[0], 1).text()
                 plane = 'plane' in region_type
                 for i in range(0, tw.rowCount()):
                     if i == selections[0]:
                         continue
-                    text = tw.item(i,1).text()
-                    enable = ('plane' in text or text=='box') and (('plane' in tw.item(i,1).text()) == plane)
+                    text = tw.item(i, 1).text()
+                    enable = (('plane' in text or text == 'box')
+                              or (plane == ('plane' in tw.item(i, 1).text())))
                     self.enable_row(i, enable)
             elif len(selections) == 0:
                 self.handle_type(self.ui.combobox.currentIndex())
@@ -153,14 +184,15 @@ class RegionsPopup(QtWidgets.QDialog):
                 #    Not available for STL regions
                 for i in range(tw.rowCount()):
                     text = tw.item(i, 1).text()
-                    enable = ('plane' in text) and (target is None or text==target)
+                    enable = ('plane' in text) and (target is None or text == target)
                     self.enable_row(i, enable)
 
             elif bc_type in ('MI', 'PO', 'MO'):
                 #    Not available for volume regions
                 for i in range(tw.rowCount()):
                     text = tw.item(i, 1).text()
-                    enable = ('plane' in text or text=='STL') and (target is None or text==target)
+                    enable = (('plane' in text or text == 'STL')
+                              and (target is None or text==target))
                     self.enable_row(i, enable)
             elif bc_type == 'CYCLIC':
                 tw.clearSelection()
@@ -170,27 +202,27 @@ class RegionsPopup(QtWidgets.QDialog):
                     self.enable_row(i, enable)
             else:
                 self.error("Unknown bc_type %s" % bc_type)
-            tw.setSelectionMode(QAbstractItemView.SingleSelection if bc_type=='CYCLIC'
+            tw.setSelectionMode(QAbstractItemView.SingleSelection if bc_type == 'CYCLIC'
                                 else QAbstractItemView.MultiSelection)
 
         elif self.surface:
             tw.setSelectionMode(QAbstractItemView.MultiSelection)
             is_type = IS_TYPES[val]
-            plane =  is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
+            plane = is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
             #enable planes, disable boxes
             for i in range(tw.rowCount()):
                 text = tw.item(i, 1).text()
-                enable = ( (text=='box' or 'plane' in text)
-                           and (('plane' in tw.item(i, 1).text()) == plane))
+                enable = ((text == 'box' or 'plane' in text)
+                          and (('plane' in tw.item(i, 1).text()) == plane))
                 self.enable_row(i, enable)
 
 
     def enable_row(self, i, enable):
         tw = self.ui.table
-        enable = enable and tw.item(i,2).data(UserRole) # Initial enable setting
-        tw.item(i,2).setText('Yes' if enable else 'No')
-        for j in (0,1,2):
-            set_item_enabled(tw.item(i,j), enable)
+        enable = enable and tw.item(i, 2).data(USER_ROLE) # Initial enable setting
+        tw.item(i, 2).setText('Yes' if enable else 'No')
+        for j in (0, 1, 2):
+            set_item_enabled(tw.item(i, j), enable)
 
 
     def reset_signals(self):
@@ -206,12 +238,12 @@ class RegionsPopup(QtWidgets.QDialog):
         self.app = app
         thisdir = os.path.abspath(os.path.dirname(__file__))
         uidir = os.path.join(os.path.dirname(thisdir), 'uifiles')
-        ui = self.ui = uic.loadUi(os.path.join(uidir, 'regions_popup.ui'), self)
+        self.ui = uic.loadUi(os.path.join(uidir, 'regions_popup.ui'), self)
 
         # key=species, val=data dict
         self.defined_regions = OrderedDict()
 
-        buttons = ui.buttonbox.buttons()
+        buttons = self.ui.buttonbox.buttons()
         buttons[0].clicked.connect(lambda: self.save.emit())
         buttons[1].clicked.connect(lambda: self.cancel.emit())
         #self.ui.table.doubleClicked.connect(self.save.emit) # Too easy to double-click accidentally
@@ -231,7 +263,7 @@ class RegionsPopup(QtWidgets.QDialog):
         nrows = table.rowCount()
         table.setRowCount(nrows+1)
         def make_item(val, enabled):
-            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            item = QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             set_item_enabled(item, enabled)
             return item
@@ -240,7 +272,7 @@ class RegionsPopup(QtWidgets.QDialog):
         table.setItem(nrows, 1, make_item(shape, available))
         table.setItem(nrows, 2, make_item('Yes' if available else 'No', available))
         # Keep track of original 'available' so we can restore
-        table.item(nrows, 2).setData(UserRole, available)
+        table.item(nrows, 2).setData(USER_ROLE, available)
 
 
     def popup(self, label_text):
@@ -279,8 +311,8 @@ class RegionsPopup(QtWidgets.QDialog):
             cb.clear()
             cb.addItems(['Cell data', 'Particle data'])
             # slight hack to set tooltips
-            get_combobox_item(cb,0).setToolTip('Cell data (VTU file)')
-            get_combobox_item(cb,1).setToolTip('Particle data (VTP file)')
+            get_combobox_item(cb, 0).setToolTip('Cell data (VTU file)')
+            get_combobox_item(cb, 1).setToolTip('Particle data (VTP file)')
             ui.frame_object_type.show()
         else:
             ui.frame_object_type.hide()
@@ -290,23 +322,23 @@ class RegionsPopup(QtWidgets.QDialog):
         self.activateWindow()
         # Table fixup
 
-        hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         stretch_column = 0
-        for n in range(0, ncols):
-            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+        for col_index in range(0, ncols):
+            if col_index == stretch_column:
+                resize(col_index, QHeaderView.Stretch)
+            else:
+                resize(col_index, QHeaderView.ResizeToContents)
 
         table_height = 4 + tw.horizontalHeader().height() + (tw.rowHeight(0)*tw.rowCount())
 
         min_table_height = 150
-        tw.setMinimumHeight(min(min_table_height,table_height))
+        tw.setMinimumHeight(min(min_table_height, table_height))
         tw.setMaximumHeight(table_height)
 
-        width = tw.horizontalHeader().width() + tw.verticalScrollBar().isVisible() * (4+tw.verticalScrollBar().width())
+        width = (tw.horizontalHeader().width()
+                 + tw.verticalScrollBar().isVisible() * (4+tw.verticalScrollBar().width()))
         self.setMaximumWidth(max(width, ui.label_top.size().width()))
         #self.setMinimumWidth(width)
 
@@ -321,8 +353,7 @@ class RegionsPopup(QtWidgets.QDialog):
 
     def get_selection_list(self):
         """return list of selected region names"""
-        rows = set([i.row() for i in self.ui.table.selectedItems()])
-        rows = list(rows)
+        rows = list(set([i.row() for i in self.ui.table.selectedItems()]))
         rows.sort()
-        names = [self.ui.table.item(r,0).text() for r in rows]
+        names = [self.ui.table.item(r, 0).text() for r in rows]
         return names
