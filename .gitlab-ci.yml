@@ -61,7 +61,7 @@ linux_py3_conda:
 
 linux_py2_whl:
   script:
-    - python2.7 setup.py bdist_wheel
+    - /nfs/home/0/users/jenkins/miniconda2/bin/python2.7 setup.py bdist_wheel
   stage: build
   only:
     - ci_reorg
