@@ -13,7 +13,7 @@ from qtpy import QtWidgets, PYQT5
 
 #local imports
 from mfixgui.constants import *
-from mfixgui.tools.general import set_item_noedit, get_selected_row, format_key_with_args
+from mfixgui.tools import set_item_noedit, get_selected_row, format_key_with_args
 from mfixgui.tools import keyword_args
 
 from mfixgui.species_handler import SpeciesHandler

@@ -18,7 +18,7 @@ import distutils.cygwinccompiler
 from numpy.distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension, setup
 
-from mfixgui.tools.general import get_mfix_home
+from mfixgui.tools.util import get_mfix_home
 
 from mfixgui.version import get_version
 
