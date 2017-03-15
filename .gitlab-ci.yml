@@ -97,7 +97,7 @@ build:windows:
 
 build_linux_py2:
   script:
-    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py build_mfix
+    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py bdist_wheel
   stage: build:py2
   only:
     - develop
