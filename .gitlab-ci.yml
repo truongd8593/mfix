@@ -8,6 +8,8 @@ stages:
 
 variables:
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
+  MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
+
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
 # test:
@@ -24,7 +26,7 @@ variables:
 
 build:src:
   script:
-    - python setup.py sdist
+    - env PATH="$ANACONDA_BIN:$PATH" python2.7 setup.py sdist
   stage: build:src
   only:
     - develop
@@ -41,7 +43,7 @@ build:src:
 
 build:linux:
   script:
-    - python setup.py build_mfix
+    - env PATH="$ANACONDA_BIN:$PATH" python2.7 setup.py build_mfix
   stage: build:libmfix
   only:
     - develop
@@ -92,7 +94,7 @@ build:windows:
 
 build_linux_py2:
   script:
-    - python2.7 setup.py bdist_wheel
+    - env PATH="$ANACONDA_BIN:$PATH" python2.7 setup.py build_mfix
   stage: build:py2
   only:
     - develop
@@ -146,7 +148,7 @@ build_linux_py2:
 
 build_linux_py3:
   script:
-    - python3.6 setup.py bdist_wheel
+    - env PATH="$MINICONDA_BIN:$PATH" python3.6 setup.py bdist_wheel
   stage: build:py3
   only:
     - develop
