@@ -61,7 +61,7 @@ linux_py3_conda:
 
 linux_py2_whl:
   variables:
-    PATH: "/nfs/home/0/users/jenkins/miniconda2/bin:$PATH"
+    PATH: "/nfs/home/0/users/jenkins/miniconda2/bin:$$PATH"
   script:
     - python2.7 setup.py bdist_wheel
   stage: build
