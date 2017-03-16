@@ -6,7 +6,7 @@ LinuxInstallation() {
 
     $PYTHON setup.py install
     cp "mfixgui/menu-linux.json" "$PREFIX/Menu"
-    cp "mfixgui/mfix.png" "$PREFIX/Menu"
+    cp "mfixgui/icons/mfix.png" "$PREFIX/Menu"
     return $?;
 }
 
