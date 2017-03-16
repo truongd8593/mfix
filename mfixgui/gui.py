@@ -2105,7 +2105,7 @@ class MfixGui(QMainWindow,
         popup.show()
 
     def update_window_title(self):
-        title = self.solver_name or 'MFiX'
+        title = self.solver_name  or 'MFiX'
         project_file = self.get_project_file()
         if project_file:
             # add entire path to title, abbreviate user dir
