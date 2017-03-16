@@ -9,8 +9,6 @@ from collections import OrderedDict
 import glob
 import os
 
-from matplotlib import pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 from qtpy import QtGui, QtCore
 import numpy as np
 
@@ -87,6 +85,9 @@ def build_vtk_lookup_tables():
 if __name__ == "__main__":
     '''Use matplotlib to generate previews of the color maps and save them as
     png files so that they can be displayed in the gui'''
+    from matplotlib import pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
+
 
     def plot_color_gradients(name, cmap, gradient):
         fig, axes = plt.subplots(1, figsize=(20, 1))
