@@ -2101,8 +2101,14 @@ class MfixGui(QMainWindow,
     def handle_compile(self):
         """compiling tool"""
 
+        self.ui.toolbutton_compile.setEnabled(False)
         popup = BuildPopup(self, self.get_project_dir())
+        popup.finished.connect(self.compile_finished)
         popup.show()
+
+    def compile_finished(self):
+        '''callback from build popup'''
+        self.ui.toolbutton_compile.setEnabled(True)
 
     def update_window_title(self):
         title = self.solver_name  or 'MFiX'
