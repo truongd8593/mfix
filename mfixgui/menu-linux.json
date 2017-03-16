@@ -1,0 +1,21 @@
+{
+    "menu_name": "World",
+    "menu_items":
+    [
+        {
+            "cmd": ["/usr/bin/mfix", "arg1", "..", "argn"],
+            // The following options can be applied to any shortcut type:
+            "id": "id1",  // For shortcut file name, becomes "World_id1"
+            "name": "MFiX",
+            "comment": "MFiX gui",
+            "terminal": true,
+            "icon": "Menu/mfix.png"
+        },
+        {
+            "cmd": ["{{FILEBROWSER}}", "~/HelloWorld.txt"]
+        },
+        {
+            "cmd": ["{{WEBBROWSER}}", "https://mfix.netl.doe.gov"]
+        }
+    ]
+}
