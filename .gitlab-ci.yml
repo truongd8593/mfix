@@ -40,6 +40,25 @@ variables:
 #   tags:
 #     - linux
 
+linux_py2_conda:
+  image: mwm126/mfix:latest
+  script:
+    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
+    - rm -rf dist
+    - mkdir -p dist
+    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
+    - ls dist
+  stage: build
+  only:
+    - develop
+    - tags
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+      - dist/mfix*.bz2
+  tags:
+    - linux
 
 linux_py3_conda:
   image: mwm126/mfix:latest
@@ -47,7 +66,7 @@ linux_py3_conda:
     - env PATH="$AC_BIN:$MINICONDA3_BIN:$GCC_BIN:$PATH" conda build --python 3.6 build-aux/meta.yaml
     - rm -rf dist
     - mkdir -p dist
-    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
+    - ls -t "$MINICONDA3_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
     - ls dist
   stage: build
   only:
