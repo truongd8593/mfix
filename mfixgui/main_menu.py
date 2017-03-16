@@ -33,6 +33,7 @@ from qtpy.QtGui import (
 )
 from qtpy.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
