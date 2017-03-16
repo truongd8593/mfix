@@ -164,7 +164,7 @@
   bc_ep_g(1) = 1.0    ! (-)
 
   bc_u_g(1) = 0.0    ! (m/s)
-  bc_v_g(1) = 5.0    ! (m/s)
+  bc_v_g(1) = 0.25    ! (m/s)
 
   bc_p_g(1) = 1.0132e+05    ! (Pa)
   bc_t_g(1) = 298.15    ! (K)
@@ -268,13 +268,11 @@
   gravity_y = -9.81
   gravity_z = 0.0
 
-  bc_w_g(1) = 0.0
-
 #!MFIX-GUI SECTION
 #!MFIX-GUI parameters = {"order": ["min", "max", "xmin", "xmax", "ymin", "ymax",
 #!MFIX-GUI   "zmin", "zmax"], "parameters": {"min": 0.0, "max": 0.0, "xmin":
 #!MFIX-GUI   -0.1, "xmax": 0.1, "ymin": 0, "ymax": 1.0, "zmin": 0.0, "zmax": 0.0}}
-#!MFIX-GUI gui_version = 17.1a7-157-g1737407
+#!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
 #!MFIX-GUI author = "tutorial"
 #!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
@@ -304,9 +302,3 @@
 #!MFIX-GUI vtk_regions = [[[1], ["IC_1"]]]
 #!MFIX-GUI OMP_NUM_THREADS = 1
 #!MFIX-GUI run_location = 1
-#!MFIX-GUI project_version = 2
-#!MFIX-GUI modified_by = justin
-#!MFIX-GUI mfix_exe = /home/justin/miniconda2/bin/mfixsolver
-#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
-#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
-#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
