@@ -20,17 +20,10 @@ else:
         __version__ = pkg_resources.get_distribution("mfix").version
     except pkg_resources.DistributionNotFound:
         # running from development version, perhaps with 'python -m mfixgui'
-        __version__ = get_git_revision_short_hash()
-
-
-def get_git_revision_short_hash():
-    """Try to get the current git hash"""
-    default_version = u"unknown"
-    try:
-        git_hash = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
-    except subprocess.CalledProcessError:
-        git_hash = default_version
-    except OSError:
-        git_hash = default_version
-
-    return git_hash
+        default_version = u"unknown"
+        try:
+            __version__ = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')
+        except subprocess.CalledProcessError:
+            __version__ = default_version
+        except OSError:
+            __version__ = default_version
