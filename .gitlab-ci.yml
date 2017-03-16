@@ -158,7 +158,7 @@ windows_py3_whl:
     paths:
     - dist/mfix*.whl
   tags:
-    - linux
+    - windows
 
 install:linux:py:
   script:
