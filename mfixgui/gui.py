@@ -121,7 +121,6 @@ from mfixgui.widgets.regions import RegionsWidget
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.species_popup import SpeciesPopup
-from mfixgui.widgets.build_popup import BuildPopup
 
 from mfixgui.version import __version__
 
@@ -475,12 +474,15 @@ class MfixGui(QMainWindow,
             (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
             (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
             (ui.toolbutton_reset_mfix, 'restore_delete', self.remove_output_files),
-            (ui.toolbutton_compile, 'build', self.handle_compile),
+            # (ui.toolbutton_compile, 'build', self.handle_compile),
             (ui.toolbutton_parameters, 'functions', self.handle_parameters),
         )
         for (button, icon_name, function) in button_tuples:
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
+
+        # TODO: implement handle_compile
+        ui.toolbutton_compile.setVisible(False)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
         for button in (ui.toolbutton_run_mfix, ui.toolbutton_save):
@@ -2098,20 +2100,13 @@ class MfixGui(QMainWindow,
         self.vtkwidget.update_parameters(changed_params)
         self.project.update_parameters(changed_params)
 
-    def handle_compile(self):
-        """compiling tool"""
-
-        self.ui.toolbutton_compile.setEnabled(False)
-        popup = BuildPopup(self, self.get_project_dir())
-        popup.finished.connect(self.compile_finished)
-        popup.show()
-
-    def compile_finished(self):
-        '''callback from build popup'''
-        self.ui.toolbutton_compile.setEnabled(True)
+    # def handle_compile(self):
+    #     """compiling tool"""
+    #     # TODO: implement
+    #     self.unimplemented()
 
     def update_window_title(self):
-        title = self.solver_name  or 'MFiX'
+        title = self.solver_name or 'MFiX'
         project_file = self.get_project_file()
         if project_file:
             # add entire path to title, abbreviate user dir

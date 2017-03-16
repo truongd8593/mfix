@@ -260,7 +260,7 @@
   des_interp_width = 0.01
 
 #!MFIX-GUI SECTION
-#!MFIX-GUI gui_version = 17.1a7-157-g1737407
+#!MFIX-GUI gui_version = 17.1.dev0
 #!MFIX-GUI project_notes = ""
 #!MFIX-GUI author = "tutorial"
 #!MFIX-GUI geometry = {"tree": {}, "geometry_dict": {}}
@@ -334,9 +334,3 @@
 #!MFIX-GUI   "xmax": 0.1, "ymin": 0, "ymax": 0.5, "zmin": 0, "zmax": 0.02}}
 #!MFIX-GUI OMP_NUM_THREADS = 1
 #!MFIX-GUI run_location = 1
-#!MFIX-GUI project_version = 2
-#!MFIX-GUI modified_by = justin
-#!MFIX-GUI mfix_exe = /home/justin/miniconda2/bin/mfixsolver
-#!MFIX-GUI queue_template = {"LOG": false, "JOB_TYPE": "mpi", "MODULES":
-#!MFIX-GUI   "mfix/17.1", "QUEUE": "general", "template": "Joule", "CORES": 16,
-#!MFIX-GUI   "JOB_NAME": "${PROJECT_NAME}"}
