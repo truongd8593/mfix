@@ -2,7 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
+AC_INIT([mfix],
+    m4_esyscmd_s(echo $(git describe)$(git status --porcelain | awk '{if ($1 == "M") {print "-dirty";exit}}')),
+    [mfix-help@mfix.netl.doe.gov],
+    [],
+    [http://mfix.netl.doe.gov/gitlab])
+
 AC_CONFIG_AUX_DIR([../build-aux])
 
 m4_include([ax_check_compile_flag.m4])
