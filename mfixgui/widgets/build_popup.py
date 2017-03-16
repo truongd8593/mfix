@@ -12,6 +12,8 @@ class BuildPopup(QtWidgets.QProgressDialog):
         self.error_list = []
         self.cwd = cwd
 
+        self.setModal(False)
+
         self.check_timer = QtCore.QTimer()
         self.check_timer.timeout.connect(self.check_progress)
         self.check_timer.start(0)
