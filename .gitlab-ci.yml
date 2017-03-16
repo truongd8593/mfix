@@ -1,18 +1,16 @@
 stages:
-  - test
-  - build:src
-  - build:libmfix
-  - build:py2
-  - build:py3
+  # - test
+  - build
   - deploy
 
 variables:
-  ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
-  MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda2/bin"
-  MINICONDA3_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
   AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin"
+  ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   GCC_BIN: "/nfs/apps/Compilers/GNU/6.1.0/bin"
-
+  MINICONDA3_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
+  MINICONDA3_BLD: "/nfs/home/0/users/jenkins/miniconda3/conda-bld"
+  MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda2/bin"
+  MINICONDA_BLD: "/nfs/home/0/users/jenkins/miniconda2/conda-bld"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
 # test:
@@ -27,10 +25,31 @@ variables:
 
 # build:src builds a source distribution tarball
 
-build:src:
+# build:src:
+#   script:
+#     - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py sdist
+#   stage: build
+#   only:
+#     - develop
+#     - tags
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - dist/*.tar.gz
+#   tags:
+#     - linux
+
+
+linux_py3_conda:
+  image: mwm126/mfix:latest
   script:
-    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py sdist
-  stage: build:src
+    - env PATH="$AC_BIN:$MINICONDA3_BIN:$GCC_BIN:$PATH" conda build --python 3.6 build-aux/meta.yaml
+    - rm -rf dist
+    - mkdir -p dist
+    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
+    - ls dist
+  stage: build
   only:
     - develop
     - tags
@@ -38,72 +57,18 @@ build:src:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/*.tar.gz
+      - dist/mfix*.bz2
   tags:
     - linux
 
-# build stage builds only Fortran code (libmfix.a)
-
-build:linux:
+linux_py2_whl:
+  variables:
   script:
-    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py build_mfix
-  stage: build:libmfix
+    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" python2.7 setup.py bdist_wheel
+  stage: build
   only:
     - develop
     - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - build
-    - .build
-  tags:
-    - linux
-
-build:mac:
-  script:
-    - python3.6 setup.py build_mfix
-  stage: build:libmfix
-  only:
-    - develop
-    - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - build
-    - .build
-  tags:
-    - mac
-
-build:windows:
-  script:
-    - python setup.py build_mfix
-  stage: build:libmfix
-  only:
-    - develop
-    - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - build
-    - .build
-  tags:
-    - windows
-
-
-# build:py2 stage builds python2 wheel packages
-
-build_linux_py2:
-  script:
-    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA_BIN:$PATH" python2.7 setup.py bdist_wheel
-  stage: build:py2
-  only:
-    - develop
-    - tags
-  dependencies:
-    - build:linux
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -115,12 +80,10 @@ build_linux_py2:
 # build_mac_py2:
 #   script:
 #     - FC=gfortran-6 CC=gcc-6 $HOME/anaconda2/bin/python2.7 setup.py bdist_wheel
-#   stage: build:py2
+#   stage: build
 #   only:
 #     - develop
 #     - tags
-#   dependencies:
-#     - build:mac
 #   artifacts:
 #     name: "$CI_BUILD_NAME"
 #     expire_in: 1 week
@@ -129,35 +92,66 @@ build_linux_py2:
 #   tags:
 #     - mac
 
-# build_windows_py2:
+# build_mac_py3:
 #   script:
-#     - python2.7 setup.py bdist_wheel
-#   stage: build:py2
+#     - FC=gfortran-6 CC=gcc-6 python3.6 setup.py bdist_wheel
+#   stage: build
 #   only:
 #     - develop
 #     - tags
-#   dependencies:
-#     - build:windows
 #   artifacts:
 #     name: "$CI_BUILD_NAME"
 #     expire_in: 1 week
 #     paths:
 #     - dist/mfix*.whl
 #   tags:
+
+# windows_py2_conda:
+#   script:
+#     - conda build --python 2.7 build-aux/meta.yaml
+#     - rm -rf dist
+#     - mkdir -p dist
+#     # - cp $(conda build --output --python 2.7 build-aux/meta.yaml) dist
+#     - ls -t /c/miniconda3/conda-bld/win-64 | tail -n 1 | xargs -i cp {} dist
+#   stage: build
+#   only:
+#     - develop
+#     - tags
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#     - dist/mfix*.tar.gz
+#   tags:
 #     - windows
 
-
-# build:py3 stage builds python3 wheel packages
-
-build_linux_py3:
+windows_py3_conda:
   script:
-    - env PATH="$AC_BIN:$GCC_BIN:$MINICONDA3_BIN:$PATH" python3.6 setup.py bdist_wheel
-  stage: build:py3
+    - conda build --python 3.4 build-aux/meta.yaml
+    - rm -rf dist
+    - mkdir dist
+    # - cp $(conda build --output --python 3.4 build-aux/meta.yaml) dist
+    - ls -t /c/Users/mmeredith/miniconda3/conda-bld/win-64/mfix*.bz2 | head -n 1 | xargs -i cp {} dist
+    - ls dist
+  stage: build
   only:
     - develop
     - tags
-  dependencies:
-    - build:linux
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+      - dist/mfix*.bz2
+  tags:
+    - windows
+
+windows_py3_whl:
+  script:
+    - python setup.py bdist_wheel
+  stage: build
+  only:
+    - develop
+    - tags
   artifacts:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
@@ -165,42 +159,6 @@ build_linux_py3:
     - dist/mfix*.whl
   tags:
     - linux
-
-build_mac_py3:
-  script:
-    - FC=gfortran-6 CC=gcc-6 python3.6 setup.py bdist_wheel
-  stage: build:py3
-  only:
-    - develop
-    - tags
-  dependencies:
-    - build:mac
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfix*.whl
-  tags:
-    - mac
-
-build_windows_py3:
-  script:
-    - python setup.py bdist_wheel
-  stage: build:py3
-  only:
-    - develop
-    - tags
-  dependencies:
-    - build:windows
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-    - dist/mfix*.whl
-  tags:
-    - windows
-
-# install stage installs python2 linux package on Joule
 
 install:linux:py:
   script:
@@ -211,6 +169,6 @@ install:linux:py:
     - develop
     - tags
   dependencies:
-    - build_linux_py2
+    - linux_py2_whl
   tags:
     - linux

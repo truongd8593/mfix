@@ -116,7 +116,6 @@ postmfix$(EXEEXT): $(LIBMFIX).md5
 	-rm -f $@
 	$(LN_S) $(top_builddir)/$@ $@
 
-
 ################################################################
 #                                                              #
 #      OpenMP and MPI support                                  #

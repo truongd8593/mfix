@@ -34,7 +34,7 @@ else:
     print("Unsupported Python version %s" % sys.version_info)
     sys.exit(-1)
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -737,7 +737,7 @@ def parse_command_line_arguments():
                         help='specify a port number to use')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=get_version)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 
