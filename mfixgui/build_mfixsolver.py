@@ -48,7 +48,7 @@ def make_mfixsolver():
             for filename in glob.glob(os.path.join(root, '*.f')):
                 udfs.append(filename)
 
-        udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs if not f.startswith('build') ]
+        udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs if not 'f2pywrappers' in f ]
 
     extra_objects = udfs + [
         '.build/read_database.o',
