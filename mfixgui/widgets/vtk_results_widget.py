@@ -9,9 +9,6 @@ from bisect import bisect_left
 from collections import Mapping, OrderedDict
 from xml.etree import ElementTree
 
-from mfixgui.tools.general import get_icon, to_unicode_from_fs
-from mfixgui.widgets.base import CustomPopUp
-from mfixgui.widgets.base_vtk import BaseVtkWidget
 from qtpy import QtCore, QtGui, QtWidgets, uic
 
 # graphics libraries
@@ -46,6 +43,9 @@ except:
     build_vtk_lookup_tables, get_color_map_pngs = None, None
     LOOKUP_TABLES = {}
 
+from mfixgui.tools.general import get_icon, to_unicode_from_fs
+from mfixgui.widgets.base import CustomPopUp
+from mfixgui.widgets.base_vtk import BaseVtkWidget
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
@@ -182,9 +182,11 @@ class ColorMapPopUp(QtWidgets.QDialog):
 
         d_range = [0, 1]
         self.ui.lineedit_from.updateValue(None,
-            self.array.get('from', self.array.get('range', d_range)[0]))
+                                          self.array.get('from',
+                                                         self.array.get('range', d_range)[0]))
         self.ui.lineedit_to.updateValue(None,
-            self.array.get('to', self.array.get('range', d_range)[1]))
+                                        self.array.get('to',
+                                                       self.array.get('range', d_range)[1]))
 
         single_color = self.array.get('single_color', False)
         self.ui.checkbox_single_color.setChecked(single_color)
@@ -235,10 +237,10 @@ class ParticleOptions(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent)
 
         self.color = None
-        ui = self.ui = uic.loadUi(os.path.join(UI_FILE_DIR, 'particle_options.ui'), self)
+        self.ui = uic.loadUi(os.path.join(UI_FILE_DIR, 'particle_options.ui'), self)
 
-        ui.lineedit_maximum_particles.updateValue(None, DEFAULT_MAXIMUM_POINTS)
-        ui.lineedit_maximum_particles.dtype = int
+        self.ui.lineedit_maximum_particles.updateValue(None, DEFAULT_MAXIMUM_POINTS)
+        self.ui.lineedit_maximum_particles.dtype = int
         self.setWindowTitle('Particle Options')
 
         btn = self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
@@ -296,7 +298,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.file_timer.start(1000)
 
         # dialogs
-        self.color_dialog  = ColorMapPopUp(self)
+        self.color_dialog = ColorMapPopUp(self)
         self.color_dialog.applyEvent.connect(self.change_color)
 
         self.particle_option_dialog = ParticleOptions(self)

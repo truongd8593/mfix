@@ -3,11 +3,14 @@
 This script will read the *.rgb files and produce pngs from them to be
 displayed in the gui.
 '''
+
 from __future__ import print_function, absolute_import, unicode_literals, division
+from collections import OrderedDict
 import glob
 import os
-from collections import OrderedDict
+
 from qtpy import QtGui, QtCore
+import numpy as np
 
 try:
     import vtk
@@ -82,9 +85,9 @@ def build_vtk_lookup_tables():
 if __name__ == "__main__":
     '''Use matplotlib to generate previews of the color maps and save them as
     png files so that they can be displayed in the gui'''
-    import numpy as np
     from matplotlib import pyplot as plt
     from matplotlib.colors import LinearSegmentedColormap
+
 
     def plot_color_gradients(name, cmap, gradient):
         fig, axes = plt.subplots(1, figsize=(20, 1))

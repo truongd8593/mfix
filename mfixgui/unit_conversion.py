@@ -34,6 +34,9 @@ when specifying reaction rates:
 • amount per time for Lagrangian model reactions
 """
 
+import os
+import re
+import sys
 
 # Running this file will add to the definitions below, but will not modify or delete any
 # existing definitions
@@ -398,9 +401,6 @@ cgs_to_SI = {
 
 
 def main():
-    import os
-    import re
-    import sys
     from tools.general import SCRIPT_DIRECTORY
     from tools.namelistparser import getKeywordDoc
 

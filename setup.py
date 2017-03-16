@@ -237,7 +237,7 @@ setup(
     install_requires=[
         'flask',
         'numpy==1.11.3',
-        'qtpy',
+        'qtpy>=1.2.1',
     ],
 
     ext_modules=[make_mfixsolver(),],

@@ -9,25 +9,41 @@ import logging
 log = logging.getLogger(__name__)
 
 #import Qt
-from qtpy import QtWidgets, PYQT5
+from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
 #local imports
-from mfixgui.constants import *
-from mfixgui.tools.general import (set_item_noedit, get_selected_row,
-                                   widget_iter, format_key_with_args,
-                                   get_combobox_item, set_item_enabled,
-                                   append_row_column_triangular,
-                                   drop_row_column_triangular)
+from mfixgui.constants import (
+    CONSTANT,
+    DEM,
+    DIM_M,
+    HYBRID,
+    MIXTURE,
+    OTHER,
+    PIC,
+    SINGLE,
+    TFM,
+    UDF,
+    VARIABLE,
+)
+from mfixgui.tools.general import (
+    append_row_column_triangular,
+    drop_row_column_triangular,
+    get_combobox_item,
+    get_selected_row,
+    set_item_enabled,
+    set_item_noedit,
+    widget_iter,
+)
+from mfixgui.tools.util import (
+    format_key_with_args,
+)
 
-
-from mfixgui.tools import keyword_args
-
-from mfixgui.widgets.base import LineEdit
-
-from mfixgui.solids_tfm import SolidsTFM
 from mfixgui.solids_dem import SolidsDEM
 from mfixgui.solids_pic import SolidsPIC
+from mfixgui.solids_tfm import SolidsTFM
+from mfixgui.tools.keyword_args import keyword_args
+from mfixgui.widgets.base import LineEdit
 
 from mfixgui.species_handler import SpeciesHandler
 
@@ -327,10 +343,7 @@ class SolidsHandler(SolidsTFM, SolidsDEM, SolidsPIC, SpeciesHandler):
         # Should we just hide the entire table (including header) if no rows?
         ui = self.ui.solids
         hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

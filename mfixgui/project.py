@@ -56,19 +56,27 @@ except ImportError:
     from io import StringIO
 
 import logging
-log = logging.getLogger(__name__)
 
 # local imports
 from mfixgui.tools.simpleeval import simple_eval
 from mfixgui.tools.comparable import Comparable
-from mfixgui.tools.general import (to_unicode_from_fs, to_fs_from_unicode,
-                           is_text_string, to_text_string,
-                           safe_shlex_split, format_key_with_args)
+from mfixgui.tools.general import (
+    is_text_string,
+    safe_shlex_split,
+    to_fs_from_unicode,
+    to_text_string,
+    to_unicode_from_fs,
+)
+from mfixgui.tools.util import (
+    format_key_with_args,
+)
 
 from mfixgui.reaction_parser import ReactionParser
 
 from mfixgui.regexes import *
 from mfixgui.constants import *
+
+log = logging.getLogger(__name__)
 
 NaN = float('NaN')
 
