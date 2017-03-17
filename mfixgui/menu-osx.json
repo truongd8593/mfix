@@ -1,0 +1,11 @@
+{
+    "menu_name": "World",
+    "menu_items":
+    [
+        {
+            "cmd": "${BIN_DIR}/mfix",
+            "name": "MFiX",
+            "icns": "${MENU_DIR}/mfix.icns"
+        }
+    ]
+}

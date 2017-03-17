@@ -20,7 +20,7 @@ from numpy.distutils.core import Extension, setup
 
 from mfixgui.tools.util import get_mfix_home
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = 'mfix'
@@ -48,7 +48,7 @@ def make_mfixsolver():
             for filename in glob.glob(os.path.join(root, '*.f')):
                 udfs.append(filename)
 
-        udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs if not f.startswith('build') ]
+        udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs if not 'f2pywrappers' in f ]
 
     extra_objects = udfs + [
         '.build/read_database.o',
@@ -183,7 +183,7 @@ def main():
             'build_mfix': BuildMfixCommand,
         },
 
-        version=get_version(),
+        version=__version__,
 
         description='MFiX computational fluid dynamics solver',
 

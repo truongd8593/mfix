@@ -33,6 +33,7 @@ from qtpy.QtGui import (
 )
 from qtpy.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -76,7 +77,7 @@ from mfixgui.tools.util import (
     SCRIPT_DIRECTORY,
     get_mfix_home,
 )
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 from mfixgui.widgets.workflow import PYQTNODE_AVAILABLE
 
 
@@ -577,7 +578,7 @@ class MainMenu(object):
         aw_layout.addItem(QSpacerItem(100, 20, QSizePolicy.Maximum, QSizePolicy.Minimum,), 3, 0)
 
         self.version_labels = [
-            '<b>MFiX GUI version:</b> {}'.format(get_version()),
+            '<b>MFiX GUI version:</b> {}'.format(__version__),
             '<b>Python version:</b> {}'.format(sys.version),
             '<b>Qt Wrapper:</b> {}'.format(API_NAME),
             '<b>Qt Version:</b> {}'.format(QT_VERSION),

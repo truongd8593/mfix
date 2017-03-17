@@ -121,8 +121,9 @@ from mfixgui.widgets.regions import RegionsWidget
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.species_popup import SpeciesPopup
+from mfixgui.widgets.build_popup import BuildPopup
 
-from .version import get_version
+from mfixgui.version import __version__
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
@@ -474,15 +475,12 @@ class MfixGui(QMainWindow,
             (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
             (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
             (ui.toolbutton_reset_mfix, 'restore_delete', self.remove_output_files),
-            # (ui.toolbutton_compile, 'build', self.handle_compile),
+            (ui.toolbutton_compile, 'build', self.handle_compile),
             (ui.toolbutton_parameters, 'functions', self.handle_parameters),
         )
         for (button, icon_name, function) in button_tuples:
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
-
-        # TODO: implement handle_compile
-        ui.toolbutton_compile.setVisible(False)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
         for button in (ui.toolbutton_run_mfix, ui.toolbutton_save):
@@ -1003,7 +1001,7 @@ class MfixGui(QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % get_version(),
+        self.print_internal("MFiX-GUI version %s" % __version__,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -1978,7 +1976,7 @@ class MfixGui(QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = get_version()
+        self.project.mfix_gui_comments['gui_version'] = __version__
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2100,10 +2098,15 @@ class MfixGui(QMainWindow,
         self.vtkwidget.update_parameters(changed_params)
         self.project.update_parameters(changed_params)
 
-    # def handle_compile(self):
-    #     """compiling tool"""
-    #     # TODO: implement
-    #     self.unimplemented()
+    def handle_compile(self):
+        """compiling tool"""
+        self.ui.toolbutton_compile.setEnabled(False)
+        popup = BuildPopup(self, self.get_project_dir())
+        popup.finished.connect(self.handle_compile_finished)
+        popup.show()
+
+    def handle_compile_finished(self):
+        self.ui.toolbutton_compile.setEnabled(True)
 
     def update_window_title(self):
         title = self.solver_name or 'MFiX'
@@ -2797,7 +2800,7 @@ def main():
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
         help="Create thumbnails in test mode.")
-    ARG('-v', '--version', action='version', version=get_version())
+    ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 
