@@ -3,14 +3,23 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 from collections import OrderedDict
 from copy import deepcopy
 
-from qtpy import QtWidgets
-from qtpy.QtWidgets import QCheckBox, QComboBox
+from qtpy.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QHeaderView,
+    QTableWidget,
+    QTableWidgetItem,
+)
 
 from qtpy.QtGui import QValidator
 
-from mfixgui.tools.general import (set_item_noedit, set_item_enabled,
-                           widget_iter,
-                           get_selected_row, get_combobox_item)
+from mfixgui.tools.general import (
+    get_combobox_item,
+    get_selected_row,
+    set_item_enabled,
+    set_item_noedit,
+    widget_iter,
+)
 
 from mfixgui.widgets.base import (LineEdit, ComboBox)
 
@@ -19,7 +28,8 @@ from mfixgui.reaction_parser import ReactionParser
 from json import JSONDecoder, JSONEncoder
 
 class ExtLineEdit(LineEdit):
-    # Track focus of lineedits, to emulate selection behavior
+    """Track focus of lineedits, to emulate selection behavior"""
+
     def focusInEvent(self, ev):
         self.tw.current_row = self.row
         if self.side == 'reactants':
@@ -457,10 +467,10 @@ class Chemistry(object):
                 tw.setCellWidget(row, COL_SPECIES, make_species_item(tw, row, phase, species))
                 tw.setCellWidget(row, COL_COEFF, make_coeff_item(tw, row, coeff))
             if data:
-                item = QtWidgets.QTableWidgetItem('Total mol. weight')
+                item = QTableWidgetItem('Total mol. weight')
                 set_item_noedit(item)
                 tw.setItem(row+1, COL_SPECIES, item)
-                item = QtWidgets.QTableWidgetItem('0.0')
+                item = QTableWidgetItem('0.0')
                 set_item_noedit(item)
                 font=item.font()
                 font.setBold(True)
@@ -660,7 +670,7 @@ class Chemistry(object):
 
     def fixup_chemistry_table(self, tw, stretch_column=1): # species column, for reactant/product tables
         ui = self.ui.chemistry
-        hv = QtWidgets.QHeaderView
+        hv = QHeaderView
         resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
 
@@ -966,7 +976,7 @@ class Chemistry(object):
         old_selection = get_selected_row(tw)
 
         def make_item(sval):
-            item = QtWidgets.QTableWidgetItem(sval)
+            item = QTableWidgetItem(sval)
             set_item_noedit(item)
             return item
 

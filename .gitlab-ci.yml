@@ -76,8 +76,9 @@ linux_py3_conda:
 linux_py2_whl:
   script:
     - rm -rf dist
-    - mkdir -p dist
-    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 --output-folder dist build-aux/meta.yaml
+    - mkdir -p dist/linux-64
+    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
+    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist/linux-64
   stage: build
   only:
     - develop
@@ -158,12 +159,24 @@ windows_py3_whl:
   tags:
     - windows
 
-install:linux:py:
-  variables:
-    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
+install:pip_update:
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/linux-64/*27*.whl --prefix=${PYPATH}
+  stage: deploy
+  only:
+    - develop
+    - tags
+  dependencies:
+    - linux_py2_whl
+  tags:
+    - linux
+
+install:conda_update:
+  variables:
+    WWW_TOP: /nfs/home/0/users/jenkins_home/userContent/
+    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
+  script:
     - rsync -av dist/ ${CONDA_REPO}/
     - conda index ${CONDA_REPO}/linux-64
     - conda index ${CONDA_REPO}/mac-64
@@ -180,5 +193,18 @@ install:linux:py:
     - windows_py2_conda
     - windows_py3_conda
     - windows_py3_whl
+  tags:
+    - linux
+
+install:pylint_update:
+  variables:
+    WWW_TOP: /nfs/home/0/users/jenkins_home/userContent/
+    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
+  script:
+    - pylint -j 4 -f html mfixgui > ${WWW_TOP}/pylint.html
+  stage: deploy
+  only:
+    - develop
+    - tags
   tags:
     - linux

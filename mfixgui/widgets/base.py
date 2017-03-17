@@ -72,10 +72,10 @@ from mfixgui.project import (
     make_FloatExp,
 )
 from mfixgui.regexes import (
-    re_float,
-    re_float_exp,
-    re_int,
-    re_math,
+    RE_FLOAT,
+    RE_FLOAT_EXP,
+    RE_INT,
+    RE_MATH,
 )
 from mfixgui.constants import (
     SPECIAL_PARAMETERS,
@@ -275,7 +275,7 @@ class LineEdit(QLineEdit, BaseWidget):
         if self.dtype is str:
             return text
         elif self.dtype is float:
-            if re_float.match(text) or re_int.match(text):
+            if RE_FLOAT.match(text) or RE_INT.match(text):
                 try:
                     f = float(text)
                 except ValueError as e: # Should not really happen, unless our regexes are bad
@@ -288,7 +288,7 @@ class LineEdit(QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.report_value_error(e)
                     return self.updateValue(None, self.saved_value)
-            elif re_float_exp.match(text):
+            elif RE_FLOAT_EXP.match(text):
                 try:
                     f = make_FloatExp(text)
                 except ValueError as e:
@@ -301,7 +301,7 @@ class LineEdit(QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.report_value_error(e)
                     return self.updateValue(None, self.saved_value)
-            elif re_math.search(text) or any(par in text for par in parameters):
+            elif RE_MATH.search(text) or any(par in text for par in parameters):
                 if text.startswith('@(') and text.endswith(')'):
                     text = text[2:-1]
                 try:
@@ -325,7 +325,7 @@ class LineEdit(QLineEdit, BaseWidget):
                 return self.updateValue(None, self.saved_value)
 
         elif self.dtype is int:
-            if re_math.search(text) or any(par in text for par in parameters):
+            if RE_MATH.search(text) or any(par in text for par in parameters):
                 # integer equations?  do we use this?
                 try:
                     eq = Equation(text, dtype=int)
