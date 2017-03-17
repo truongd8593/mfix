@@ -25,6 +25,7 @@ from qtpy import PYQT5
 from qtpy.QtGui import (
     QColor,
     QIcon,
+    QKeySequence,
     QTextCharFormat,
 )
 
@@ -55,6 +56,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QShortcut,
     QSplashScreen,
     QSplitter,
     QStyleFactory,
@@ -434,6 +436,7 @@ class MfixGui(QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
+        self.init_keyboard_shortcuts()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -580,6 +583,20 @@ class MfixGui(QMainWindow,
         # Reset everything to default values
         # This is done in 'load_project'.  so why do it now?
         #self.reset() # Clear command_output too?
+
+    def init_keyboard_shortcuts(self):
+
+        sc = [
+        ('Ctrl+O', self.handle_open_shortcut),
+        ('Ctrl+N', self.handle_new_shortcut),
+        ('Ctrl+S', self.handle_save),
+        ('Ctrl+R', self.handle_run),
+        ('Ctrl+B', self.handle_compile),
+        ]
+
+        for key, callback in sc:
+            qsc = QShortcut(QKeySequence(key), self)
+            qsc.activated.connect(callback)
 
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...

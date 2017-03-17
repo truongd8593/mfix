@@ -679,6 +679,16 @@ class MainMenu(object):
                 elif text == 'open':
                     self.populate_recent_projects()
 
+    def handle_open_shortcut(self):
+        """handle Ctrl+O shortcut"""
+        self.handle_main_menu()
+        self.ui.main_menu_list.setCurrentRow(2)
+
+    def handle_new_shortcut(self):
+        """handle Ctrl+O shortcut"""
+        self.handle_main_menu()
+        self.ui.main_menu_list.setCurrentRow(1)
+
     def handle_main_menu(self):
         """Show the main menu"""
 
@@ -724,14 +734,15 @@ class MainMenu(object):
         self.ui.tabWidgetGraphics.currentWidget().hide()
 
         # animate
-        w, h = self.width(), self.height()
-        self.main_menu.setGeometry(-w/2, 0, w, h)
-        self.main_menu.show()
-        self.main_menu.raise_()
-        ani = self.create_main_menu_animation(self.main_menu, -w/4, 0, 0, 0)
-        self.main_menu_animation = ani
-        ani.finished.connect(self.main_menu_animation_finished)
-        ani.start()
+        if not self.main_menu.isVisible():
+            w, h = self.width(), self.height()
+            self.main_menu.setGeometry(-w/2, 0, w, h)
+            self.main_menu.show()
+            self.main_menu.raise_()
+            ani = self.create_main_menu_animation(self.main_menu, -w/4, 0, 0, 0)
+            self.main_menu_animation = ani
+            ani.finished.connect(self.main_menu_animation_finished)
+            ani.start()
 
     def populate_recent_projects(self):
         projs = self.settings.value('recent_projects', '').split('|')
