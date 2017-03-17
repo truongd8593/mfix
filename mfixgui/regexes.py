@@ -6,7 +6,7 @@ import re
 # Note: parsing with regular expressions is a problem, since they
 #  can't handle things like matching parens and quotes.
 
-re_keyValue = re.compile(r"""
+RE_KEYVALUE = re.compile(r"""
     (\w+)                            # Alphanumeric, key name
     \s*                              # possible whitespace
     (?:\(([\d,: ]+)\))?              # Indices, possibly with : and , non-capturing group
@@ -17,7 +17,7 @@ re_keyValue = re.compile(r"""
     (?=(!|$|\w+(\([\d,: ]+\))?\s*=)) # comment ?  further keywords ? lookahead
     """, re.VERBOSE|re.IGNORECASE)
 
-re_float_exp = re.compile(r"""
+RE_FLOAT_EXP = re.compile(r"""
     ^                                # Beginning of expr
     [-+]?                            # possible sign
     \d+                              # digits
@@ -27,7 +27,7 @@ re_float_exp = re.compile(r"""
     $                                # end
     """, re.VERBOSE|re.IGNORECASE)
 
-re_float = re.compile(r"""
+RE_FLOAT = re.compile(r"""
     ^                            # beginning of expr
     [-+]?                        # possible sign
     (?:                          # non-capturing group
@@ -38,11 +38,11 @@ re_float = re.compile(r"""
     $                            # end
     """, re.VERBOSE|re.IGNORECASE)
 
-re_int = re.compile(r"""
+RE_INT = re.compile(r"""
     ^[+-]?\d+$                                 # optional sign, one or more digits
     """, re.VERBOSE|re.IGNORECASE)
 
-re_shorthand = re.compile(r"""
+RE_SHORTHAND = re.compile(r"""
     [\d]+                                      # unsigned integer
     \*                                         # literal *
     (?:                                        # non-capturing group
@@ -54,7 +54,7 @@ re_shorthand = re.compile(r"""
     """, re.VERBOSE|re.IGNORECASE)
 
 # detect whether int/float keyword needs to be upgraded to Equation
-re_math = re.compile("""
+RE_MATH = re.compile(r"""
     pi             |                           # universal constant, or
     ^e$            |                           # a lone 'e', or
     [^\d\.]e[^\d]  |                           # 'e', but not as part of exp. notation, or
