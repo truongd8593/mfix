@@ -22,7 +22,7 @@ class Monitor(object):
         project_dir = self.parent.get_project_dir()
         if project_dir is None:
             return
-        if len(patterns) == 0:
+        if patterns is None or len(patterns) == 0:
             patterns = RESTART_FILES + SPX_FILES + VTK_FILES + OTHER_FILES
         outputs = []
         for pat in patterns:

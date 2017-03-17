@@ -43,6 +43,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 # Python core imports
 import sys
 import math
+import re
 import warnings
 import traceback
 from collections import OrderedDict
@@ -551,7 +552,7 @@ class Keyword(Comparable):
             else:
                 eq = Equation(value)
                 try:
-                    f = float(eq)
+                    float(eq)
                     self.value = eq
                 except ValueError:
                     pass # Don't update invalid equation
