@@ -13,7 +13,7 @@ from mfixgui.constants import (
     SPECIAL_PARAMETERS,
 )
 from mfixgui.project import Equation
-from mfixgui.regexes import re_math
+from mfixgui.regexes import RE_MATH
 from mfixgui.tools.general import (
     get_icon,
     get_unique_string,
@@ -200,7 +200,7 @@ class ParameterDialog(QtWidgets.QDialog):
         for key, value in data.items():
             par_value = str(value['value'])
             if value['type'] in ['float', 'integer']:
-                if re_math.search(par_value) or any(par in par_value for par in param_names):
+                if RE_MATH.search(par_value) or any(par in par_value for par in param_names):
                     par_value = Equation(par_value)
             elif value['type'] == 'float':
                 par_value = float(value['value'])
