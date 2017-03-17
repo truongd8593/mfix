@@ -30,18 +30,20 @@ requirements:
     - python
     - setuptools
     - wheel >=0.25.0
+    - libpython # [win]
     - numpy ==1.11.3
     - pandoc
-    - libpython # [win]
+    - pyqt # [win]
+    - qtpy >=1.2.1 # [win]
 
   run:
     - python
     - setuptools
     - wheel >=0.25.0
+    - flask
     - numpy ==1.11.3
     - pyqt
     - qtpy >=1.2.1
-    - flask
     - vtk
 
 #### build as .whl package if OUTPUT_TYPE_WHEEL is defined
