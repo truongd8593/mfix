@@ -178,9 +178,9 @@ install:conda_update:
     CONDA_REPO: ${JENKINS_HOME}/userContent/conda
   script:
     - rsync -av dist/ ${CONDA_REPO}/
-    - conda index ${CONDA_REPO}/linux-64
-    - conda index ${CONDA_REPO}/mac-64
-    - conda index ${CONDA_REPO}/win-64
+    - $MINICONDA_BIN/conda index ${CONDA_REPO}/linux-64
+    - $MINICONDA_BIN/conda index ${CONDA_REPO}/mac-64
+    - $MINICONDA_BIN/conda index ${CONDA_REPO}/win-64
   stage: deploy
   only:
     - develop
@@ -198,7 +198,7 @@ install:conda_update:
 
 install:pylint_update:
   script:
-    - pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
+    - $MINICONDA_BIN/pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
   stage: deploy
   only:
     - develop
