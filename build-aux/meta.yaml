@@ -30,6 +30,7 @@ requirements:
     - python
     - setuptools
     - wheel >=0.25.0
+    - flask # [win]
     - libpython # [win]
     - numpy ==1.11.3
     - pandoc
