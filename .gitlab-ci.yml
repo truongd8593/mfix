@@ -78,7 +78,7 @@ linux_py2_whl:
     - rm -rf dist
     - mkdir -p dist/linux-64
     - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
-    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist/linux-64
+    - ls -t "$MINICONDA_BLD/linux-64/mfix*.whl" | head -n 1 | xargs -i cp {} dist/linux-64
   stage: build
   only:
     - develop
@@ -146,7 +146,8 @@ windows_py3_whl:
   script:
     - rm -rf dist
     - mkdir dist
-    - env OUTPUT_TYPE_WHEEL=1 conda build --python 3.4 --output-folder dist build-aux/meta.yaml
+    - env OUTPUT_TYPE_WHEEL=1 conda build --python 3.4 build-aux/meta.yaml
+    - ls -t "/c/Users/mmeredith/miniconda3/conda-bld/win-64/mfix*.whl" | head -n 1 | xargs -i cp {} dist/win-64
   stage: build
   only:
     - develop
