@@ -7,6 +7,7 @@ variables:
   AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin"
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   GCC_BIN: "/nfs/apps/Compilers/GNU/6.1.0/bin"
+  JENKINS_HOME: "/nfs/home/0/users/jenkins/jenkins_home"
   MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
   MINICONDA_BLD: "/nfs/home/0/users/jenkins/miniconda3/conda-bld"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
@@ -75,9 +76,9 @@ linux_py3_conda:
 linux_py2_whl:
   script:
     - rm -rf dist
+    - ( source activate py2; env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" python setup.py bdist_wheel )
     - mkdir -p dist/linux-64
-    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
-    - ls -t $MINICONDA_BLD/linux-64/mfix*.whl | head -n 1 | xargs -i cp {} dist/linux-64
+    - mv dist/mfix*.whl dist/linux-64
   stage: build
   only:
     - develop
@@ -174,8 +175,7 @@ install:pip_update:
 
 install:conda_update:
   variables:
-    WWW_TOP: /nfs/home/0/users/jenkins_home/userContent/
-    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
+    CONDA_REPO: ${JENKINS_HOME}/userContent/conda
   script:
     - rsync -av dist/ ${CONDA_REPO}/
     - conda index ${CONDA_REPO}/linux-64
@@ -197,11 +197,8 @@ install:conda_update:
     - linux
 
 install:pylint_update:
-  variables:
-    WWW_TOP: /nfs/home/0/users/jenkins_home/userContent/
-    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
   script:
-    - pylint -j 4 -f html mfixgui > ${WWW_TOP}/pylint.html
+    - pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
   stage: deploy
   only:
     - develop
