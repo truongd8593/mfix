@@ -56,7 +56,6 @@ linux_py2_conda:
     - linux
 
 linux_py3_conda:
-  image: mwm126/mfix:latest
   script:
     - rm -rf dist
     - mkdir -p dist
@@ -77,7 +76,7 @@ linux_py2_whl:
   script:
     - rm -rf dist
     - mkdir -p dist/linux-64
-    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 --dirty build-aux/meta.yaml
+    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 --output-folder ${MINICONDA_BLD} build-aux/meta.yaml
     - ls -t "$MINICONDA_BLD/linux-64/mfix*.whl" | head -n 1 | xargs -i cp {} dist/linux-64
   stage: build
   only:
