@@ -51,7 +51,7 @@ linux_py2_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/*
+      - dist/linux-64/mfix*
   tags:
     - linux
 
@@ -69,7 +69,7 @@ linux_py3_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/*
+      - dist/linux-64/mfix*
   tags:
     - linux
 
@@ -86,7 +86,7 @@ linux_py2_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/*
+      - dist/linux-64/mfix*
   tags:
     - linux
 
@@ -103,7 +103,7 @@ mac_py3_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/*
+      - dist/mac-64/mfix*
   tags:
     - mac
 
@@ -120,7 +120,7 @@ windows_py2_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/*
+      - dist/windows-64/mfix*
   tags:
     - windows
 
@@ -137,7 +137,7 @@ windows_py3_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/*
+      - dist/windows-64/mfix*
   tags:
     - windows
 
@@ -154,19 +154,31 @@ windows_py3_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/*
+      - dist/windows-64/mfix*
   tags:
     - windows
 
 install:linux:py:
+  variables:
+    CONDA_REPO: /nfs/home/0/users/jenkins_home/userContent/conda
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/linux-64/*27*.whl --prefix=${PYPATH}
+    - rsync -av dist/ ${CONDA_REPO}/
+    - conda index ${CONDA_REPO}/linux-64
+    - conda index ${CONDA_REPO}/mac-64
+    - conda index ${CONDA_REPO}/win-64
   stage: deploy
   only:
     - develop
     - tags
   dependencies:
+    - linux_py2_conda
     - linux_py2_whl
+    - linux_py3_conda
+    - mac_py3_whl
+    - windows_py2_conda
+    - windows_py3_conda
+    - windows_py3_whl
   tags:
     - linux
