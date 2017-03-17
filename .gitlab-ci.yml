@@ -76,7 +76,7 @@ linux_py3_conda:
 linux_py2_whl:
   script:
     - rm -rf dist
-    - ( source activate py2; env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" python setup.py bdist_wheel )
+    - ( export PATH="$AC_BIN:$GCC_BIN:$PATH"; source $MINICONDA_BIN/activate py2; python setup.py bdist_wheel ) || exit $?
     - mkdir -p dist/linux-64
     - mv dist/mfix*.whl dist/linux-64
   stage: build
