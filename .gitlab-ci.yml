@@ -7,10 +7,8 @@ variables:
   AC_BIN: "/nfs/apps/autoconf/2.69/gnu/4.6.4/bin"
   ANACONDA_BIN: "/nfs/apps/Compilers/Python/Anaconda/2.7/x86-64/bin"
   GCC_BIN: "/nfs/apps/Compilers/GNU/6.1.0/bin"
-  MINICONDA3_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
-  MINICONDA3_BLD: "/nfs/home/0/users/jenkins/miniconda3/conda-bld"
-  MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda2/bin"
-  MINICONDA_BLD: "/nfs/home/0/users/jenkins/miniconda2/conda-bld"
+  MINICONDA_BIN: "/nfs/home/0/users/jenkins/miniconda3/bin"
+  MINICONDA_BLD: "/nfs/home/0/users/jenkins/miniconda3/conda-bld"
   PYPATH: "/nfs/home/8/public/mfixgui/branches/$CI_BUILD_REF_NAME"
 
 # test:
@@ -40,34 +38,32 @@ variables:
 #   tags:
 #     - linux
 
-linux_py2_conda:
-  image: mwm126/mfix:latest
-  script:
-    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
-    - rm -rf dist
-    - mkdir -p dist
-    - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
-    - ls dist
-  stage: build
-  only:
-    - develop
-    - tags
-  artifacts:
-    name: "$CI_BUILD_NAME"
-    expire_in: 1 week
-    paths:
-      - dist/mfix*.bz2
-  tags:
-    - linux
+# linux_py2_conda:
+#   image: mwm126/mfix:latest
+#   script:
+#     - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 build-aux/meta.yaml
+#     - rm -rf dist
+#     - mkdir -p dist
+#     - ls -t "$MINICONDA_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
+#     - ls dist
+#   stage: build
+#   only:
+#     - develop
+#     - tags
+#   artifacts:
+#     name: "$CI_BUILD_NAME"
+#     expire_in: 1 week
+#     paths:
+#       - dist/mfix*.bz2
+#   tags:
+#     - linux
 
 linux_py3_conda:
   image: mwm126/mfix:latest
   script:
-    - env PATH="$AC_BIN:$MINICONDA3_BIN:$GCC_BIN:$PATH" conda build --python 3.6 build-aux/meta.yaml
     - rm -rf dist
     - mkdir -p dist
-    - ls -t "$MINICONDA3_BLD/linux-64/mfix*.bz2" | head -n 1 | xargs -i cp {} dist
-    - ls dist
+    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 3.6 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -76,14 +72,15 @@ linux_py3_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/mfix*.bz2
+      - dist/*
   tags:
     - linux
 
 linux_py2_whl:
-  variables:
   script:
-    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" python2.7 setup.py bdist_wheel
+    - rm -rf dist
+    - mkdir -p dist
+    - env OUTPUT_TYPE_WHEEL=1 PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 2.7 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -92,7 +89,7 @@ linux_py2_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/mfix*.whl
+    - dist/*
   tags:
     - linux
 
@@ -146,12 +143,9 @@ linux_py2_whl:
 
 windows_py3_conda:
   script:
-    - conda build --python 3.4 build-aux/meta.yaml
     - rm -rf dist
     - mkdir dist
-    # - cp $(conda build --output --python 3.4 build-aux/meta.yaml) dist
-    - ls -t /c/Users/mmeredith/miniconda3/conda-bld/win-64/mfix*.bz2 | head -n 1 | xargs -i cp {} dist
-    - ls dist
+    - env conda build --python 3.4 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -160,13 +154,15 @@ windows_py3_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/mfix*.bz2
+      - dist/*
   tags:
     - windows
 
 windows_py3_whl:
   script:
-    - python setup.py bdist_wheel
+    - rm -rf dist
+    - mkdir dist
+    - env OUTPUT_TYPE_WHEEL=1 conda build --python 3.4 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -175,14 +171,14 @@ windows_py3_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-    - dist/mfix*.whl
+    - dist/*
   tags:
     - windows
 
 install:linux:py:
   script:
     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
-    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/*27*.whl --prefix=${PYPATH}
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/linux-64/*27*.whl --prefix=${PYPATH}
   stage: deploy
   only:
     - develop

@@ -44,9 +44,13 @@ requirements:
     - flask
     - vtk
 
-#### Uncomment to build as .whl packge instead of conda package
-# outputs:
-#   - type: wheel
+#### build as .whl package if OUTPUT_TYPE_WHEEL is defined
+{% if environ.get('OUTPUT_TYPE_WHEEL',None) %}
+
+outputs:
+  - type: wheel
+
+{% endif %}
 
 # test:
 #   # Python imports
