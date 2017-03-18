@@ -9,6 +9,7 @@ from timeit import default_timer as timer
 
 import argparse
 import copy
+import errno
 import json
 import logging
 import os
@@ -21,6 +22,8 @@ import threading
 import time
 import traceback
 
+pidfilename = None
+
 from flask import Flask, jsonify, make_response, request
 
 if sys.version_info.major == 3:
@@ -31,9 +34,8 @@ else:
     print("Unsupported Python version %s" % sys.version_info)
     sys.exit(-1)
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
-pidfilename = None
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -95,15 +97,6 @@ def get_run_name():
 def import_mfixsolver(solver=None):
     """ imports the mfixsolver module passed in as solver """
 
-    if solver:
-        # solver passed on command line has priority
-        if os.path.isfile(solver):
-            sys.path.insert(0, os.path.dirname(solver))
-        else:
-            log.warning('invalid solver passed on command line: %s', solver)
-
-    import mfixsolver
-
     # Fortran modules are in uppercase since Fortran uses uppercase (even though it's
     # conventional to only use uppercase for constants)
     global COMPAR
@@ -116,6 +109,16 @@ def import_mfixsolver(solver=None):
     global RESIDUAL
     global RUN
     global STEP
+
+    if solver:
+        # solver passed on command line has priority
+        if os.path.isfile(solver):
+            sys.path.insert(0, os.path.dirname(solver))
+        else:
+            log.warning('invalid solver passed on command line: %s', solver)
+
+    import mfixsolver
+
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
     DEM = mfixsolver.discretelement
@@ -130,6 +133,7 @@ def import_mfixsolver(solver=None):
 def main():
     """The main function starts MFiX on a separate thread, then
        start the Flask server. """
+    global mfix_thread
 
     os.environ['GFORTRAN_CONVERT_UNIT'] = 'BIG_ENDIAN'
 
@@ -137,7 +141,6 @@ def main():
 
     import_mfixsolver(solver)
 
-    global mfix_thread
     mfix_thread = Mfix(mfix_dat, paused, keyword_args, port=port)
     mfix_thread.start()
 
@@ -160,50 +163,46 @@ def main():
     protocol = 'https' if setup_ssl() else 'http'
 
     def _start_flask(host, port, debug, use_reloader):
+        global pidfilename
         try:
-            global pidfilename
             while not get_run_name():
                 # wait for mfix thread to initialize RUN_NAME
-                pass
+                time.sleep(0.1)
             pidfilename = '%s.pid' % get_run_name()
-            with open(pidfilename, 'w') as pid:
-                pid.write('pid=%s\n' % (os.getpid(),))
-                pid.write('url=%s://%s:%s\n' % (
-                                    protocol, socket.gethostname(), port))
-                pid.write('token=%s:%s\n' % (
-                                    FLASK_APP.config['TOKEN_NAME'],
-                                    FLASK_APP.config['SECRET_KEY']))
-            log.debug('flask starting on port %d', port)
+            pid = os.getpid()
+            with open(pidfilename, 'w') as f:
+                f.write('pid=%s\n' % pid)
+                f.write('url=%s://%s:%s\n' %
+                        (protocol, socket.gethostname(), port))
+                f.write('token=%s:%s\n' % (
+                    FLASK_APP.config['TOKEN_NAME'],
+                    FLASK_APP.config['SECRET_KEY']))
             FLASK_APP.run(host=host,
                           port=port, debug=debug,
                           use_reloader=use_reloader)
-
-        except OSError:
-            os.remove(pidfilename)
-            log.exception('cannot bind to port %d', port)
-            _start_flask(host=host,
-                         port=find_free_port(), debug=DEBUG_FLAG,
-                         use_reloader=use_reloader)
+        finally:
+            try:
+                os.remove(pidfilename)
+            except:
+                pass
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
+        _start_flask(host='0.0.0.0',
+                     port=port, debug=DEBUG_FLAG,
+                     use_reloader=False)
         try:
-            _start_flask(host='0.0.0.0',
-                         port=port, debug=DEBUG_FLAG,
-                         use_reloader=False)
-        except KeyboardInterrupt:
-            traceback.print_exc()
-            # If we get here, the user hit Ctrl-C to shutdown the server,
-            # so we call _exit() to kill the run_mfix thread.
             os.remove(pidfilename)
-            os._exit(0)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+        os._exit(0) # Why?  this avoids all deallocators and atexit hooks
 
     else:
         # nothing else for rank>0 to do
         mfix_thread.thread.join()
 
 
-# FIXME: it would be make sense to subclass Thread
 class Mfix(object):
     requests = {}
     responses = {}
@@ -246,9 +245,9 @@ class Mfix(object):
         # Read input data, check data, do computations for IC and BC locations
         # and flows, and set geometry parameters such as X, X_E, DToDX, etc.
         MAIN.get_data(self.mfix_dat)
+
         # DEBUG.good_config is not instantaneously set correctly
         time.sleep(0.25)
-
         while not DEBUG.good_config:
             # loaded project file can't be run, enter loop to wait for good
             # config to be uploaded
@@ -332,7 +331,7 @@ class Mfix(object):
         """Run DEM timesteps"""
         start = timer()
         for ii in range(DES_TIME_MARCH.factor):
-            print("DEM timestep %d / %d" % (ii, DES_TIME_MARCH.factor))
+            ##print("DEM timestep %d / %d" % (ii, DES_TIME_MARCH.factor))
             DES_TIME_MARCH.des_time_step(ii)
             self.check_requests()
         self.des_time_steps_walltime = float(timer() - start)
@@ -367,38 +366,41 @@ class Mfix(object):
         try:
             self.status = json.dumps(output)
         except UnicodeDecodeError:
-            log.exception("exception when decoding:  %s", output)
+            log.exception("exception when decoding: %s", output)
 
     def check_pidfile(self):
         if 0 != COMPAR.mype:
             return True
-
-        global pidfilename
+        pid = os.getpid()
+        file_pid = None
         try:
-            pidfile = open(pidfilename)
-            pid = pidfile.readline()[4:]
-            url = pidfile.readline()[4:]
-            token = pidfile.readline()[6:]
-            pidfile.close()
-        except IOError:
-            log.exception("could not find PID file ", pidfilename)
+            with open(pidfilename) as f:
+                for line in f:
+                    tok = line.strip().split('=', 1)
+                    if len(tok) == 2 and tok[0] == 'pid':
+                        try:
+                            file_pid = int(tok(1))
+                            break
+                        except ValueError as e:
+                            log.exception(str(e))
+
+        except Exception as e:
+            log.exception(str(e))
             return False
 
-        if int(pid) != os.getpid():
-            log.error('did not find pidfile containing PID %d', os.getpid())
+        if pid != file_pid:
+            log.error("Expected %s, got %s" % (pid, file_pid))
             return False
+
         return True
 
     def check_requests(self):
         "check for requests sent by the Flask thread"
-
-        # exit if pidfile is missing
-        self.check_pidfile()
-
         while True:
             if self.requests:
                 # requests would only arrive at rank 0
                 req_id, cmd_args = self.requests.popitem()
+                # exit if pidfile is missing
                 if not self.check_pidfile():
                     cmd_args = ('EXIT', None)
             else:
@@ -535,12 +537,12 @@ def reinitialize():
             tmp.flush()
             # MFiX truncates path to 80 characters, so try to keep it short.
             # split tmp name (defaults to absolute) on cwd, remove leading slash
-            relative_name = tmp.name.split(os.getcwdu())[-1].lstrip('/')
-            status_code, command_output = \
-              mfix_thread.do_command("REINIT", args={'mfix_dat': relative_name})
+            relative_name = tmp.name.split(os.getcwd())[-1].lstrip('/')
+            status_code, command_output = mfix_thread.do_command("REINIT",
+                                        args={'mfix_dat': relative_name})
     except Exception as e:
         status_code = 500
-        command_output = "Error saving submitted project file"
+        command_output = "Error %s saving submitted project file" % e
     return api_response(status_code, command_output)
 
 @FLASK_APP.route('/set/<modname>/<varname>', methods=['POST'])
@@ -634,12 +636,16 @@ def unpause():
     return api_response(status_code, command_output)
 
 def do_exit():
-    global pidfilename
-    os.remove(pidfilename)
+    try:
+        os.remove(pidfilename)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
     shutdown = request.environ.get('werkzeug.server.shutdown')
     if shutdown is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     shutdown() # will finish current request, then shutdown
+
 
 @FLASK_APP.route('/status', methods=['GET'])
 @token_required
@@ -731,7 +737,7 @@ def parse_command_line_arguments():
                         help='specify a port number to use')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=get_version)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 

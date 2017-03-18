@@ -4,13 +4,23 @@
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals, division
 from collections import OrderedDict
-from qtpy import QtWidgets, QtCore
 import copy
 
-from mfixgui.constants import *
+from qtpy import QtWidgets, QtCore
+
+from mfixgui.constants import (
+    PARAMETER_DICT,
+    SPECIAL_PARAMETERS,
+)
 from mfixgui.project import Equation
-from mfixgui.regexes import *
-from mfixgui.tools.general import get_icon, get_unique_string, parse_key_with_args
+from mfixgui.regexes import RE_MATH
+from mfixgui.tools.general import (
+    get_icon,
+    get_unique_string,
+)
+from mfixgui.tools.util import (
+    parse_key_with_args,
+)
 from mfixgui.tools.simpleeval import DEFAULT_FUNCTIONS, DEFAULT_NAMES
 from mfixgui.widgets.base import Table
 
@@ -65,15 +75,19 @@ class ParameterDialog(QtWidgets.QDialog):
             selection_behavior='row',
             multi_selection='multi',
             columns=['parameter', 'type', 'value'],
-            column_delegate={0: {'widget': 'lineedit',
-                                 },
-                             1: {'widget': 'combobox',
-                                 'items':  ['integer', 'float', 'string'],
-                                 },
-                             2: {'widget': 'lineedit',
-                                 },
-                             }
-            )
+            column_delegate={
+                0: {
+                    'widget': 'lineedit',
+                },
+                1: {
+                    'widget': 'combobox',
+                    'items':  ['integer', 'float', 'string'],
+                },
+                2: {
+                    'widget': 'lineedit',
+                },
+            }
+        )
         self.table.show_vertical_header(False)
         self.table.auto_update_rows(True)
         self.table.new_selection.connect(self.table_clicked)
@@ -129,7 +143,10 @@ class ParameterDialog(QtWidgets.QDialog):
                     data.pop(index)
             self.update_table(data)
             if cant_remove:
-                self.parent().message(title='Error', text='The following parameters are being used: <b>{}</b>. Please remove reference before deleting.'.format(', '.join(cant_remove)))
+                txt = ('The following parameters are being used: <b>{}</b>.'
+                       ' Please remove reference before deleting.')
+                self.parent().message(title='Error',
+                                      text=txt.format(', '.join(cant_remove)))
 
         self.toolbutton_remove.setDown(False)
 
@@ -182,8 +199,9 @@ class ParameterDialog(QtWidgets.QDialog):
         param_names = [val['parameter'] for val in data.values()]
         for key, value in data.items():
             par_value = str(value['value'])
-            if value['type'] in ['float', 'integer'] and (re_math.search(par_value) or any(par in par_value for par in param_names)):
-                par_value = Equation(par_value)
+            if value['type'] in ['float', 'integer']:
+                if RE_MATH.search(par_value) or any(par in par_value for par in param_names):
+                    par_value = Equation(par_value)
             elif value['type'] == 'float':
                 par_value = float(value['value'])
             elif value['type'] == 'integer':

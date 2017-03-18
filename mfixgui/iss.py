@@ -1,22 +1,38 @@
-# -*- coding: utf-8 -*-
+'''Internal Surfaces Task Pane Window: This section allows a user to define
+    internal surfaces for the described model. This section relies on regions
+    named in the Regions section.
+'''
+
 from __future__ import print_function, absolute_import, unicode_literals, division
-
-from qtpy import QtCore, QtWidgets, PYQT5
-from qtpy.QtWidgets import QLabel
-
-UserRole = QtCore.Qt.UserRole
-
-from mfixgui.constants import *
-from mfixgui.widgets.base import LineEdit
-
-from mfixgui.tools.general import (set_item_noedit, get_selected_row,
-                                   get_combobox_item,
-                                   widget_iter, safe_float)
-
-from mfixgui.tools.keyword_args import mkargs
 
 from json import JSONDecoder, JSONEncoder
 
+from qtpy.QtCore import (
+    Qt,
+)
+
+from qtpy.QtWidgets import (
+    QHeaderView,
+    QTableWidgetItem,
+    QLabel,
+)
+
+
+from mfixgui.constants import (
+    IS_NAMES,
+    IS_TYPES,
+)
+
+from mfixgui.widgets.base import LineEdit
+
+from mfixgui.tools.general import (
+    get_combobox_item,
+    get_selected_row,
+    set_item_noedit,
+    widget_iter,
+)
+
+from mfixgui.tools.keyword_args import mkargs
 
 class ISS(object):
     #Internal Surfaces Task Pane Window: This section allows a user to define internal surfaces for
@@ -31,10 +47,12 @@ class ISS(object):
         self.iss_region_dict = None
         self.iss_saved_solids_names = []
 
-        #The top of the task pane is where users define/select IS regions
-        #Icons to add/remove/duplicate internal surfaces are given at the top
-        #Clicking the 'add' and 'duplicate' buttons triggers a popup window where the user must select
-        #a region to apply the internal surface.
+        #  The top of the task pane is where users define/select IS regions.
+        #  Icons to add/remove/duplicate internal surfaces are given at the
+        #  top. Clicking the 'add' and 'duplicate' buttons triggers a popup
+        #  window where the user must select a region to apply the internal
+        #  surface.
+
         ui.toolbutton_add.clicked.connect(self.iss_show_regions_popup)
         ui.toolbutton_delete.clicked.connect(self.iss_delete_regions)
         ui.toolbutton_delete.setEnabled(False) # Need a selection
@@ -53,14 +71,13 @@ class ISS(object):
             return
         new_name = IS_NAMES[idx]
         new_type = IS_TYPES[idx]
-        item = QtWidgets.QTableWidgetItem(new_name)
+        item = QTableWidgetItem(new_name)
         set_item_noedit(item)
         ui.tablewidget_regions.setItem(row, 1, item)
         for IS in self.iss_current_indices:
-            old_type = self.project.get_value('is_type', default='', args=[IS])
             self.update_keyword('is_type', new_type, args=[IS])
             for kw in list(self.project.keywordItems()):
-                if kw.key.startswith('is_') and kw.args and kw.args[0]==IS:
+                if kw.key.startswith('is_') and kw.args and kw.args[0] == IS:
                     if kw.key not in ('is_type',
                                       'is_x_e', 'is_x_w',
                                       'is_y_s', 'is_y_n',
@@ -77,7 +94,7 @@ class ISS(object):
         ui = self.ui.internal_surfaces
         rp = self.regions_popup
         rp.clear()
-        for (name,data) in self.iss_region_dict.items():
+        for (name, data) in self.iss_region_dict.items():
             shape = data.get('type', '---')
             # Assume available if unmarked
 
@@ -86,7 +103,7 @@ class ISS(object):
             # No region can define more than one internal surface.
 
             available = (data.get('available', True)
-                         and (shape=='box'
+                         and (shape == 'box'
                               or 'plane' in shape))
             row = (name, shape, available)
             rp.add_row(row)
@@ -116,7 +133,6 @@ class ISS(object):
 
     def iss_add_regions(self):
         # Interactively add regions to define ISs
-        ui = self.ui.internal_surfaces
         rp = self.regions_popup
         self.iss_cancel_add() # Reenable input widgets
         selections = rp.get_selection_list()
@@ -143,7 +159,7 @@ class ISS(object):
         nrows = tw.rowCount()
         tw.setRowCount(nrows+1)
         def make_item(val):
-            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            item = QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
         item = make_item('+'.join(selections))
@@ -165,7 +181,7 @@ class ISS(object):
                 continue
             self.iss_set_region_keys(region_name, idx, region_data, is_type)
             self.iss_region_dict[region_name]['available'] = False # Mark as in-use
-        item.setData(UserRole, (tuple(indices), tuple(selections)))
+        item.setData(Qt.UserRole, (tuple(indices), tuple(selections)))
         tw.setItem(nrows, 0, item)
 
         item = make_item(IS_NAMES[IS_TYPES.index(is_type)])
@@ -216,8 +232,8 @@ class ISS(object):
 
     def iss_delete_solids_phase(self, phase_index):
         """adjust iss_current_solid when solids phase deleted"""
-        if (self.iss_current_solid is not None and
-            self.iss_current_solid >= phase_index):
+        if (self.iss_current_solid is not None
+                and self.iss_current_solid >= phase_index):
             self.iss_current_solid -= 1
             if self.iss_current_solid == 0:
                 self.iss_current_solid = None
@@ -231,7 +247,7 @@ class ISS(object):
             indices = []
             regions = []
         else:
-            (indices, regions) = table.item(row,0).data(UserRole)
+            (indices, regions) = table.item(row, 0).data(Qt.UserRole)
         self.iss_current_indices, self.iss_current_regions = indices, regions
         enabled = (row is not None)
         for item in (ui.toolbutton_delete,
@@ -284,7 +300,7 @@ class ISS(object):
 
         plane = is_type in ('IMPERMEABLE', 'SEMIPERMEABLE')
         vol = not plane
-        for (i, enable) in enumerate((plane,vol,vol,vol,plane,vol,vol,vol)):
+        for (i, enable) in enumerate((plane, vol, vol, vol, plane, vol, vol, vol)):
             get_combobox_item(cb, i).setEnabled(enable)
 
         self.setup_iss() # reinitialize all widgets in current tab
@@ -294,33 +310,31 @@ class ISS(object):
 
     def fixup_iss_table(self, tw, stretch_column=0):
         ui = self.ui.internal_surfaces
-        hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        hv = QHeaderView
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
-            resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)
+            resize(n, hv.Stretch if n == stretch_column else hv.ResizeToContents)
 
         # trim excess vertical space - can't figure out how to do this in designer
         header_height = tw.horizontalHeader().height()
 
         # Note - scrollbar status can change outside of this function.
         # Do we need to call this everytime window geometry changes?
-        scrollbar_height = tw.horizontalScrollBar().isVisible() * (4+tw.horizontalScrollBar().height())
+        scrollbar_height = (tw.horizontalScrollBar().isVisible()
+                            * (4+tw.horizontalScrollBar().height()))
         nrows = tw.rowCount()
-        if nrows==0:
+        if nrows == 0:
             row_height = 0
             height = header_height+scrollbar_height
         else:
             row_height = tw.rowHeight(0)
-            height =  (header_height+scrollbar_height
-                       + nrows*row_height + 4) # extra to avoid unneeded scrollbar
+            height = (header_height+scrollbar_height
+                      + nrows*row_height + 4) # extra to avoid unneeded scrollbar
 
         if tw == ui.tablewidget_regions: # main table, adjust top splitter
             ui.top_frame.setMaximumHeight(height+24)
-            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows,5))
+            ui.top_frame.setMinimumHeight(header_height+24+row_height*min(nrows, 5))
             ui.top_frame.updateGeometry()
             tw.setMaximumHeight(height)
             tw.setMinimumHeight(header_height)
@@ -339,11 +353,11 @@ class ISS(object):
             # then we have no input tabs on the ISs pane, so disable it completely
             regions = self.ui.regions.get_region_dict()
             nregions = sum(1 for (name, r) in regions.items()
-                           if (r.get('type')=='box'
+                           if (r.get('type') == 'box'
                                or 'plane' in r.get('type')))
-            disabled = (nregions==0
+            disabled = (nregions == 0
                         or (self.fluid_solver_disabled
-                            and len(self.solids)==0))
+                            and len(self.solids) == 0))
         self.find_navigation_tree_item("Internal Surfaces").setDisabled(disabled)
 
 
@@ -369,12 +383,12 @@ class ISS(object):
                 self.iss[key]['region'] = new_name
                 tw = ui.tablewidget_regions
                 for i in range(tw.rowCount()):
-                    data = tw.item(i,0).data(UserRole)
+                    data = tw.item(i, 0).data(Qt.UserRole)
                     indices, names = data
                     if key in indices:
-                        item = tw.item(i,0)
-                        names = [new_name if n==old_name else n for n in names]
-                        item.setData(UserRole, (indices, names))
+                        item = tw.item(i, 0)
+                        names = [new_name if n == old_name else n for n in names]
+                        item.setData(Qt.UserRole, (indices, names))
                         item.setText('+'.join(names))
                         break
                 break
@@ -395,7 +409,7 @@ class ISS(object):
     def is_regions_to_str(self):
         ui = self.ui.internal_surfaces
         tw = ui.tablewidget_regions
-        data = [tw.item(i,0).data(UserRole)
+        data = [tw.item(i, 0).data(Qt.UserRole)
                 for i in range(tw.rowCount())]
         return JSONEncoder().encode(data)
 
@@ -424,8 +438,8 @@ class ISS(object):
 
         for is_ in self.project.iss:
             d = is_.keyword_dict
-            extent = [d.get('is_'+k,None) for k in ('x_w', 'y_s', 'z_b',
-                                                    'x_e', 'y_n', 'z_t')]
+            extent = [d.get('is_'+k, None) for k in ('x_w', 'y_s', 'z_b',
+                                                     'x_e', 'y_n', 'z_t')]
             extent = [0 if x is None else x.value for x in extent]
             #if any (x is None for x in extent):
             #    self.warn("internal surface %s: invalid extents %s" %
@@ -440,7 +454,7 @@ class ISS(object):
 
             for (region_name, data) in self.iss_region_dict.items():
                 ext2 = [0 if x is None else x for x in
-                        (data.get('from',[]) + data.get('to',[]))]
+                        (data.get('from', []) + data.get('to', []))]
                 if ext2 == extent:
                     if data.get('available', True):
                         self.iss_add_regions_1([region_name], is_type=is_type,
@@ -452,12 +466,12 @@ class ISS(object):
 
 
     def iss_check_region_in_use(self, name):
-        return any(data.get('region')==name for data in self.iss.values())
+        return any(data.get('region') == name for data in self.iss.values())
 
 
 
     def iss_update_region(self, name, data):
-        for (i,is_) in self.iss.items():
+        for (i, is_) in self.iss.items():
             if is_.get('region') == name:
                 self.iss_set_region_keys(name, i, data)
 
@@ -514,7 +528,7 @@ class ISS(object):
                     self.add_tooltip(le, key)
                     layout.addWidget(le, row, 1)
                     units_label = QLabel('m/s')
-                    layout.addWidget(units_label , row, 2)
+                    layout.addWidget(units_label, row, 2)
                     row += 1
             ui.groupbox_solids_velocities.show()
 
@@ -526,7 +540,7 @@ class ISS(object):
         ui = self.ui.internal_surfaces
         if not self.iss_current_indices:
             return
-        IS0 =  self.iss_current_indices[0]
+        IS0 = self.iss_current_indices[0]
 
         #Input is only needed for semi-permeable surfaces.
         is_type = self.project.get_value('is_type', args=[IS0])
@@ -570,7 +584,6 @@ class ISS(object):
         # Sets keyword IS_VEL_s(#,PHASE)
         default = 0.0 if enabled else None
         key = 'is_vel_s'
-        row = 0
         for le in widget_iter(ui.groupbox_solids_velocities):
             if not isinstance(le, LineEdit):
                 continue

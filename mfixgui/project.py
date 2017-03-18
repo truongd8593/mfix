@@ -43,6 +43,7 @@ from __future__ import print_function, absolute_import, unicode_literals, divisi
 # Python core imports
 import sys
 import math
+import re
 import warnings
 import traceback
 from collections import OrderedDict
@@ -56,19 +57,33 @@ except ImportError:
     from io import StringIO
 
 import logging
-log = logging.getLogger(__name__)
 
 # local imports
 from mfixgui.tools.simpleeval import simple_eval
 from mfixgui.tools.comparable import Comparable
-from mfixgui.tools.general import (to_unicode_from_fs, to_fs_from_unicode,
-                           is_text_string, to_text_string,
-                           safe_shlex_split, format_key_with_args)
+from mfixgui.tools.general import (
+    is_text_string,
+    safe_shlex_split,
+    to_fs_from_unicode,
+    to_text_string,
+    to_unicode_from_fs,
+)
+from mfixgui.tools.util import (
+    format_key_with_args,
+)
 
 from mfixgui.reaction_parser import ReactionParser
 
-from mfixgui.regexes import *
+from mfixgui.regexes import (
+    RE_FLOAT,
+    RE_FLOAT_EXP,
+    RE_INT,
+    RE_KEYVALUE,
+    RE_SHORTHAND,
+)
 from mfixgui.constants import *
+
+log = logging.getLogger(__name__)
 
 NaN = float('NaN')
 
@@ -84,12 +99,14 @@ BC_TYPE_DICT = {
     'P_OUTFLOW': 'PO',
     'FREE_SLIP_WALL': 'FSW',
     'NO_SLIP_WALL': 'NSW',
-    'PAR_SLIP_WALL': 'PSW' }
+    'PAR_SLIP_WALL': 'PSW',
+}
 
 # For IS_TYPE, prefer the long form
 IS_TYPE_DICT = {
     'IP': 'IMPERMEABLE',
-    'SP': 'SEMIPERMEABLE' }
+    'SP': 'SEMIPERMEABLE',
+}
 
 class FloatExp(float):
     fmt = '4'
@@ -98,7 +115,8 @@ class FloatExp(float):
 
     __str__ = __repr__
 
-def make_FloatExp(val): # Handle Fortran formats
+def make_FloatExp(val):
+    """ Handle Fortran formats """
     # (we can't do this in FloatExp.__init__)
     try:
         return FloatExp(val)
@@ -127,7 +145,7 @@ def clean_string(string):
     # lower-case version of string
     s_low = string.lower()
 
-    if s_low in ('.t.',  '.true.'):
+    if s_low in ('.t.', '.true.'):
         return True
     elif s_low in ('.f.', '.false.'):
         return False
@@ -137,7 +155,7 @@ def clean_string(string):
         return Equation(string)
 
     # Look for exponential-notation
-    match = re_float_exp.match(string)
+    match = RE_FLOAT_EXP.match(string)
     if match:
         return make_FloatExp(string)
 
@@ -162,10 +180,10 @@ def expand_shorthand(string):
     # TODO:  we could do better about handling quoted strings
     # and escapes
     def _expand(s): # Inner function to do expansion, once we've handled quoting and parens
-        for shorthand in re_shorthand.findall(s):
+        for shorthand in RE_SHORTHAND.findall(s):
             count, word = shorthand.split('*', 1)
             count = int(count)
-            expansion =' '.join(count * [word])
+            expansion = ' '.join(count * [word])
             s = s.replace(shorthand, expansion)
         return s
     paren_level = 0
@@ -201,7 +219,7 @@ def remove_spaces_from_equations(string):
         if c == '\\':
             escape = not escape
         else:
-            if quote and c==quote and not escape:
+            if quote and c == quote and not escape:
                 quote = False
             elif c == '"' or c == "'": # Start of quoted text
                                 # (We're not doing triple-quotes!)
@@ -257,7 +275,7 @@ class EquationAwareJSONDecoder(JSONDecoder):
     """
 
     def __init__(self):
-            JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+        JSONDecoder.__init__(self, object_hook=self.dict_to_object)
 
     def dict_to_object(self, d):
         if '__type__' not in d:
@@ -488,7 +506,7 @@ class Keyword(Comparable):
             #    self.value = self.value.replace('"', '').replace("'", '')
             #else:
             #    self.value = to_text_string(self.value)
-            sval = sval.replace('"','').replace("'",'')
+            sval = sval.replace('"', '').replace("'", '')
             return "'%s'" % sval
         else:
             return sval
@@ -524,17 +542,17 @@ class Keyword(Comparable):
 
     def updateValue(self, value):
         sval = to_text_string(value)
-        if value is None or sval=='': # is this the right place to check this?
+        if value is None or sval == '': # is this the right place to check this?
             self.value = None
         elif self.dtype == Equation and is_text_string(value):
             self.value.eq = value
-        elif (self.dtype == float and not re_float.match(sval) and not re_int.match(sval)):
-            if re_float_exp.match(sval):
+        elif self.dtype == float and not RE_FLOAT.match(sval) and not RE_INT.match(sval):
+            if RE_FLOAT_EXP.match(sval):
                 self.value = make_FloatExp(value)
             else:
                 eq = Equation(value)
                 try:
-                    f = float(eq)
+                    float(eq)
                     self.value = eq
                 except ValueError:
                     pass # Don't update invalid equation
@@ -578,7 +596,7 @@ class Base(object):
     def get(self, key, default=None):
         # Note, this only works with dynamic attributes, not static ones defined
         # in subclasses of Base (eg Solid.name)
-        d =  self.keyword_dict.get(key)
+        d = self.keyword_dict.get(key)
         return default if d is None else d.value
 
 
@@ -703,7 +721,7 @@ class Species(Base):
             p = "Solid"
         return '\n'.join(["{} Species: {}".format(p, self.ind), ] +
                          [''.join(['  ', str(key), ': ', str(value)])
-                         for key, value in self.keyword_dict.items()])
+                          for key, value in self.keyword_dict.items()])
 
 
 class Solid(Base):
@@ -714,7 +732,7 @@ class Solid(Base):
         self.name = 'Solid {}'.format(self.ind)
 
     def get(self, key, default=None):
-            return self.keyword_dict.get(key, default)
+        return self.keyword_dict.get(key, default)
 
     def addSpecies(self, ind):
         return self.species.new(ind, phase='s')
@@ -837,11 +855,11 @@ class SolidsCollection(Collection):
         return self[ind]
 
     def _prettyPrintList(self):
-        printList = []
+        print_list = []
         for solid in self:
-            printList += solid._prettyPrintList()
+            print_list += solid._prettyPrintList()
 
-        return printList
+        return print_list
 
     def __str__(self):
         return '\n'.join(self._prettyPrintList())
@@ -875,10 +893,10 @@ class Project(object):
         self.keyword_dict = {}
         self.dat_file_list = [] # contains the project file, lines are replaced with
                             # keywords as parsed
-        self.thermo_data =  {} # key=species value=list of lines
+        self.thermo_data = {} # key=species value=list of lines
         self.mfix_gui_comments = OrderedDict() # lines starting with #!MFIX-GUI
         self.parameter_key_map = {}  # key=parameter, value=set of keywords
-        self.reactions= OrderedDict()
+        self.reactions = OrderedDict()
         # See also 'reset'
 
         self.init_data()
@@ -1022,7 +1040,7 @@ class Project(object):
         if not line.strip():
             yield(None, None, None)
             return
-        matches = re_keyValue.findall(line)
+        matches = RE_KEYVALUE.findall(line)
         single_key = False
         if matches:
             for match in matches:
@@ -1079,7 +1097,7 @@ class Project(object):
                 colon_lo = None
                 colon_hi = None
                 if match[1]:
-                    for (i,arg) in enumerate(match[1].split(',')):
+                    for (i, arg) in enumerate(match[1].split(',')):
                         if ':' in arg:
                             if colon_arg is not None: # Only one index can have :
                                 raise ValueError(match[1])
@@ -1313,7 +1331,7 @@ class Project(object):
 
         # Normalize some values
         if is_text_string(value):
-            v_upper= value.upper()
+            v_upper = value.upper()
             if v_upper == 'USR_DRAG':
                 value = 'USER_DRAG'
 
@@ -1354,7 +1372,7 @@ class Project(object):
             if cond is not None:
                 if len(args) == 1: # 1-dimensional
                     keyword = Keyword(key, value, args=args,
-                                            comment=keywordComment)
+                                      comment=keywordComment)
                     cond[args[0]][key] = keyword
                 # Gas Keys
                 elif len(args) == 2 and key.endswith('_g'):
@@ -1364,7 +1382,7 @@ class Project(object):
                     else:
                         spec = condItm.gasSpecies[args[1]]
                     keyword = Keyword(key, value, args=args,
-                                            comment=keywordComment)
+                                      comment=keywordComment)
                     spec[key] = keyword
                 # Solid Keys
                 elif key.endswith('_s'):
@@ -1376,7 +1394,7 @@ class Project(object):
                         solid = condItm.solids[args[1]]
                     if len(args) == 2:
                         keyword = Keyword(key, value, args=args,
-                                                comment=keywordComment)
+                                          comment=keywordComment)
                         solid[key] = keyword
                     elif len(args) == 3:
                         if args[2] not in solid.species:
@@ -1392,7 +1410,7 @@ class Project(object):
                     # (see 'save everything else' comment below)
                     # TODO - is there more to do here?
                     keyword = Keyword(key, value, args=args,
-                                            comment=keywordComment)
+                                      comment=keywordComment)
                     log.debug("Created keyword object for %s" %
                               format_key_with_args(key, args))
             # Solid Species
@@ -1405,7 +1423,7 @@ class Project(object):
                     solid = self.solids[args[0]]
                 if len(args) == 1:
                     keyword = Keyword(key, value, args=args,
-                                            comment=keywordComment)
+                                      comment=keywordComment)
                     solid[key] = keyword
                 else:
                     if args[1] not in solid.species:
@@ -1413,7 +1431,7 @@ class Project(object):
                     else:
                         spec = solid.species[args[1]]
                     keyword = Keyword(key, value, args=args,
-                                            comment=keywordComment)
+                                      comment=keywordComment)
                     spec[key] = keyword
             # Gas Species
             elif key in ['species_g', 'species_alias_g', 'mw_g']:
@@ -1422,7 +1440,7 @@ class Project(object):
                 else:
                     spec = self.gasSpecies[args[0]]
                 keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
+                                  comment=keywordComment)
                 spec[key] = keyword
 
             # variable grid
@@ -1434,15 +1452,15 @@ class Project(object):
                 else:
                     variablegrid = self.variablegrid[args[0]]
                 keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
+                                  comment=keywordComment)
                 variablegrid[key] = keyword
             # Save everything else
             else:
                 keyword = Keyword(key, value, args=args,
-                                        comment=keywordComment)
+                                  comment=keywordComment)
         else: # no args
             keyword = Keyword(key, value, args=None,
-                                    comment=keywordComment)
+                              comment=keywordComment)
 
         # add keyword to other data structures
         if keyword is not None:
@@ -1460,17 +1478,17 @@ class Project(object):
 
     def format_reaction(self, name):
         data = self.reactions[name]
-        yield('%s {\n' % name)
+        yield '%s {\n' % name
         # TODO split chem_eq if long
         chem_eq = data.get('chem_eq', 'NONE')
         chem_eq, rest = self.break_string(chem_eq, 60)
         if not rest:
-            yield('    chem_eq = "%s"\n' % chem_eq)
+            yield '    chem_eq = "%s"\n' % chem_eq
         else:
-            yield('    chem_eq = "%s" &\n' % chem_eq)
+            yield '    chem_eq = "%s" &\n' % chem_eq
             while rest:
                 chem_eq, rest = self.break_string(rest, 60)
-                yield('        "%s"%s\n' % (chem_eq, '&' if rest else ''))
+                yield '        "%s"%s\n' % (chem_eq, '&' if rest else '')
 
         for (key, val) in sorted(data.items()):
             if key in ('chem_eq', # handled above
@@ -1478,10 +1496,10 @@ class Project(object):
                 continue
             if isinstance(val, dict):
                 for (arg, subval) in sorted(val.items()):
-                    yield('    %s(%s) = %s\n' % (key, arg, subval))
+                    yield '    %s(%s) = %s\n' % (key, arg, subval)
             else:
-                yield('    %s = %s\n' % (key, val))
-        yield('}\n')
+                yield '    %s = %s\n' % (key, val)
+        yield '}\n'
 
 
     def break_string(self, s, w):
@@ -1514,30 +1532,30 @@ class Project(object):
             if reaction.get('chem_eq') is None: # Don't save incompletely-defined reactions
                 continue
             des = any(self.get('solids_model', args=[p]) in ('DEM', 'PIC')
-                      for p in reaction.get('phases',[]))
+                      for p in reaction.get('phases', []))
             if des:
                 des_rxns.append(name)
             else:
                 rxns.append(name)
 
         if rxns or des_rxns:
-            yield('\n')
-            yield('# CHEMICAL REACTION SECTION\n')
+            yield '\n'
+            yield '# CHEMICAL REACTION SECTION\n'
         if rxns:
-            yield('@(RXNS)\n')
+            yield '@(RXNS)\n'
             for name in rxns:
                 for line in self.format_reaction(name):
                     yield line
-            yield('@(END)\n')
-            yield('\n')
+            yield '@(END)\n'
+            yield '\n'
         if des_rxns:
-            yield('\n')
-            yield('@(DES_RXNS)\n')
+            yield '\n'
+            yield '@(DES_RXNS)\n'
             for name in des_rxns:
                 for line in self.format_reaction(name):
-                    yield(line)
-            yield('@(DES_END)\n')
-            yield('\n')
+                    yield line
+            yield '@(DES_END)\n'
+            yield '\n'
         # TODO: if there are disabled reactions save them in gui comments
 
         if self.mfix_gui_comments: # Special comment block to hold non-keyword gui params
@@ -1617,9 +1635,10 @@ class Project(object):
 
     def parameters_to_str(self):
         """convert parameter data to a string for saving"""
-        data = {'order': list(PARAMETER_DICT.keys()),
-                'parameters': PARAMETER_DICT
-                }
+        data = {
+            'order': list(PARAMETER_DICT.keys()),
+            'parameters': PARAMETER_DICT
+        }
         return ExtendedJSON.dumps(data)
 
     def update_parameter_map(self, new_value, key, args):

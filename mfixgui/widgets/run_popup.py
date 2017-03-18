@@ -1,14 +1,17 @@
-#!/usr/bin/env python
+""" Dialog in the GUI for starting an MFIX solver job """
 
 import logging
 import os
 import signal
 import sys
 import tempfile
+
 try: #2.7
     from StringIO import StringIO
 except ImportError: # 3
     from io import StringIO
+
+import errno
 import multiprocessing
 import json
 
@@ -16,22 +19,40 @@ from collections import OrderedDict
 from subprocess import Popen, PIPE
 from glob import glob
 
-from qtpy import PYQT5, uic
-from qtpy.QtCore import Signal, QProcess, QProcessEnvironment
-from qtpy.QtWidgets import (QDialog, QApplication, QFileDialog,
-                            QLabel, QComboBox, QSpinBox,
-                            QDoubleSpinBox, QCheckBox)
-
-from mfixgui.tools.general import get_mfix_home, clear_layout, extract_config, replace_with_dict
-from mfixgui.widgets.base import BASE_WIDGETS
-
 try: #2.7
     import ConfigParser as configparser
 except: # 3
     import configparser
 
+from qtpy import PYQT5, uic
+from qtpy.QtCore import (
+    QProcess,
+    QProcessEnvironment,
+    Signal,
+)
+from qtpy.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QLabel,
+    QSpinBox,
+)
 
-log = logging.getLogger('mfix-gui' if __name__=='__main__' else __name__)
+from mfixgui.tools.general import (
+    clear_layout,
+    extract_config,
+    replace_with_dict
+    )
+from mfixgui.tools.util import (
+    get_mfix_home,
+)
+
+from mfixgui.widgets.base import BASE_WIDGETS
+
+log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
 
 RECENT_EXE_LIMIT = 5
 MFIXSOLVER_GLOB_NAMES = ['mfixsolver', 'mfixsolver.exe']
@@ -224,20 +245,22 @@ class RunPopup(QDialog):
 
         l = self.ui.groupbox_queue_options_gridlayout
         clear_layout(l)
-        tp =  self.ui.combobox_template.currentText()
+        tp = self.ui.combobox_template.currentText()
 
         wids_data = self.templates.get(tp, None)
-        if wids_data is None: return
+        if wids_data is None:
+            return
 
         # add the widgets
         for i, wid in enumerate(list(wids_data.keys())):
             wd = wids_data[wid]
-            if not isinstance(wd, dict) or wid == 'options': continue
+            if not isinstance(wd, dict) or wid == 'options':
+                continue
 
             label = QLabel(wd.get('label', wid))
             l.addWidget(label, i, 0)
             widget = BASE_WIDGETS.get(wd.get('widget', 'lineedit'), BASE_WIDGETS['lineedit'])()
-            items = [it.strip() for it in wd.get('items','').split('|')]
+            items = [it.strip() for it in wd.get('items', '').split('|')]
             v = self.template_values.get(wid)
             if not v or self.template_values.get('template') != tp:
                 v = wd.get('value')
@@ -292,8 +315,7 @@ class RunPopup(QDialog):
         """ save run options in project file, then emit run signal """
         thread_count = str(self.ui.spinbox_threads.value())
         os.environ['OMP_NUM_THREADS'] = thread_count
-        log.info('SMP enabled with OMP_NUM_THREADS=%s' % \
-                 os.environ["OMP_NUM_THREADS"])
+        log.info('SMP enabled with OMP_NUM_THREADS=%s', os.environ["OMP_NUM_THREADS"])
         self.gui_comments['OMP_NUM_THREADS'] = thread_count
         self.gui_comments['run_location'] = self.ui.tabWidget.currentIndex()
 
@@ -343,7 +365,12 @@ class RunPopup(QDialog):
         msg = 'Submitting to queue'
         self.parent.print_internal(msg, color='blue')
 
-        script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict = self.get_submit_command()
+        (script,
+         sub_cmd,
+         delete_cmd,
+         status_cmd,
+         job_id_regex,
+         replace_dict) = self.get_submit_command()
 
         self.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
@@ -355,7 +382,7 @@ class RunPopup(QDialog):
 
     def handle_exe_change(self):
         """emit signals when exe combobox changes"""
-        log.debug('selected new solver %s' % self.solver)
+        log.debug('selected new solver %s', self.solver)
         self.update_dialog_options()
 
     def handle_browse_exe(self):
@@ -394,7 +421,8 @@ class RunPopup(QDialog):
             for temp_path in temp_paths.split('|'):
                 if os.path.exists(temp_path):
                     good_paths.append(temp_path)
-        self.settings.setValue('queue_templates', '|'.join(list(set(good_paths))[:RECENT_EXE_LIMIT]))
+        self.settings.setValue('queue_templates',
+                               '|'.join(list(set(good_paths))[:RECENT_EXE_LIMIT]))
 
     # utils
     def save_selected_exe(self, new_solver=None):
@@ -415,8 +443,8 @@ class RunPopup(QDialog):
             recent_list.pop(recent_list.index(new_solver))
         recent_list.insert(0, new_solver)
         self.settings.setValue(
-                        'recent_executables',
-                        str(os.pathsep).join(recent_list))
+            'recent_executables',
+            str(os.pathsep).join(recent_list))
 
     def get_solver_list(self):
         """ assemble list of executables from:
@@ -431,7 +459,8 @@ class RunPopup(QDialog):
             recent_list = self.settings.value('recent_executables')
             if recent_list:
                 # limit recently used exes to RECENT_EXE_LIMIT
-                recent_list = [ exe for exe in recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT] if os.path.exists(exe) ]
+                recent_lim = recent_list.split(os.pathsep)[:RECENT_EXE_LIMIT]
+                recent_list = [exe for exe in recent_lim if os.path.exists(exe)]
                 for recent_exe in recent_list:
                     yield recent_exe
 
@@ -529,13 +558,13 @@ class RunPopup(QDialog):
             _, flags = self.mfix_exe_cache[(stat, solver)]
             return flags
         try:
-            log.debug('Feature testing MFiX %s' % solver)
+            log.debug('Feature testing MFiX %s', solver)
             exe_dir = os.path.dirname(solver)
             popen = Popen(solver + " --print-flags",
-                        cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
+                          cwd=exe_dir, stdout=PIPE, stderr=PIPE, shell=True)
             (out, err) = popen.communicate()
             if err:
-                log.error('MFiX %s' % str(err))
+                log.error('MFiX %s', str(err))
         except:
             log.error("could not run %s --print-flags", solver)
             return None
@@ -618,10 +647,16 @@ class RunPopup(QDialog):
         self.remove_mfix_stop()
 
         if not sub_cmd:
-            self.parent.error('The template file at: {}\ndoes not have a submit_cmd defined'.format(tempfile['path']))
+            self.parent.error(('The template file at: {}\n'
+                               'does not have a submit_cmd defined').format(tempfile['path']))
             return
 
-        self.parent.job_manager.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
+        self.parent.job_manager.submit_command(script,
+                                               sub_cmd,
+                                               delete_cmd,
+                                               status_cmd,
+                                               job_id_regex,
+                                               replace_dict)
 
     def remove_mfix_stop(self):
         mfix_stop_file = os.path.join(self.parent.get_project_dir(), 'MFIX.STOP')
@@ -629,7 +664,7 @@ class RunPopup(QDialog):
             try:
                 os.remove(mfix_stop_file)
             except OSError:
-                log.error("Cannot remove", mfix_stop_file)
+                log.error("Cannot remove %s", mfix_stop_file)
                 return
 
     def start_command(self, cmd, cwd, env):
@@ -648,10 +683,8 @@ class RunPopup(QDialog):
         self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
-            # Keep a copy because it gets reset
             msg = "MFiX process %d is running" % self.mfixproc.pid()
             self.parent.signal_update_runbuttons.emit(msg)
-            log.debug("Full MFiX startup parameters: %s", self.cmdline)
 
         def slot_read_out():
             out_str = bytes(self.mfixproc.readAllStandardOutput()).decode('utf-8')
@@ -662,8 +695,21 @@ class RunPopup(QDialog):
             self.parent.stderr_signal.emit(err_str)
 
         def slot_finish(status):
-            msg = "MFiX process has stopped"
-            self.parent.signal_update_runbuttons.emit(msg)
+
+            if self.parent.job_manager.pidfile:
+                try:
+                    os.unlink(self.parent.job_manager.pidfile)
+                    self.parent.job_manager.pidfile = None
+                except OSError as e:
+                    if e.errno != errno.ENOENT:
+                        raise
+                finally:
+                    # Turn off timers!
+                    if self.parent.job_manager.job:
+                        self.parent.job_manager.job.cleanup_and_exit()
+                    self.parent.job_manager.job = None
+                    msg = "MFiX process has stopped"
+                    self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_error(error):
             if error == QProcess.FailedToStart:

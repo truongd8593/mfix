@@ -1,0 +1,29 @@
+{
+    "menu_name": "World",
+    "menu_items":
+    [
+        {
+            "script": "${PREFIX}/mfix.exe",
+            // "scriptarguments": ["-l", "error", ],
+            // The following options can be applied to any shortcut type:
+            "name": "MFiX",
+            "workdir": "${PREFIX}",
+            "icon": "${MENU_DIR}/mfix.ico",
+            "desktop": true,  // Also create desktop shortcut
+            "quicklaunch": true  // Also create "Quick Launch" bar shortcut
+        },
+        {
+            "pywscript": "${PYTHON_SCRIPTS}/mfix.py"
+        },
+        {
+            "pyscript": "${PYTHON_SCRIPTS}/mfix.py"
+        },
+        {
+            "webbrowser": "https://mfix.netl.doe.gov/mfix"
+        },
+        {
+            "system": "path to executable.  No environment modification is done.",
+            "scriptarguments": ["list", "of", "arguments"]
+        }
+    ]
+}

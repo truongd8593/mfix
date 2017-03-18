@@ -2,12 +2,15 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(mfix, 2016.1, mfix-help@mfix.netl.doe.gov)
+AC_INIT([mfix],
+    m4_esyscmd_s(echo $(git describe)$(git status --porcelain | awk '{if ($1 == "M") {print "-dirty";exit}}')),
+    [mfix-help@mfix.netl.doe.gov],
+    [],
+    [http://mfix.netl.doe.gov/gitlab])
+
 AC_CONFIG_AUX_DIR([../build-aux])
 
 m4_include([ax_check_compile_flag.m4])
-m4_include([ax_python.m4])
-m4_include([ax_python_devel.m4])
 m4_include([ax_prog_cc_mpi.m4])
 m4_include([ax_prog_fc_mpi.m4])
 m4_include([netcdf.m4])
@@ -65,27 +68,6 @@ AM_CONDITIONAL([PGI], [$FC --version|grep Portland])
 # If pymfix support is enabled, require f2py to be in PATH and
 # add -fPIC to FCFLAGS and FFLAGS.
 
-AC_ARG_ENABLE([python],
-[  --enable-python    Build Python-linked MFIX to support interactivity ],
-[case "${enableval}" in
-yes) python=true ;;
-no)  python=false ;;
-*) AC_MSG_ERROR([bad value ${enableval} for --enable-python]) ;;
-esac],[python=false])
-
-AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
-
-if test "$python" = "true"; then
-
-AX_PYTHON()
-AX_PYTHON_DEVEL()
-
-AC_CHECK_PROGS(PYUIC,pyuic pyuic4 pyuic5,pyuic)
-
-if test x"$PYUIC" = x; then
-AC_MSG_ERROR([Enabling python support requires pyuic to be in PATH])
-fi
-fi
 
 AC_MSG_CHECKING(whether fPIC compiler option is accepted)
 SAVED_FCFLAGS="$FCFLAGS"
@@ -220,7 +202,4 @@ AC_MSG_NOTICE([FC=$FC])
 AC_MSG_NOTICE([FCFLAGS=$FCFLAGS])
 AC_MSG_NOTICE([F77=$F77])
 AC_MSG_NOTICE([FFLAGS=$FFLAGS])
-if test "$python" = "true"; then
-AC_MSG_NOTICE([PYTHON_BIN=$PYTHON_BIN])
-fi
 AC_MSG_NOTICE([==============================================================])

@@ -26,7 +26,6 @@ import sys
 import os
 import traceback
 import logging
-log = logging.getLogger(__name__)
 import warnings
 
 from mfixgui.project import Project, Keyword, Equation
@@ -34,12 +33,19 @@ from mfixgui.constants import *
 
 from mfixgui.widgets.base import LineEdit # a little special handling needed
 
-from mfixgui.tools.general import (format_key_with_args, parse_key_with_args,
-                           plural, to_text_string)
+from mfixgui.tools.general import (
+    to_text_string,
+)
+from mfixgui.tools.util import (
+    format_key_with_args,
+    parse_key_with_args,
+    plural,
+)
 from mfixgui.tools import read_burcat
 from mfixgui.tools.keyword_args import keyword_args
 from mfixgui.unit_conversion import cgs_to_SI
 
+log = logging.getLogger(__name__)
 
 class ProjectManager(Project):
     """handles interaction between gui and mfix project"""
