@@ -196,12 +196,12 @@ install:conda_update:
   tags:
     - linux
 
-install:pylint_update:
-  script:
-    - $MINICONDA_BIN/pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
-  stage: deploy
-  only:
-    - develop
-    - tags
-  tags:
-    - linux
+# install:pylint_update:
+#   script:
+#     - $MINICONDA_BIN/pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
+#   stage: deploy
+#   only:
+#     - develop
+#     - tags
+#   tags:
+#     - linux
