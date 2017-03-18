@@ -146,7 +146,7 @@ windows_py3_conda:
 windows_py3_whl:
   script:
     - rm -rf dist
-    - mkdir -p dist/win-64
+    - bash -c "mkdir -p dist/win-64"
     - python setup.py bdist_wheel
     - mv dist/*.whl dist/win-64
   stage: build
