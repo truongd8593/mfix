@@ -121,12 +121,12 @@ def import_mfixsolver(solver=None):
 
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
-    DEM = mfixsolver.discretelement
+    DEM = mfixsolver.discretelement_pub
     DES_TIME_MARCH = mfixsolver.des_time_march
     ITERATE = mfixsolver.iterate
     MAIN = mfixsolver.main
     PARALLEL_MPI = mfixsolver.parallel_mpi
-    RESIDUAL = mfixsolver.residual
+    RESIDUAL = mfixsolver.residual_pub
     RUN = mfixsolver.run
     STEP = mfixsolver.step
 

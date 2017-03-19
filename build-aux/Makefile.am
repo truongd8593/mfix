@@ -441,6 +441,7 @@ libmfix_src = \
 	../model/des/dif_phi_source_des.f \
 	../model/des/diffuse_mean_fields.f \
 	../model/des/discretelement_mod.f \
+	../model/des/discretelement_pub_mod.f \
 	../model/des/drag_gp_des.f \
 	../model/des/drag_gs_des0.f \
 	../model/des/drag_gs_des1.f \
@@ -634,6 +635,7 @@ libmfix_src = \
 	../model/remove_comment.f \
 	../model/reset_new.f \
 	../model/residual_mod.f \
+	../model/residual_pub_mod.f \
 	../model/rrates.f \
 	../model/rrates0.f \
 	../model/rrates_init.f \

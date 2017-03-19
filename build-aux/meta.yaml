@@ -32,7 +32,7 @@ requirements:
     - wheel >=0.25.0
     - flask
     - libpython # [win]
-    - numpy ==1.11.3
+    - numpy
     - pandoc
     - pyqt
     - qtpy >=1.2.1
@@ -42,7 +42,7 @@ requirements:
     - setuptools
     - wheel >=0.25.0
     - flask
-    - numpy ==1.11.3
+    - numpy
     - pyqt
     - qtpy >=1.2.1
     - vtk

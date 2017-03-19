@@ -13,6 +13,7 @@
 ! Modules
 !-----------------------------------------------
       USE param, only: dim_m
+      USE discretelement_pub
       IMPLICIT NONE
 !-----------------------------------------------
 
@@ -155,10 +156,6 @@
       INTEGER VTP_FINDEX, TECPLOT_FINDEX
 ! End Output/debug controls
 !-----------------------------------------------------------------<<<
-
-! DES - Continuum
-      LOGICAL DISCRETE_ELEMENT
-      LOGICAL DES_CONTINUUM_COUPLED
 
 ! DES - Invoke hybrid model where both the DEM and continuum model
 ! are employed to describe solids
