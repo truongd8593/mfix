@@ -130,7 +130,7 @@ windows_py3_conda:
   script:
     - rm -rf dist
     - mkdir dist
-    - env conda build --python 3.4 --output-folder dist build-aux/meta.yaml
+    - env conda build --python 3.6 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop

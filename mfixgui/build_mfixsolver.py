@@ -134,6 +134,33 @@ def mfix_prereq(command_subclass):
 
     def modified_run(self):
         self.run_command('build_mfix')
+        msc_pos = sys.version.find('MSC v.')
+        if msc_pos != -1:
+            msc_ver = sys.version[msc_pos+6:msc_pos+10]
+            if msc_ver == '1900':
+                # VS2014 / MSVC 14.0
+                def monkeypatch():
+                    return ['msvcr140']
+                distutils.cygwinccompiler.get_msvcr = monkeypatch
+                def monkeypatch2():
+                    "Return name of MSVC runtime library if Python was built with MSVC >= 7"
+                    msc_pos = sys.version.find('MSC v.')
+                    if msc_pos != -1:
+                        msc_ver = sys.version[msc_pos+6:msc_pos+10]
+                        lib = {'1300': 'msvcr70',    # MSVC 7.0
+                               '1310': 'msvcr71',    # MSVC 7.1
+                               '1400': 'msvcr80',    # MSVC 8
+                               '1500': 'msvcr90',    # MSVC 9 (VS 2008)
+                               '1600': 'msvcr100',   # MSVC 10 (aka 2010)
+                               '1900': 'msvcr140',   # MSVC 14 (aka 2014)
+                              }.get(msc_ver, None)
+                    else:
+                        lib = None
+                    return lib
+                import numpy.distutils.misc_util
+                import numpy.distutils.mingw32ccompiler
+                numpy.distutils.mingw32ccompiler.msvc_runtime_library = monkeypatch2
+                numpy.distutils.misc_util.msvc_runtime_library = monkeypatch2
         orig_run(self)
 
     command_subclass.run = modified_run
