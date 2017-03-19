@@ -94,8 +94,9 @@ linux_py2_whl:
 mac_py3_whl:
   script:
     - rm -rf dist
-    - mkdir -p dist
-    - env OUTPUT_TYPE_WHEEL=1 FC=gfortran-6 CC=gcc-6 conda build --python 3.6 --output-folder dist build-aux/meta.yaml
+    - mkdir -p dist/mac-64
+    - python setup.py bdist_wheel
+    - mv dist/*.whl dist/mac-64
   stage: build
   only:
     - develop
@@ -121,7 +122,7 @@ windows_py2_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/windows-64/mfix*
+      - dist/win-64/mfix*
   tags:
     - windows
 
@@ -138,16 +139,16 @@ windows_py3_conda:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/windows-64/mfix*
+      - dist/win-64/mfix*
   tags:
     - windows
 
 windows_py3_whl:
   script:
     - rm -rf dist
-    - mkdir dist
-    - env OUTPUT_TYPE_WHEEL=1 conda build --python 3.4 build-aux/meta.yaml
-    - ls -t "/c/Users/mmeredith/miniconda3/conda-bld/win-64/mfix*.whl" | head -n 1 | xargs -i cp {} dist/win-64
+    - bash -c "mkdir -p dist/win-64"
+    - python setup.py bdist_wheel
+    - mv dist/*.whl dist/win-64
   stage: build
   only:
     - develop
@@ -156,7 +157,7 @@ windows_py3_whl:
     name: "$CI_BUILD_NAME"
     expire_in: 1 week
     paths:
-      - dist/windows-64/mfix*
+      - dist/win-64/mfix*
   tags:
     - windows
 
