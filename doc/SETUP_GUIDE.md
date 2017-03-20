@@ -132,7 +132,7 @@ To install MFIX runtime dependencies on Windows, open the command prompt CMD.exe
 and enter the following commands:
 
 ```shell
-C:\> conda install python==3.4 numpy pyqt qtpy pandoc libpython
+C:\> conda install python numpy pyqt qtpy pandoc libpython
 C:\> conda install -c menpo vtk
 ```
 
