@@ -101,7 +101,7 @@ def import_mfixsolver(solver=None):
     # conventional to only use uppercase for constants)
     global COMPAR
     global DEBUG
-    global DEM
+    global PIC
     global DES_TIME_MARCH
     global ITERATE
     global MAIN
@@ -121,12 +121,12 @@ def import_mfixsolver(solver=None):
 
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
-    DEM = mfixsolver.discretelement
+    PIC = mfixsolver.time_march_pic
     DES_TIME_MARCH = mfixsolver.des_time_march
     ITERATE = mfixsolver.iterate
     MAIN = mfixsolver.main
     PARALLEL_MPI = mfixsolver.parallel_mpi
-    RESIDUAL = mfixsolver.residual
+    RESIDUAL = mfixsolver.residual_pub
     RUN = mfixsolver.run
     STEP = mfixsolver.step
 
@@ -263,12 +263,12 @@ class Mfix(object):
 
         self.update_status()
 
-        if DEM.discrete_element and not DEM.des_continuum_coupled:
+        if RUN.discrete_element and not RUN.des_continuum_coupled:
             DES_TIME_MARCH.des_time_init()
             if RUN.dem_solids:
                 self.dem_time_march()
             if RUN.pic_solids:
-                DEM.pic_time_march()
+                PIC.pic_time_march()
         else:
 
             while not self.stopped:

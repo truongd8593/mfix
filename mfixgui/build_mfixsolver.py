@@ -66,26 +66,27 @@ def make_mfixsolver():
 def get_pymfix_src():
     """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
-        'param_mod.f',
-        'param1_mod.f',
+        'des/des_time_march.f',
+        'des/pic/time_march_pic.f',
         'dmp_modules/compar_mod.f',
         'dmp_modules/debug_mod.f',
         'dmp_modules/parallel_mpi_mod.f',
         'fldvar_mod.f',
-        'des/discretelement_mod.f',
-        'des/des_time_march.f',
         'iterate.f',
-        'residual_mod.f',
-        'time_step.f',
         'main.f',
+        'param1_mod.f',
+        'param_mod.f',
+        'residual_pub_mod.f',
         'run_mod.f',
+        'time_step.f',
     ]
 
     f90_tmp = tempfile.mkdtemp()
     atexit.register(shutil.rmtree, f90_tmp)
 
-    os.makedirs(os.path.join(f90_tmp, 'dmp_modules'))
     os.makedirs(os.path.join(f90_tmp, 'des'))
+    os.makedirs(os.path.join(f90_tmp, 'des', 'pic'))
+    os.makedirs(os.path.join(f90_tmp, 'dmp_modules'))
     for src in pymfix_src:
         shutil.copyfile(os.path.join(get_mfix_home(), 'model', src),
                         os.path.join(f90_tmp, src)+'90')

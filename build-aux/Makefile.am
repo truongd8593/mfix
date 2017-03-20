@@ -634,6 +634,7 @@ libmfix_src = \
 	../model/remove_comment.f \
 	../model/reset_new.f \
 	../model/residual_mod.f \
+	../model/residual_pub_mod.f \
 	../model/rrates.f \
 	../model/rrates0.f \
 	../model/rrates_init.f \

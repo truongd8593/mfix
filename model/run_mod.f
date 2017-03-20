@@ -250,6 +250,10 @@
 ! Specifies the type of solids: TFM, DEM, MPPIC
       CHARACTER(len=3), DIMENSION(DIM_M) :: SOLIDS_MODEL
 
+! DES - Continuum
+   LOGICAL DISCRETE_ELEMENT
+   LOGICAL DES_CONTINUUM_COUPLED
+
 ! Flags for various solids phase models.
       LOGICAL :: TFM_SOLIDS
       LOGICAL :: DEM_SOLIDS
