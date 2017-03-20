@@ -4,8 +4,7 @@
     [
         {
             "cmd": ["/usr/bin/mfix", "arg1", "..", "argn"],
-            // The following options can be applied to any shortcut type:
-            "id": "id1",  // For shortcut file name, becomes "World_id1"
+            "id": "id1",
             "name": "MFiX",
             "comment": "MFiX gui",
             "terminal": true,
