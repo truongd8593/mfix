@@ -67,6 +67,7 @@ class PymfixAPI(QNetworkAccessManager):
         self.requests = set()
         self.def_response_handler = def_response_handler
         self.api_available = False
+        self.ignore_ssl_errors = ignore_ssl_errors
         self.methods = {'put': super(PymfixAPI, self).put,
                         'get': super(PymfixAPI, self).get,
                         'post': super(PymfixAPI, self).post,
@@ -173,14 +174,10 @@ class PymfixAPI(QNetworkAccessManager):
             response_object.deleteLater()
 
     def slot_ssl_error(self, reply):
-        """Handler for SSL connection errors. Check self.ignore_ssl_errors
-           and continue as appropriate"""
-        if self.api.ignore_ssl_errors:
+        if self.ignore_ssl_errors:
             reply.ignoreSsl()
         else:
-            self.error('call to %s:%s aborted due to SSL errors' %
-                         (self.runname_pid, self.endpoint))
-            raise RuntimeException("SSL connection error")
+            raise RuntimeError("SSL connection error")
 
 
     def get(self, endpoint, handlers=None):
@@ -345,7 +342,13 @@ class JobManager(QObject):
     def is_job_ready(self):
         return self.job and self.job.api_available
 
-    def submit_command(self, qscript, submit_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
+    def submit_command(self,
+                       qscript,
+                       submit_cmd,
+                       delete_cmd, # XXX UNUSED
+                       status_cmd,
+                       job_id_regex,
+                       replace_dict):
 
         project_dir = self.parent.get_project_dir()
         script_name = '.qsubmit_script'
@@ -412,7 +415,8 @@ class JobManager(QObject):
                 self.sig_update_job_status.emit()
                 self.sig_change_run_state.emit()
 
-        def force_stop():
+
+        def force_stop(): # XXX UNUSED
             # if mfix exited cleanly, there should be no pidfile
             if not os.path.isfile(pidfile):
                 return
