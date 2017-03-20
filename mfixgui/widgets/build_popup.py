@@ -26,24 +26,30 @@ class BuildPopup(QtWidgets.QDialog):
         self.layout.setSizeConstraint(self.layout.SetFixedSize)
 
         # don't show options on windows
-        if os.name != 'nt':
-            self.dmp = QtWidgets.QCheckBox('Distributed memory parallel (DMP)')
-            self.layout.addWidget(self.dmp , 2, 0, 1, -1)
+        visible = os.name != 'nt'
+        self.dmp = QtWidgets.QCheckBox('Distributed memory parallel (DMP)')
+        self.dmp.setVisible(visible)
+        self.layout.addWidget(self.dmp , 2, 0, 1, -1)
 
-            self.smp = QtWidgets.QCheckBox('Shared memory parallel (SMP)')
-            self.layout.addWidget(self.smp , 3, 0, 1, -1)
+        self.smp = QtWidgets.QCheckBox('Shared memory parallel (SMP)')
+        self.smp.setVisible(visible)
+        self.layout.addWidget(self.smp , 3, 0, 1, -1)
 
-            label = QtWidgets.QLabel('FCFLAGS')
-            self.layout.addWidget(label, 5, 0)
+        label = QtWidgets.QLabel('FCFLAGS')
+        label.setVisible(visible)
+        self.layout.addWidget(label, 5, 0)
 
-            self.fc_flags = QtWidgets.QLineEdit()
-            self.layout.addWidget(self.fc_flags, 5, 1, 1, -1)
+        self.fc_flags = QtWidgets.QLineEdit()
+        self.fc_flags.setVisible(visible)
+        self.layout.addWidget(self.fc_flags, 5, 1, 1, -1)
 
-            label = QtWidgets.QLabel('Other Flags')
-            self.layout.addWidget(label, 6, 0)
+        label = QtWidgets.QLabel('Other Flags')
+        label.setVisible(visible)
+        self.layout.addWidget(label, 6, 0)
 
-            self.other_flags = QtWidgets.QLineEdit()
-            self.layout.addWidget(self.other_flags, 6, 1, 1, -1)
+        self.other_flags = QtWidgets.QLineEdit()
+        self.other_flags.setVisible(visible)
+        self.layout.addWidget(self.other_flags, 6, 1, 1, -1)
 
         self.progressbar = QtWidgets.QProgressBar()
         self.progressbar.setValue(0)
