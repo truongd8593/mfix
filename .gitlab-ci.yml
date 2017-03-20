@@ -240,10 +240,13 @@ install:conda_update:
   dependencies:
     - linux_py2_conda
     - linux_py2_whl
-    - linux_py3_conda
-    - mac_py3_whl
+    - linux_py34_conda
+    - linux_py35_conda
+    - linux_py36_conda
+    - mac_py36_conda
     - windows_py2_conda
-    - windows_py3_conda
+    - windows_py34_conda
+    - windows_py35_conda
     - windows_py3_whl
   tags:
     - conda
