@@ -13,7 +13,8 @@
 ! Modules
 !-----------------------------------------------
       USE param, only: dim_m
-      USE discretelement_pub
+      USE run, only: discrete_element, des_continuum_coupled
+
       IMPLICIT NONE
 !-----------------------------------------------
 

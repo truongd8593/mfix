@@ -441,7 +441,6 @@ libmfix_src = \
 	../model/des/dif_phi_source_des.f \
 	../model/des/diffuse_mean_fields.f \
 	../model/des/discretelement_mod.f \
-	../model/des/discretelement_pub_mod.f \
 	../model/des/drag_gp_des.f \
 	../model/des/drag_gs_des0.f \
 	../model/des/drag_gs_des1.f \
