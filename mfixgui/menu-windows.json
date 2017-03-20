@@ -1,9 +1,9 @@
 {
-    "menu_name": "World",
+    "menu_name": "MFiX",
     "menu_items":
     [
         {
-            "script": "${PREFIX}/mfix.exe",
+            "script": "${PYTHON_SCRIPTS}/mfix",
             "name": "MFiX",
             "workdir": "${PREFIX}",
             "icon": "${MENU_DIR}/mfix.ico",
@@ -11,17 +11,20 @@
             "quicklaunch": true
         },
         {
-            "pywscript": "${PYTHON_SCRIPTS}/mfix.py"
+            "name": "Setup Guide",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/SETUP_GUIDE.html"
         },
         {
-            "pyscript": "${PYTHON_SCRIPTS}/mfix.py"
+            "name": "User Guide",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/USER_GUIDE.html"
         },
         {
+            "name": "Tutorials",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/TUTORIALS.html"
+        },
+        {
+            "name": "MFiX Web Site",
             "webbrowser": "https://mfix.netl.doe.gov/mfix"
-        },
-        {
-            "system": "path to executable.  No environment modification is done.",
-            "scriptarguments": ["list", "of", "arguments"]
         }
     ]
 }

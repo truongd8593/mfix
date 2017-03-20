@@ -56,7 +56,41 @@ linux_py2_conda:
   tags:
     - linux
 
-linux_py3_conda:
+linux_py34_conda:
+  script:
+    - rm -rf dist
+    - mkdir -p dist
+    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 3.4 --output-folder dist build-aux/meta.yaml
+  stage: build
+  only:
+    - develop
+    - tags
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+      - dist/linux-64/mfix*
+  tags:
+    - linux
+
+linux_py35_conda:
+  script:
+    - rm -rf dist
+    - mkdir -p dist
+    - env PATH="$AC_BIN:$MINICONDA_BIN:$GCC_BIN:$PATH" conda build --python 3.5 --output-folder dist build-aux/meta.yaml
+  stage: build
+  only:
+    - develop
+    - tags
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+      - dist/linux-64/mfix*
+  tags:
+    - linux
+
+linux_py36_conda:
   script:
     - rm -rf dist
     - mkdir -p dist
@@ -91,12 +125,11 @@ linux_py2_whl:
   tags:
     - linux
 
-mac_py3_whl:
+mac_py36_conda:
   script:
     - rm -rf dist
     - mkdir -p dist/mac-64
-    - python setup.py bdist_wheel
-    - mv dist/*.whl dist/mac-64
+    - conda build --python 3.6 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -112,7 +145,7 @@ mac_py3_whl:
 windows_py2_conda:
   script:
     - rm -rf dist
-    - mkdir dist
+    - mkdir -p dist/win-64
     - env conda build --python 2.7 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
@@ -126,11 +159,28 @@ windows_py2_conda:
   tags:
     - windows
 
-windows_py3_conda:
+windows_py34_conda:
   script:
     - rm -rf dist
-    - mkdir dist
-    - env conda build --python 3.6 --output-folder dist build-aux/meta.yaml
+    - mkdir -p dist/win-64
+    - env conda build --python 3.4 --output-folder dist build-aux/meta.yaml
+  stage: build
+  only:
+    - develop
+    - tags
+  artifacts:
+    name: "$CI_BUILD_NAME"
+    expire_in: 1 week
+    paths:
+      - dist/win-64/mfix*
+  tags:
+    - windows
+
+windows_py35_conda:
+  script:
+    - rm -rf dist
+    - mkdir -p dist/win-64
+    - env conda build --python 3.5 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
