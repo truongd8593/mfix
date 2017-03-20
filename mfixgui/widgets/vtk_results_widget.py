@@ -111,7 +111,7 @@ def update(d, u):
     return d
 
 class ArrowWidget(QtWidgets.QWidget):
-    '''a widget that draw an arrow'''
+    '''a widget that draws an arrow'''
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
@@ -379,7 +379,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.glyph_mask = vtk.vtkMaskPoints()
         self.glyph_mask.SetInputConnection(self.particle_reader.GetOutputPort())
         self.glyph_mask.RandomModeOn()
-        self.glyph_mask.SetRandomModeType(1)
+        self.glyph_mask.SetRandomModeType(2) # setting to type 1 crashes on windows
         self.glyph_mask.SetMaximumNumberOfPoints(DEFAULT_MAXIMUM_POINTS)
 
         self.glyph = vtk.vtkGlyph3D()
@@ -617,7 +617,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         hspacer = QtWidgets.QSpacerItem(99999, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
 
         self.frame_spinbox = QtWidgets.QSpinBox()
-        self.frame_spinbox.valueChanged.connect(self.change_frame)
+        self.frame_spinbox.editingFinished.connect(lambda: self.change_frame(self.frame_spinbox.value()))
         self.frame_spinbox.setMaximum(9999999)
         self.frame_spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
 
@@ -698,31 +698,28 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.change_frame(self.frame_index + 1)
 
     def handle_last(self):
-        self.change_frame(max(len(self.vtu_files), len(self.vtp_files)))
+        self.change_frame(max(len(self.vtu_files), len(self.vtp_files))-1)
 
     def forward(self):
         self.change_frame(self.frame_index + 1)
 
     def change_frame(self, index, force=False):
-
-        if index == self.frame_index and not force:
-            return
-        else:
-            self.frame_index = index
-
         # assume that whatever one is bigger has the smaller time step
         n_vtp = len(self.vtp_files)
         n_vtu = len(self.vtu_files)
         n_max = max(n_vtp, n_vtu)
 
+        if index >= n_max:
+            index = n_max-1
+        elif index < 0:
+            index = 0
+        if index == self.frame_index and not force:
+            return
+        else:
+            self.frame_index = index
+        self.frame_spinbox.setValue(index)
+
         if n_max > 0:
-            if index >= n_max:
-                index = n_max-1
-            elif index < 0:
-                index = 0
-
-            self.frame_spinbox.setValue(index)
-
             if n_vtp > n_vtu:
                 time = list(self.vtp_files.keys())[index]
                 self.read_vtp(self.vtp_files[time])
@@ -740,8 +737,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
             if self.checkbox_snap.isChecked():
                 self.screenshot(True, fname=os.path.join(self.project_dir, self.project_name+'_'+str(index).zfill(4)+'.png'))
-        else:
-            self.frame_spinbox.setValue(0)
 
     def look_for_files(self):
         pvd_files = glob.glob(os.path.join(self.project_dir, '*.pvd'))
@@ -866,7 +861,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'i':i,
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange()}
-
         point_info = self.point_arrays.get(self.vtp_pattern, {})
         point_info = update( point_info, copy.deepcopy(new_array_info))
         self.point_arrays[self.vtp_pattern] = point_info
