@@ -498,8 +498,8 @@ def token_required(f):
         if client_token == server_token:
             return f(*args, **kwargs)
         else:
-            return "Authentication required", 401, \
-                  {'Content-Type': 'text/plain; charset=utf-8'}
+            return ("Authentication required", 401,
+                  {'Content-Type': 'text/plain; charset=utf-8'})
     return decorated_function
 
 def api_response(status_code, command_output):
