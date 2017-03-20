@@ -1,20 +1,30 @@
 {
-    "menu_name": "World",
+    "menu_name": "MFiX",
     "menu_items":
     [
         {
-            "cmd": ["/usr/bin/mfix", "arg1", "..", "argn"],
+            "cmd": ["${PYTHON_SCRIPTS}/mfix",],
             "id": "id1",
             "name": "MFiX",
-            "comment": "MFiX gui",
+            "comment": "MFiX GUI",
             "terminal": true,
-            "icon": "Menu/mfix.png"
+            "icon": "${MENU_DIR}/mfix.png"
         },
         {
-            "cmd": ["{{FILEBROWSER}}", "~/HelloWorld.txt"]
+            "name": "Setup Guide",
+            "cmd": ["{{WEBBROWSER}}", "file://${PREFIX}/lib/site-packages/mfixgui/doc/SETUP_GUIDE.html"]
         },
         {
-            "cmd": ["{{WEBBROWSER}}", "https://mfix.netl.doe.gov"]
+            "name": "User Guide",
+            "cmd": ["{{WEBBROWSER}}", "file://${PREFIX}/lib/site-packages/mfixgui/doc/USER_GUIDE.html"]
+        },
+        {
+            "name": "Tutorials",
+            "cmd": ["{{WEBBROWSER}}", "file://${PREFIX}/lib/site-packages/mfixgui/doc/TUTORIALS.html"]
+        },
+        {
+            "name": "MFiX Web Site",
+            "cmd": ["{{WEBBROWSER}}", "https://mfix.netl.doe.gov/mfix"]
         }
     ]
 }
