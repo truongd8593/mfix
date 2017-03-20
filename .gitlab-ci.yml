@@ -130,7 +130,7 @@ windows_py3_conda:
   script:
     - rm -rf dist
     - mkdir dist
-    - env conda build --python 3.4 --output-folder dist build-aux/meta.yaml
+    - env conda build --python 3.6 --output-folder dist build-aux/meta.yaml
   stage: build
   only:
     - develop
@@ -176,12 +176,13 @@ install:pip_update:
 
 install:conda_update:
   variables:
-    CONDA_REPO: ${JENKINS_HOME}/userContent/conda
+    CONDA_BIN: /opt/miniconda3/bin
+    CONDA_REPO: /var/www/html/dist
   script:
-    - rsync -av dist/ ${CONDA_REPO}/
-    - $MINICONDA_BIN/conda index ${CONDA_REPO}/linux-64
-    - $MINICONDA_BIN/conda index ${CONDA_REPO}/mac-64
-    - $MINICONDA_BIN/conda index ${CONDA_REPO}/win-64
+    - rsync -rv dist/ ${CONDA_REPO}/
+    - $CONDA_BIN/conda index ${CONDA_REPO}/linux-64
+    - $CONDA_BIN/conda index ${CONDA_REPO}/mac-64
+    - $CONDA_BIN/conda index ${CONDA_REPO}/win-64
   stage: deploy
   only:
     - develop
@@ -195,14 +196,14 @@ install:conda_update:
     - windows_py3_conda
     - windows_py3_whl
   tags:
-    - linux
+    - conda
 
-# install:pylint_update:
-#   script:
-#     - $MINICONDA_BIN/pylint -j 4 -f html mfixgui > ${JENKINS_HOME}/userContent/pylint.html
-#   stage: deploy
-#   only:
-#     - develop
-#     - tags
-#   tags:
-#     - linux
+install:pylint_update:
+  script:
+    - ( export MFIXHOME=$PWD; cd ${JENKINS_HOME}/userContent; env PYLINTRC="$MFIXHOME/.pylintrc" PYTHONPATH="$MFIXHOME" PATH="$MINICONDA_BIN:$PATH" pylint --files-output=y -f html mfixgui )  || exit 0 # $?
+  stage: deploy
+  only:
+    - develop
+    - tags
+  tags:
+    - linux

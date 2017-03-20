@@ -4,13 +4,11 @@
     [
         {
             "script": "${PREFIX}/mfix.exe",
-            // "scriptarguments": ["-l", "error", ],
-            // The following options can be applied to any shortcut type:
             "name": "MFiX",
             "workdir": "${PREFIX}",
             "icon": "${MENU_DIR}/mfix.ico",
-            "desktop": true,  // Also create desktop shortcut
-            "quicklaunch": true  // Also create "Quick Launch" bar shortcut
+            "desktop": true,
+            "quicklaunch": true
         },
         {
             "pywscript": "${PYTHON_SCRIPTS}/mfix.py"
