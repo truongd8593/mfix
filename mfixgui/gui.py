@@ -722,7 +722,6 @@ class MfixGui(QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-
         expected_args = keyword_args.get(key)
         if expected_args is not None:
             if isinstance(args, int):
@@ -2452,13 +2451,10 @@ class MfixGui(QMainWindow,
 
         self.do_open(project_file, runname_pid)
 
-        #self.navigate_all() # leaves GUI in undesired state
+
 
     def do_open(self, project_file, runname_pid):
-        """do_open performs the details of opening the project. It has a direct
-        control-flow path, with no return statements, meaning that the project
-        open cannot be canceled beyond this point.
-        """
+        """details of opening the project"""
         project_dir = os.path.dirname(project_file)
 
         # make sure the main_menu is closed
@@ -2474,9 +2470,6 @@ class MfixGui(QMainWindow,
 
         self.setup_current_pane() # update vals in any open tabs
         self.update_source_view()
-
-        # set up rundir watcher
-        self.slot_rundir_timer()
 
         ### Geometry
         # Look for geometry.stl and load automatically

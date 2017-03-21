@@ -8,24 +8,11 @@ from collections import OrderedDict
 import logging
 log = logging.getLogger(__name__)
 
-#import Qt
 from qtpy import QtWidgets
 from qtpy.QtCore import Qt
 
-#local imports
-from mfixgui.constants import (
-    CONSTANT,
-    DEM,
-    DIM_M,
-    HYBRID,
-    MIXTURE,
-    OTHER,
-    PIC,
-    SINGLE,
-    TFM,
-    UDF,
-    VARIABLE,
-)
+from mfixgui.constants import *
+
 from mfixgui.tools.general import (
     append_row_column_triangular,
     drop_row_column_triangular,
@@ -35,9 +22,7 @@ from mfixgui.tools.general import (
     set_item_noedit,
     widget_iter,
 )
-from mfixgui.tools.util import (
-    format_key_with_args,
-)
+from mfixgui.tools.util import format_key_with_args
 
 from mfixgui.solids_dem import SolidsDEM
 from mfixgui.solids_pic import SolidsPIC

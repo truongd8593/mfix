@@ -12,24 +12,11 @@ from qtpy.QtWidgets import (
     QTableWidgetItem,
 )
 
-#local imports
-from mfixgui.constants import (
-    AIR,
-    CONSTANT,
-    UDF,
-)
-from mfixgui.tools.util import (
-    format_key_with_args,
-)
-from mfixgui.tools.general import (
-    get_selected_row,
-    set_item_noedit,
-    )
+from mfixgui.constants import *
+from mfixgui.tools.util import format_key_with_args
+from mfixgui.tools.general import get_selected_row, set_item_noedit
 from mfixgui.tools import keyword_args
-
 from mfixgui.species_handler import SpeciesHandler
-
-log = logging.getLogger(__name__)
 
 class FluidHandler(SpeciesHandler):
     # Defaults
@@ -246,7 +233,7 @@ class FluidHandler(SpeciesHandler):
         # Species/alias unification
         #self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.fluid_species = OrderedDict((data.get('alias', species), deepcopy(data))
-            for (species, data) in self.species_popup.defined_species.items())
+            for (species,data) in self.species_popup.defined_species.items())
 
         self.update_fluid_species_table()
         for (old_alias, new_alias) in rename.items():
@@ -273,7 +260,7 @@ class FluidHandler(SpeciesHandler):
             self.update_keyword('nmax_g', nmax_g)
         else:
             self.unset_keyword('nmax_g')
-        for (row, (species, data)) in enumerate(self.fluid_species.items()):
+        for (row, (species,data)) in enumerate(self.fluid_species.items()):
             for (col, key) in enumerate(('alias', 'phase', 'mol_weight', 'h_f')):
                 alias = data.get('alias', species) # default to species if no alias
                 data['alias'] = alias # for make_item
@@ -365,8 +352,8 @@ class FluidHandler(SpeciesHandler):
         self.update_nav_tree() # Chemistry
 
     def fluid_species_edit(self):
-        table_widget = self.ui.fluid.tablewidget_fluid_species
-        row = get_selected_row(table_widget)
+        tw = self.ui.fluid.tablewidget_fluid_species
+        row = get_selected_row(tw)
         sp = self.species_popup
         sp.set_phases('GL')
         sp.reset_signals()
