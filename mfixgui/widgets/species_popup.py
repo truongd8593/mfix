@@ -233,8 +233,8 @@ class SpeciesPopup(QDialog):
 
     def handle_defined_species_selection(self):
         self.ui.tablewidget_search.clearSelection() # is this right?
-        table_widget = self.tablewidget_defined_species
-        row = get_selected_row(table_widget)
+        tw = self.tablewidget_defined_species
+        row = get_selected_row(tw)
 
         if row is None:
             self.current_species = None
@@ -245,7 +245,7 @@ class SpeciesPopup(QDialog):
         else:
             self.ui.pushbutton_delete.setEnabled(True)
             self.ui.pushbutton_copy.setEnabled(True)
-            self.current_species = table_widget.item(row, 0).text()
+            self.current_species = tw.item(row, 0).text()
             self.enable_species_panel()
 
 
@@ -322,29 +322,29 @@ class SpeciesPopup(QDialog):
     def add_defined_species_row(self, species, select=False):
         species_data = self.defined_species[species]
         ui = self.ui
-        table_widget = ui.tablewidget_defined_species
-        nrows = table_widget.rowCount()
-        table_widget.setRowCount(nrows+1)
+        tw = ui.tablewidget_defined_species
+        nrows = tw.rowCount()
+        tw.setRowCount(nrows+1)
         alias = species_data['alias']
         assert (alias == species)
         phase = species_data['phase']
         item = QTableWidgetItem(alias)
         set_item_noedit(item)
-        table_widget.setItem(nrows, 0, item)
+        tw.setItem(nrows, 0, item)
         item = QTableWidgetItem(phase)
         set_item_noedit(item)
-        table_widget.setItem(nrows, 1, item)
+        tw.setItem(nrows, 1, item)
 
         if select:
-            table_widget.setCurrentCell(nrows, 0) # Cause the new row to be selected
+            tw.setCurrentCell(nrows, 0) # Cause the new row to be selected
 
 
     def handle_copy(self):
-        table_widget = self.ui.tablewidget_defined_species
-        row = get_selected_row(table_widget)
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
         if row is None:
             return
-        species = table_widget.item(row, 0).text()
+        species = tw.item(row, 0).text()
         alias = self.make_alias(species)
         if species not in self.defined_species:
             return
@@ -362,8 +362,8 @@ class SpeciesPopup(QDialog):
 
 
     def handle_delete(self):
-        table_widget = self.ui.tablewidget_defined_species
-        row = get_selected_row(table_widget)
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
         current_species = self.current_species # will be reset when selection cleared
@@ -376,8 +376,8 @@ class SpeciesPopup(QDialog):
             self.parent().message(text="%s is used in reaction %s" % (alias, msg))
             return
 
-        table_widget.removeRow(row)
-        table_widget.clearSelection()
+        tw.removeRow(row)
+        tw.clearSelection()
         self.ui.tablewidget_search.clearSelection()
 
         if current_species:
@@ -421,14 +421,14 @@ class SpeciesPopup(QDialog):
 
     def handle_alias(self):
         val = self.ui.lineedit_alias.text() # Already validated (?)
-        table_widget = self.ui.tablewidget_defined_species
-        row = get_selected_row(table_widget)
+        tw = self.ui.tablewidget_defined_species
+        row = get_selected_row(tw)
         if row is None: # No selection
             return
         #note, making a new item here, instead of changing item inplace
         item = QTableWidgetItem(val)
         set_item_noedit(item)
-        table_widget.setItem(row, 0, item)
+        tw.setItem(row, 0, item)
         defined_species = OrderedDict()
         for (key, data) in self.defined_species.items():
             if key == self.current_species:
@@ -576,13 +576,13 @@ class SpeciesPopup(QDialog):
             ui.tablewidget_params,
         ]
 
-        header_view = QHeaderView
-        for table_widget in (self.tablewidget_search, self.tablewidget_defined_species):
-            resize_column(table_widget, 0, header_view.Stretch)
-            resize_column(table_widget, 1, header_view.ResizeToContents)
-        table_widget = self.tablewidget_params
+        hv = QHeaderView
+        for tw in (self.tablewidget_search, self.tablewidget_defined_species):
+            resize_column(tw, 0, hv.Stretch)
+            resize_column(tw, 1, hv.ResizeToContents)
+        tw = self.tablewidget_params
         for i in (0, 1):
-            resize_column(table_widget, i, header_view.Stretch)
+            resize_column(tw, i, hv.Stretch)
 
         self.set_ok_button(False) # nothing to accept
         self.clear_species_panel()
