@@ -459,7 +459,7 @@ class Chemistry(object):
             # Add a "total" row, only if there is data
             tw = ui.tablewidget_reactants if side == 'reactants' else ui.tablewidget_products
             tw.setRowCount(len(data)+1 if data else 0)
-            for (row, (species, coeff)) in enumerate(data):
+            for (row, (species,coeff)) in enumerate(data):
                 phase = self.find_species_phase(species)
                 if phase is None:
                     self.error("Species %s not found in any phase" % species)
