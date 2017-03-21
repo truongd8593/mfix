@@ -355,11 +355,11 @@ class Mfix(object):
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
-            for res_id in range(len(RESIDUAL.resid_grp_string)):
+            for res_id in range(RESIDUAL.get_resid_grp_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_grp_string(res_id)),
                                             str(RESIDUAL.get_resid_grp(res_id))))
         else:
-            for res_id in range(len(RESIDUAL.resid_string)):
+            for res_id in range(RESIDUAL.get_resid_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
