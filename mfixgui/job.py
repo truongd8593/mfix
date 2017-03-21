@@ -639,8 +639,14 @@ class Job(QObject):
         req_id = self.api.post('exit')
         self.register_request(req_id, self.handle_stop_mfix)
 
+    def force_stop_mfix(self):
+        """Send stop request"""
+        req_id = self.api.post('die')
+        self.register_request(req_id, self.handle_stop_mfix)
+
+
     def handle_stop_mfix(self, req_id, response_string):
-        """Handler for responses to `stop_mfix` requests"""
+        """Handler for responses to stop requests"""
         self.api_available = False
         self.api_status_timer.stop()
         self.handle_status(req_id, response_string)

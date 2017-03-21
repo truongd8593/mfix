@@ -414,6 +414,7 @@ class MfixGui(QtWidgets.QMainWindow,
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
+        ui.toolbutton_stop_mfix.mouseDoubleClickEvent = self.handle_force_stop
         # TODO: implement handle_compile
         ui.toolbutton_compile.setVisible(False)
 
@@ -1776,11 +1777,21 @@ class MfixGui(QtWidgets.QMainWindow,
             log.debug('reinitialize called in invalid state')
         log.debug('gui leaving handle_reinit')
 
+
     def handle_stop(self):
+        #print("STOP")
         try:
             self.job_manager.stop_mfix()
         except Exception as e:
             self.error('handle_stop: %s' % e)
+
+    def handle_force_stop(self, *args):
+        #print("FORCE STOP", args)
+        try:
+            self.job_manager.force_stop_mfix()
+        except Exception as e:
+            self.error('handle_stop: %s' % e)
+
 
     def confirm_save(self, text="Save current project?"):
         if self.unsaved_flag:
