@@ -843,6 +843,8 @@ class MfixGui(QtWidgets.QMainWindow,
                 self.progress_bar.show()
 
             # update status message
+            paused = self.job_manager.job and self.job_manager.job.is_paused()
+
             tl = status.get('walltime_elapsed', None)
             if tl is not None:
                 try:
@@ -851,7 +853,9 @@ class MfixGui(QtWidgets.QMainWindow,
                     h, m = divmod(m, 60)
                 except:
                     h, m, s = 0, 0, 0
-                self.status_message('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
+                self.status_message('MFiX %s: Elapsed Time %d:%02d:%02d' %
+                                    ('running' if not paused else 'paused',
+                                     h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -908,7 +912,8 @@ class MfixGui(QtWidgets.QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif paused:
-            self.status_message("MFiX paused, process %s" % self.job_manager.job.mfix_pid)
+            if not 'paused' in self.ui.label_status.text().lower():
+                self.status_message("MFiX paused")
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
