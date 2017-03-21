@@ -67,7 +67,7 @@ def get_pymfix_src():
     """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
         'des/des_time_march.f',
-        'des/pic/time_march_pic.f',
+        'des/pic/pic_time_march.f',
         'dmp_modules/compar_mod.f',
         'dmp_modules/debug_mod.f',
         'dmp_modules/parallel_mpi_mod.f',

@@ -121,7 +121,7 @@ def import_mfixsolver(solver=None):
 
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
-    PIC = mfixsolver.time_march_pic
+    PIC = mfixsolver.pic_time_march
     DES_TIME_MARCH = mfixsolver.des_time_march
     ITERATE = mfixsolver.iterate
     MAIN = mfixsolver.main
