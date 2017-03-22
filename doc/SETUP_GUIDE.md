@@ -54,7 +54,7 @@ To recap:
   This is the recommended starting point to learn and use MFIX for most users.
   The default solver will be installed which will allow basic simulations (no UDFs).
 - If you have MFIX installed and want to build a custom solver (with UDFs), you need to [install build dependencies](#install-build-dependencies) and then [build a custom interactive mfixsolver](#building-custom-mfixsolver).
-- If you are a developer and want to build and install MFIX from source, see [Building MFIX](#building-mfix).
+- If you are a developer and want to build and install MFIX from source, see [Building MFIX](#building-mfix-for-developers).
 - If you want to run the command line version of MFIX without Python and without the GUI (Linux recommended, similar to previous versions), see [building a non-interactive solver](#running-non-interactive-fortran-only-solver).
 
 # Installing MFIX
@@ -127,7 +127,9 @@ C:\> conda install m2-base m2-autoconf m2-automake-wrapper m2-make m2w64-toolcha
 
 Install MFIX using the following command: **TODO replace with URL for actual release**
 
-`> conda install -c http://condatest:condatest12345@aeolustec.com/dist mfix`
+```shell
+> conda install -c http://condatest:condatest12345@aeolustec.com/dist mfix
+```
 
 
 
@@ -239,7 +241,6 @@ write_usr0.f
 mfixsolver
 build/
 lib/
-./mfixsolver -f MY_EXAMPLE.mfx
 ```
 
 The `build_mfixsolver` command creates a wrapper script `mfixsolver`, that runs
@@ -249,8 +250,14 @@ The `build` directory can be deleted, and the custom `mfixsolver` will still
 run. However, leaving the `build` directory will greatly speed up rebuilds if
 you want to edit the UDFs and run `build_mfixsolver` again.
 
-When running `mfix` in the [Run Dialog](USER_GUIDE.html#run-dialog), select the
+From the GUI, in the [Run Dialog](USER_GUIDE.html#run-dialog), select the
 mfixsolver file you have just built.
+
+From the command line, run the custom solver with:
+
+```shell
+> ./mfixsolver -f MY_EXAMPLE.mfx
+```
 
 ### Running mfixsolver from the command line
 
