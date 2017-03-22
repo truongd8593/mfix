@@ -678,7 +678,7 @@ class RunPopup(QDialog):
         self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
-            msg = "MFiX process %d is running" % self.mfixproc.pid()
+            msg = "MFiX process %d is running" % self.mfixproc.processId()
             self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_read_out():
