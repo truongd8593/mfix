@@ -374,12 +374,6 @@ class RunPopup(QDialog):
 
         self.submit_command(script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict)
 
-    def handle_resume(self):
-        """resume previously stopped mfix run"""
-        #FIXME need to catch/report errors, writeDatFile is too low-level
-        self.project.writeDatFile(self.get_project_file()) # XXX
-        self._start_mfix(False)
-
     def handle_exe_change(self):
         """emit signals when exe combobox changes"""
         log.debug('selected new solver %s', self.solver)
@@ -636,10 +630,11 @@ class RunPopup(QDialog):
         script = replace_with_dict(script, replace_dict)
 
         sub_cmd = template['options'].get('submit', False)
-        delete_cmd = template['options'].get('delete', False)
+        delete_cmd = template['options'].get('delete', False) # XXX
         status_cmd = template['options'].get('status', False)
         job_id_regex = template['options'].get('job_id_regex', None)
 
+        ## FIXME, return something nicer than this 6-tuple
         return script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict
 
     def submit_command(self, script, sub_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
@@ -733,17 +728,3 @@ class RunPopup(QDialog):
         self.mfixproc.finished.connect(slot_finish)
         self.mfixproc.error.connect(slot_error)
         self.mfixproc.start(cmd[0], cmd[1:])
-
-if __name__ == '__main__':
-
-    args = sys.argv
-    app = QApplication(args)
-    run_popup = RunPopup(QDialog())
-    run_popup.show()
-    # exit with Ctrl-C at the terminal
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    app.exec_()
-    app.deleteLater()
-
-    sys.exit()

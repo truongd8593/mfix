@@ -401,7 +401,6 @@ cgs_to_SI = {
 
 
 def main():
-    from tools.general import SCRIPT_DIRECTORY
     from tools.namelistparser import getKeywordDoc
 
     PY2 = sys.version_info.major == 2
@@ -411,7 +410,7 @@ def main():
         pat = re.compile(r'\[[^]]*\]') # Remove anything inside []
         s = pat.sub('', s)
         while len(s) > maxlen:
-            for c in (' .,'):
+            for c in (' ', '.', ','):
                 i = s.rindex(c)
                 if i > 0:
                     s = s[:i]

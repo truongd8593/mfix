@@ -25,6 +25,7 @@ from mfixgui.tools.general import replace_with_dict
 #: List of valid keys to read from PID file
 SUPPORTED_PYMFIXPID_FIELDS = ['url', 'pid', 'token', 'qjobid']
 
+
 def get_process_info(filename):
     """Read contents of provided MFiX job pid file and set supported
     key-value pairs as dictionary members
@@ -55,7 +56,7 @@ class PymfixAPI(QNetworkAccessManager):
        class is used by instances of :mod:`job.Job`
     """
 
-    def __init__(self, parent, def_response_handler, ignore_ssl_errors=False):
+    def __init__(self, parent, default_response_handler, ignore_ssl_errors=False):
 
         super(PymfixAPI, self).__init__()
         self.parent = parent
@@ -65,12 +66,14 @@ class PymfixAPI(QNetworkAccessManager):
         self.process_info = get_process_info(self.pidfile)
         self.mfix_pid = self.process_info.get('pid')
         self.requests = set()
-        self.def_response_handler = def_response_handler
+        self.default_response_handler = default_response_handler
         self.api_available = False
+        self.ignore_ssl_errors = ignore_ssl_errors
         self.methods = {'put': super(PymfixAPI, self).put,
                         'get': super(PymfixAPI, self).get,
                         'post': super(PymfixAPI, self).post,
                         'delete': super(PymfixAPI, self).deleteResource}
+
 
     def test_connection(self, response, error=None):
         # use request/reply methods to call 'status', Job will provide the
@@ -80,16 +83,18 @@ class PymfixAPI(QNetworkAccessManager):
             raise Exception
         self.get('status', handlers={'response': response, 'error': error})
 
+
     def request(self, method, endpoint, data=None, headers=None, handlers=None):
         """This method abstracts HTTP requests. A unique request ID will be
         returned to the caller. Callbacks are set on the request to response
         and error handlers within this class.
 
-        The "handlers" dictionary must contain one or both of the keys 'error'
+        The "handlers" dictionary may contain one or both of the keys 'error'
         and 'response'. These must be `QtCore.Signal` objects, and the internal
         handlers in this class will emit these signals after local response
         processing.
         """
+        #print("REQUEST", method)
         if not headers:
             headers = {}
         if not handlers:
@@ -97,7 +102,7 @@ class PymfixAPI(QNetworkAccessManager):
         url = self.process_info.get('url')
         token = self.process_info.get('token')
         req = QNetworkRequest(QUrl('%s/%s' % (url, endpoint)))
-        api_method = self.methods[str(method).lower()]
+        method = self.methods[str(method).lower()]
         req_id = str(uuid.uuid4())
         self.requests.add(req_id)
         # assemble headers
@@ -114,10 +119,10 @@ class PymfixAPI(QNetworkAccessManager):
             req.setRawHeader(kb,vb)
 
         if data is not None:
-            request_object = api_method(req, data)
+            request_object = method(req, data)
         else:
-            request_object = api_method(req)
-        response_handler = handlers.get('response', self.def_response_handler)
+            request_object = method(req)
+        response_handler = handlers.get('response', self.default_response_handler)
         error_handler = handlers.get('error')
         request_object.finished.connect(
           partial(
@@ -127,6 +132,7 @@ class PymfixAPI(QNetworkAccessManager):
             self.slot_protocol_error, req_id, request_object, error_handler))
         return req_id
 
+
     def slot_response(self, req_id, response_object, signal):
         """Process QNetworkReply content then emit a signal containing response
         content to the signal object provided. If reponse content is valid JSON
@@ -134,6 +140,7 @@ class PymfixAPI(QNetworkAccessManager):
         is not parsable as JSON, an error JSON string is assembled and emitted
         via the specified signal.
         """
+        #print("SLOT_RESPONSE", req_id)
         try:
             response = response_object.readAll()
             if not response:  # Nothing read. We should not have gotten here
@@ -161,6 +168,7 @@ class PymfixAPI(QNetworkAccessManager):
         """Process response errors then emit a signal containing the
         request id and `QtNetwork.QNetworkReply` object to the signal object provided.
         """
+        #print("SLOT_PROTOCOL_ERROR", req_id)
         try:
             error_code = response_object.error()
             error_string = response_object.errorString()
@@ -172,32 +180,32 @@ class PymfixAPI(QNetworkAccessManager):
                 signal.emit(req_id, response_object)
             response_object.deleteLater()
 
+
     def slot_ssl_error(self, reply):
-        """Handler for SSL connection errors. Check self.ignore_ssl_errors
-           and continue as appropriate"""
-        if self.api.ignore_ssl_errors:
+        #print("SLOT_SSL_ERROR", reply)
+        if self.ignore_ssl_errors:
             reply.ignoreSsl()
         else:
-            self.error('call to %s:%s aborted due to SSL errors' %
-                         (self.runname_pid, self.endpoint))
-            raise RuntimeException("SSL connection error")
+            raise RuntimeError("SSL connection error")
 
 
     def get(self, endpoint, handlers=None):
         """HTTP GET"""
+        #print("GET", endpoint)
         req_id = self.request(
                     'get', endpoint, handlers=handlers)
         return req_id
 
     def put(self, endpoint, data=b'', handlers=None):
         """HTTP PUT"""
-
+        #print("PUT", endpoint, data)
         req_id = self.request(
                     'put', endpoint, data=data, handlers=handlers)
         return req_id
 
     def post(self, endpoint, data=b'', headers=None, handlers=None):
         """HTTP POST"""
+        #print("POST", endpoint, data)
         req_id = self.request(
                     'post', endpoint, data=data, headers=headers, handlers=handlers)
         return req_id
@@ -345,7 +353,13 @@ class JobManager(QObject):
     def is_job_ready(self):
         return self.job and self.job.api_available
 
-    def submit_command(self, qscript, submit_cmd, delete_cmd, status_cmd, job_id_regex, replace_dict):
+    def submit_command(self,
+                       qscript,
+                       submit_cmd,
+                       delete_cmd, # XXX UNUSED
+                       status_cmd,
+                       job_id_regex,
+                       replace_dict):
 
         project_dir = self.parent.get_project_dir()
         script_name = '.qsubmit_script'
@@ -386,6 +400,11 @@ class JobManager(QObject):
         if self.job is not None:
             self.job.stop_mfix()
 
+    def force_stop_mfix(self):
+        if self.job is not None:
+            self.job.force_stop_mfix()
+
+
     def teardown_job(self):
         """Job ended or exited. Destroy Job object and remove pidfile"""
         # TODO: this handles local only, not queued jobs
@@ -412,7 +431,8 @@ class JobManager(QObject):
                 self.sig_update_job_status.emit()
                 self.sig_change_run_state.emit()
 
-        def force_stop():
+
+        def force_stop(): # XXX UNUSED
             # if mfix exited cleanly, there should be no pidfile
             if not os.path.isfile(pidfile):
                 return
@@ -506,7 +526,8 @@ class Job(QObject):
         count and signal job exit if timeout has been exceeded."""
         try:
             self.api.get('status', handlers={'response':self.sig_handle_test})
-        except Exception as e:
+        except Exception as e: ## FIXME, too generic
+            #print("SIG_ERROR", e) #increments error count
             self.sig_error.emit()
 
     def slot_handle_test_error(self, req_id, response_object):
@@ -547,11 +568,13 @@ class Job(QObject):
 
     def register_request(self, req_id, handler):
         """Bind handler to req_id."""
+        #print("REGISTER", req_id, handler)
         registered_requests = self.requests.get(req_id, set([]))
         registered_requests.add(handler)
         self.requests[req_id] = registered_requests
 
     def slot_response(self, req_id, response_string):
+        #print("RESPONSE", req_id, response_string)
         try:
             response_json = json.loads(response_string)
         except Exception as e:
@@ -635,8 +658,14 @@ class Job(QObject):
         req_id = self.api.post('exit')
         self.register_request(req_id, self.handle_stop_mfix)
 
+    def force_stop_mfix(self):
+        """Send stop request"""
+        req_id = self.api.post('die')
+        self.register_request(req_id, self.handle_stop_mfix)
+
+
     def handle_stop_mfix(self, req_id, response_string):
-        """Handler for responses to `stop_mfix` requests"""
+        """Handler for responses to stop requests"""
         self.api_available = False
         self.api_status_timer.stop()
         self.handle_status(req_id, response_string)

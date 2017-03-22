@@ -485,6 +485,8 @@ class MfixGui(QMainWindow,
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
+        ui.toolbutton_stop_mfix.mouseDoubleClickEvent = self.handle_force_stop
+
         # Make sure lineedits lose focus so keywords update before save/run !!
         for button in (ui.toolbutton_run_mfix, ui.toolbutton_save):
             button.setFocusPolicy(Qt.ClickFocus)
@@ -924,6 +926,8 @@ class MfixGui(QMainWindow,
                 self.progress_bar.show()
 
             # update status message
+            paused = self.job_manager.job and self.job_manager.job.is_paused()
+
             tl = status.get('walltime_elapsed', None)
             if tl is not None:
                 try:
@@ -932,7 +936,9 @@ class MfixGui(QMainWindow,
                     h, m = divmod(m, 60)
                 except:
                     h, m, s = 0, 0, 0
-                self.status_message('MFiX Running: Elapsed Time %d:%02d:%02d' % (h, m, s))
+                self.status_message('MFiX %s: Elapsed Time %d:%02d:%02d' %
+                                    ('running' if not paused else 'paused',
+                                     h, m, s))
         else:
             log.debug('no Job object (update_residuals)')
 
@@ -992,7 +998,8 @@ class MfixGui(QMainWindow,
             self.set_stop_button(enabled=True)
 
         elif paused:
-            self.status_message("MFiX paused, process %s" % self.job_manager.job.mfix_pid)
+            if not 'paused' in self.ui.label_status.text().lower():
+                self.status_message("MFiX paused")
             self.set_reset_button(enabled=False)
             self.set_run_button(text="Unpause", enabled=True)
             self.set_pause_button(text="Pause", enabled=False)
@@ -1861,11 +1868,21 @@ class MfixGui(QMainWindow,
             log.debug('reinitialize called in invalid state')
         log.debug('gui leaving handle_reinit')
 
+
     def handle_stop(self):
+        #print("STOP")
         try:
             self.job_manager.stop_mfix()
         except Exception as e:
             self.error('handle_stop: %s' % e)
+
+    def handle_force_stop(self, *args):
+        #print("FORCE STOP", args)
+        try:
+            self.job_manager.force_stop_mfix()
+        except Exception as e:
+            self.error('handle_stop: %s' % e)
+
 
     def confirm_save(self, text="Save current project?"):
         if self.unsaved_flag:
