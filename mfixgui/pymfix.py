@@ -42,7 +42,7 @@ else:
     print("Unsupported Python version %s" % sys.version_info)
     sys.exit(-1)
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -109,7 +109,7 @@ def import_mfixsolver(solver=None):
     # conventional to only use uppercase for constants)
     global COMPAR
     global DEBUG
-    global DEM
+    global PIC
     global DES_TIME_MARCH
     global ITERATE
     global MAIN
@@ -129,12 +129,12 @@ def import_mfixsolver(solver=None):
 
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
-    DEM = mfixsolver.discretelement
+    PIC = mfixsolver.pic_time_march
     DES_TIME_MARCH = mfixsolver.des_time_march
     ITERATE = mfixsolver.iterate
     MAIN = mfixsolver.main
     PARALLEL_MPI = mfixsolver.parallel_mpi
-    RESIDUAL = mfixsolver.residual
+    RESIDUAL = mfixsolver.residual_pub
     RUN = mfixsolver.run
     STEP = mfixsolver.step
 
@@ -278,12 +278,12 @@ class Mfix(object):
 
         self.update_status()
 
-        if DEM.discrete_element and not DEM.des_continuum_coupled:
+        if RUN.discrete_element and not RUN.des_continuum_coupled:
             DES_TIME_MARCH.des_time_init()
             if RUN.dem_solids:
                 self.dem_time_march()
             if RUN.pic_solids:
-                DEM.pic_time_march()
+                PIC.pic_time_march()
         else:
 
             while not self.stopped:
@@ -370,11 +370,11 @@ class Mfix(object):
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
-            for res_id in range(len(RESIDUAL.resid_grp_string)):
+            for res_id in range(RESIDUAL.get_resid_grp_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_grp_string(res_id)),
                                             str(RESIDUAL.get_resid_grp(res_id))))
         else:
-            for res_id in range(len(RESIDUAL.resid_string)):
+            for res_id in range(RESIDUAL.get_resid_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
@@ -791,7 +791,7 @@ def parse_command_line_arguments():
                         help='specify a port number to use')
     parser.add_argument('-w', '--wait', action='store_false',
                         help='wait for api connection to run')
-    parser.add_argument('-v', '--version', action='version', version=get_version)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 

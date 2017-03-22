@@ -7,7 +7,7 @@ import traceback
 
 from code import InteractiveConsole
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 from qtpy import QtGui
 from qtpy.QtCore import QEvent, Qt
@@ -69,7 +69,7 @@ class Interpreter(object):
         self.stderr = Output(err=True)
         self.interp = InteractiveConsole()
         banner = 'Python ' + sys.version + ' on ' + sys.platform + '\n'
-        banner += 'MFiX-GUI version %s' % get_version + '\n'
+        banner += 'MFiX-GUI version %s' % __version__ + '\n'
         te.insertPlainText(banner)
 
 
@@ -94,7 +94,6 @@ class Interpreter(object):
             self.handle_interp_line()
 
     def capture_output(self, enable):
-        import sys
         if enable:
             sys.stdout = self.stdout
             sys.stderr = self.stderr

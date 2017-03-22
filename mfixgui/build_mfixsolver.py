@@ -3,6 +3,7 @@ by setup.py when building the mfix distribution package, and is run as a
 standalone command to build the custom mfixsolvers. """
 
 import atexit
+import glob
 import os
 import platform
 import shutil
@@ -17,9 +18,9 @@ import distutils.cygwinccompiler
 from numpy.distutils.command.build_ext import build_ext
 from numpy.distutils.core import Extension, setup
 
-from mfixgui.tools.general import get_mfix_home
+from mfixgui.tools.util import get_mfix_home
 
-from mfixgui.version import get_version
+from mfixgui.version import __version__
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 NAME = 'mfix'
@@ -41,40 +42,51 @@ def make_mfixsolver():
     configure_args_dirname = configure_args_dirname.replace('__', '_').strip('_')
     build_dir = os.path.join('build', configure_args_dirname)
 
+    udfs = []
+    if not os.path.isfile('configure_mfix'):
+        for root, dirnames, filenames in os.walk('.'):
+            for filename in glob.glob(os.path.join(root, '*.f')):
+                udfs.append(filename)
+
+        udfs = [ os.path.splitext(f)[0]+'.o' for f in udfs if not 'f2pywrappers' in f ]
+
+    extra_objects = udfs + [
+        '.build/read_database.o',
+        '.build/read_namelist.o',
+        os.path.join(build_dir, 'build-aux/libmfix.a') ,
+    ]
+
     return Extension(name='mfixsolver',
                      sources=get_pymfix_src(),
                      extra_f90_compile_args=['-cpp'],
                      module_dirs=[os.path.join(build_dir, 'model')],
-                     extra_objects=[
-                         '.build/read_database.o',
-                         '.build/read_namelist.o',
-                         os.path.join(build_dir, 'build-aux/libmfix.a'),
-                     ])
+                     extra_objects=extra_objects)
 
 
 def get_pymfix_src():
     """ copies those Fortran sources to be built with Python to .f90 extension """
     pymfix_src = [
-        'param_mod.f',
-        'param1_mod.f',
+        'des/des_time_march.f',
+        'des/pic/pic_time_march.f',
         'dmp_modules/compar_mod.f',
         'dmp_modules/debug_mod.f',
         'dmp_modules/parallel_mpi_mod.f',
         'fldvar_mod.f',
-        'des/discretelement_mod.f',
-        'des/des_time_march.f',
         'iterate.f',
-        'residual_mod.f',
-        'time_step.f',
         'main.f',
+        'param1_mod.f',
+        'param_mod.f',
+        'residual_pub_mod.f',
         'run_mod.f',
+        'time_step.f',
     ]
 
     f90_tmp = tempfile.mkdtemp()
     atexit.register(shutil.rmtree, f90_tmp)
 
-    os.makedirs(os.path.join(f90_tmp, 'dmp_modules'))
     os.makedirs(os.path.join(f90_tmp, 'des'))
+    os.makedirs(os.path.join(f90_tmp, 'des', 'pic'))
+    os.makedirs(os.path.join(f90_tmp, 'dmp_modules'))
     for src in pymfix_src:
         shutil.copyfile(os.path.join(get_mfix_home(), 'model', src),
                         os.path.join(f90_tmp, src)+'90')
@@ -123,6 +135,33 @@ def mfix_prereq(command_subclass):
 
     def modified_run(self):
         self.run_command('build_mfix')
+        msc_pos = sys.version.find('MSC v.')
+        if msc_pos != -1:
+            msc_ver = sys.version[msc_pos+6:msc_pos+10]
+            if msc_ver == '1900':
+                # VS2014 / MSVC 14.0
+                def monkeypatch():
+                    return ['msvcr140']
+                distutils.cygwinccompiler.get_msvcr = monkeypatch
+                def monkeypatch2():
+                    "Return name of MSVC runtime library if Python was built with MSVC >= 7"
+                    msc_pos = sys.version.find('MSC v.')
+                    if msc_pos != -1:
+                        msc_ver = sys.version[msc_pos+6:msc_pos+10]
+                        lib = {'1300': 'msvcr70',    # MSVC 7.0
+                               '1310': 'msvcr71',    # MSVC 7.1
+                               '1400': 'msvcr80',    # MSVC 8
+                               '1500': 'msvcr90',    # MSVC 9 (VS 2008)
+                               '1600': 'msvcr100',   # MSVC 10 (aka 2010)
+                               '1900': 'msvcr140',   # MSVC 14 (aka 2014)
+                              }.get(msc_ver, None)
+                    else:
+                        lib = None
+                    return lib
+                import numpy.distutils.misc_util
+                import numpy.distutils.mingw32ccompiler
+                numpy.distutils.mingw32ccompiler.msvc_runtime_library = monkeypatch2
+                numpy.distutils.misc_util.msvc_runtime_library = monkeypatch2
         orig_run(self)
 
     command_subclass.run = modified_run
@@ -172,7 +211,7 @@ def main():
             'build_mfix': BuildMfixCommand,
         },
 
-        version=get_version(),
+        version=__version__,
 
         description='MFiX computational fluid dynamics solver',
 

@@ -1,0 +1,30 @@
+{
+    "menu_name": "MFiX",
+    "menu_items":
+    [
+        {
+            "script": "${PYTHON_SCRIPTS}/mfix",
+            "name": "MFiX",
+            "workdir": "${PREFIX}",
+            "icon": "${MENU_DIR}/mfix.ico",
+            "desktop": true,
+            "quicklaunch": true
+        },
+        {
+            "name": "Setup Guide",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/SETUP_GUIDE.html"
+        },
+        {
+            "name": "User Guide",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/USER_GUIDE.html"
+        },
+        {
+            "name": "Tutorials",
+            "webbrowser": "file://${PREFIX}/lib/site-packages/mfixgui/doc/TUTORIALS.html"
+        },
+        {
+            "name": "MFiX Web Site",
+            "webbrowser": "https://mfix.netl.doe.gov/mfix"
+        }
+    ]
+}

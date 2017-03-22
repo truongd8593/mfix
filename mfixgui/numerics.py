@@ -1,13 +1,16 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import logging
-log = logging.getLogger(__name__)
 
 #import Qt
-from qtpy import QtWidgets, PYQT5
+from qtpy.QtWidgets import QHeaderView
 
 #local imports
-from mfixgui.constants import *
+from mfixgui.constants import (
+    DIM_EQS,
+    PRECON_TYPES,
+    SWEEP_TYPES,
+)
 from mfixgui.tools.general import get_combobox_item
 
 from mfixgui.widgets.base import (LineEdit, ComboBox)
@@ -18,17 +21,21 @@ from mfixgui.widgets.base import (LineEdit, ComboBox)
  TAB_PRECONDITIONER, TAB_ADVANCED) = range(5)
 
 # Discretization table
-(COL_SCHEME, COL_RELAX) = (0,1)
-DISCRETIZATION_NAMES= ["First-order upwind",
-                       "First-order upwind (dwf)",
-                       "Superbee",
-                       "SMART",
-                       "ULTRA-QUICK",
-                       "QUICKEST",
-                       "MUSCL",
-                       "van Leer",
-                       "minmod",
-                       "Central"]
+(COL_SCHEME, COL_RELAX) = (0, 1)
+DISCRETIZATION_NAMES = [
+    "First-order upwind",
+    "First-order upwind (dwf)",
+    "Superbee",
+    "SMART",
+    "ULTRA-QUICK",
+    "QUICKEST",
+    "MUSCL",
+    "van Leer",
+    "minmod",
+    "Central"
+]
+
+log = logging.getLogger(__name__)
 
 # Linear solver table
 (COL_SOLVER, COL_ITER, COL_TOL) = (0, 1, 2)
@@ -45,8 +52,11 @@ SWEEP_NAMES = ['Red-black sweep', 'All sweep', 'I-sweep', 'J-sweep', 'K-sweep']
 
 class Numerics(object):
     """Numerics Task Pane Window
-    The numerics input is split into tabs to group similar inputs and reduce the amount of input needed
-    on a single pane."""
+
+    The numerics input is split into tabs to group similar inputs and reduce
+    the amount of input needed on a single pane.
+
+    """
 
     def init_numerics(self):
         ui = self.ui.numerics
@@ -75,20 +85,14 @@ class Numerics(object):
         cb = ui.combobox_cn_on
         key = 'cn_on'
         cb.currentIndexChanged.connect(self.set_cn_on)
-        self.add_tooltip(get_combobox_item(cb,0), key, value='.FALSE.')
-        self.add_tooltip(get_combobox_item(cb,1), key, value='.TRUE.')
+        self.add_tooltip(get_combobox_item(cb, 0), key, value='.FALSE.')
+        self.add_tooltip(get_combobox_item(cb, 1), key, value='.TRUE.')
 
         tw = ui.tablewidget_discretization
         key = 'discretize'
         self.add_tooltip(tw.horizontalHeaderItem(COL_SCHEME), key)
         key = 'ur_fac'
         self.add_tooltip(tw.horizontalHeaderItem(COL_RELAX), key)
-
-        #hv = QtWidgets.QHeaderView
-        #if PYQT5:
-        #    resize = tw.verticalHeader().setSectionResizeMode
-        #else:
-        #    resize = tw.verticalalHeader().setResizeMode
 
         # Populate table with combobox and lineedit widgets
 
@@ -100,7 +104,7 @@ class Numerics(object):
                 cb.addItem(name)
             for j in range(len(DISCRETIZATION_NAMES)):
                 self.add_tooltip(get_combobox_item(cb, j), key, value=j)
-            cb.setToolTip(get_combobox_item(cb,0).toolTip())
+            cb.setToolTip(get_combobox_item(cb, 0).toolTip())
             cb.currentIndexChanged.connect(lambda val, i=i: self.set_discretize(val, i))
             tw.setCellWidget(row, COL_SCHEME, cb)
 
@@ -269,11 +273,8 @@ class Numerics(object):
     def fixup_numerics_table(self, tw, stretch_column=1):
         # TODO catch resize & call fixup
         ui = self.ui.numerics
-        hv = QtWidgets.QHeaderView
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        hv = QHeaderView
+        resize = tw.horizontalHeader().setSectionResizeMode
         ncols = tw.columnCount()
         for n in range(0, ncols):
             resize(n, hv.Stretch if n==stretch_column else hv.ResizeToContents)

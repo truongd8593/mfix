@@ -6,16 +6,16 @@ from copy import deepcopy
 from collections import OrderedDict
 
 import logging
-log = logging.getLogger(__name__)
 
-#import Qt
-from qtpy import QtWidgets, PYQT5
+from qtpy.QtWidgets import (
+    QHeaderView,
+    QTableWidgetItem,
+)
 
-#local imports
 from mfixgui.constants import *
-from mfixgui.tools.general import set_item_noedit, get_selected_row, format_key_with_args
+from mfixgui.tools.util import format_key_with_args
+from mfixgui.tools.general import get_selected_row, set_item_noedit
 from mfixgui.tools import keyword_args
-
 from mfixgui.species_handler import SpeciesHandler
 
 class FluidHandler(SpeciesHandler):
@@ -93,13 +93,13 @@ class FluidHandler(SpeciesHandler):
                 combobox.setToolTip(combobox.currentText())
 
                 # Enable lineedit for constant model
-                key_g0 = 'c_pg0' if key=='c_p' else key + '_g0'
-                key_usr = 'usr_cpg' if key=='c_p' else 'usr_' + key + 'g'
+                key_g0 = 'c_pg0' if key == 'c_p' else key + '_g0'
+                key_usr = 'usr_cpg' if key == 'c_p' else 'usr_' + key + 'g'
                 lineedit = getattr(ui, 'lineedit_keyword_%s' % key_g0)
                 label = getattr(ui, 'label_%s_units' % key_g0)
 
                 for item in (lineedit, label):
-                    item.setEnabled(model==CONSTANT)
+                    item.setEnabled(model == CONSTANT)
 
                 if model == CONSTANT:
                     value = lineedit.value # Possibly re-enabled gui item
@@ -166,13 +166,10 @@ class FluidHandler(SpeciesHandler):
 
 
     def fixup_fluid_table(self):
-        hv = QtWidgets.QHeaderView
+        hv = QHeaderView
         ui = self.ui.fluid
         tw = ui.tablewidget_fluid_species
-        if PYQT5:
-            resize = tw.horizontalHeader().setSectionResizeMode
-        else:
-            resize = tw.horizontalHeader().setResizeMode
+        resize = tw.horizontalHeader().setSectionResizeMode
         for n in range(tw.columnCount()):
             resize(n, hv.ResizeToContents if n>0
                    else hv.Stretch)
@@ -236,7 +233,7 @@ class FluidHandler(SpeciesHandler):
         # Species/alias unification
         #self.fluid_species = deepcopy(self.species_popup.defined_species)
         self.fluid_species = OrderedDict((data.get('alias', species), deepcopy(data))
-            for (species, data) in self.species_popup.defined_species.items())
+            for (species,data) in self.species_popup.defined_species.items())
 
         self.update_fluid_species_table()
         for (old_alias, new_alias) in rename.items():
@@ -254,7 +251,7 @@ class FluidHandler(SpeciesHandler):
         nrows = len(self.fluid_species)
         tw.setRowCount(nrows)
         def make_item(val):
-            item = QtWidgets.QTableWidgetItem('' if val is None else str(val))
+            item = QTableWidgetItem('' if val is None else str(val))
             set_item_noedit(item)
             return item
         old_nmax_g = self.project.get_value('nmax_g')

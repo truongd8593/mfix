@@ -75,16 +75,14 @@ The `conda` command is the package manager for Anaconda, and will be used to
 install MFIX dependencies.
 
 At the time of this writing, the default anaconda package for vtk needs to be
-installed separately. Also, MFIX only works with numpy 1.11.3 so a specific
-version needs to be installed.
-
+installed separately.
 
 ## Linux
 
 To install MFIX runtime dependencies on Linux:
 
 ```shell
-> conda install python==3.6 numpy==1.11.3 pyqt qtpy pandoc
+> conda install python==3.6 pyqt qtpy pandoc
 > conda install -c clinicalgraphics vtk
 ```
 
@@ -106,7 +104,7 @@ and proceed to [Building MFIX](#building-mfix) or [build a custom interactive mf
 To install MFIX runtime dependencies on Mac:
 
 ```shell
-> conda install python==3.6 numpy==1.11.3 pyqt qtpy pandoc
+> conda install python==3.6 pyqt qtpy pandoc
 > conda install -c clinicalgraphics vtk
 ```
 
@@ -132,7 +130,7 @@ To install MFIX runtime dependencies on Windows, open the command prompt CMD.exe
 and enter the following commands:
 
 ```shell
-C:\> conda install python==3.4 numpy pyqt qtpy pandoc libpython
+C:\> conda install python numpy pyqt qtpy pandoc libpython
 C:\> conda install -c menpo vtk
 ```
 

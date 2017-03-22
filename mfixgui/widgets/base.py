@@ -5,54 +5,97 @@
 from __future__ import print_function, absolute_import, unicode_literals, division
 
 import copy
-import os
-from collections import OrderedDict
-from qtpy import QtWidgets, QtCore, QtGui, PYQT5
-from qtpy.QtCore import Qt
-
-# Note - some items moved from 'Widgets' to 'Core'
-# depending on version of both qtpy and Qt.
-# This cannot be determined just using the PYQT4
-# and PYQT5 constants, hence this try/except, for
-# portability.  With newer versions of qtpy this
-# can be removed (symbols are in QtCore)
-
-try:
-    from qtpy.QtWidgets import QStringListModel
-except ImportError:
-    from qtpy.QtCore import QStringListModel
-
-try:
-    from qtpy.QtWidgets import QItemSelectionModel
-except ImportError:
-    from qtpy.QtCore import QItemSelectionModel
-
 import logging
-log = logging.getLogger(__name__)
+import os
 
-# optional imports
-try:
-    import numpy as np
-except ImportError:
-    np = None
-    log.debug("can't import numpy")
+from collections import OrderedDict
+
+from qtpy import PYQT5
+
+from qtpy.QtGui import (
+    QCursor,
+    QPixmap,
+)
+
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QAction,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QCompleter,
+    QDoubleSpinBox,
+    QFileDialog,
+    QGridLayout,
+    QGroupBox,
+    QLayout,
+    QLineEdit,
+    QMenu,
+    QMessageBox,
+    QPlainTextEdit,
+    QSpinBox,
+    QStyle,
+    QStyleOptionProgressBar,
+    QStyledItemDelegate,
+    QTableView,
+    QWidget,
+)
+
+from qtpy.QtCore import (
+    QAbstractTableModel,
+    QEasingCurve,
+    QEvent,
+    QItemSelectionModel,
+    QModelIndex,
+    QObject,
+    QPropertyAnimation,
+    QRect,
+    QSettings,
+    QStringListModel,
+    Qt,
+    Signal,
+)
+
+import numpy as np
 
 try:
     import pandas as pd
 except ImportError:
     pd = None
-    log.debug("can't import pandas")
+    logging.getLogger(__name__).debug("can't import pandas")
 
 # local imports
-from mfixgui.project import Keyword, Equation, FloatExp, make_FloatExp
-from mfixgui.regexes import *
-from mfixgui.constants import *
-from mfixgui.tools.general import (to_text_string, get_icon, insert_append_action,
-                           insert_append_separator, get_unique_string)
+from mfixgui.project import (
+    Equation,
+    FloatExp,
+    Keyword,
+    make_FloatExp,
+)
+from mfixgui.regexes import (
+    RE_FLOAT,
+    RE_FLOAT_EXP,
+    RE_INT,
+    RE_MATH,
+)
+from mfixgui.constants import (
+    SPECIAL_PARAMETERS,
+    PARAMETER_DICT,
+)
+from mfixgui.tools.general import (
+    get_icon,
+    get_unique_string,
+    insert_append_action,
+    insert_append_separator,
+    to_text_string,
+)
 from mfixgui.tools.simpleeval import VALID_EXPRESION_NAMES
+
+log = logging.getLogger(__name__)
+
 VALID_EXP_NAMES = VALID_EXPRESION_NAMES + SPECIAL_PARAMETERS
 
-SETTINGS = QtCore.QSettings('MFIX', 'MFIX')
+SETTINGS = QSettings('MFIX', 'MFIX')
+
 ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
 
 def rreplace(s, old, new, occurrence):
@@ -62,8 +105,8 @@ def rreplace(s, old, new, occurrence):
 class RangeError(ValueError):
     pass
 
-class BaseWidget(QtCore.QObject):
-    value_updated = QtCore.Signal(object, object, object)
+class BaseWidget(QObject):
+    value_updated = Signal(object, object, object)
     key = None
     default_value = None
     saved_value = None
@@ -82,14 +125,14 @@ class BaseWidget(QtCore.QObject):
         if first_default_action:
             first_default_action = first_default_action[0]
         # help
-        help_action = QtWidgets.QAction(
+        help_action = QAction(
             get_icon('help.png'), 'Help', menu)
         help_action.triggered.connect(self.show_help_message)
         insert_append_action(menu, help_action, first_default_action)
 
         # create parameter
         if self.allow_parameters:
-            create_param_action = QtWidgets.QAction(
+            create_param_action = QAction(
                 get_icon('functions.png'), 'Create Parameter', menu)
             create_param_action.triggered.connect(self.create_parameter)
             insert_append_action(menu, create_param_action, first_default_action)
@@ -104,36 +147,36 @@ class BaseWidget(QtCore.QObject):
             menu.exec_(event.globalPos())
 
     def show_help_message(self):
-        message_box = QtWidgets.QMessageBox(self)
+        message_box = QMessageBox(self)
         if self.key is not None:
             key = ': ' + self.key
         else:
             key = ''
         message_box.setWindowTitle('Help' + key)
-        message_box.setIcon(QtWidgets.QMessageBox.Information)
+        message_box.setIcon(QMessageBox.Information)
 
         # Text
         message_box.setText(self.help_text)
 
-        message_box.addButton(QtWidgets.QMessageBox.Ok)
+        message_box.addButton(QMessageBox.Ok)
         message_box.exec_()
 
     def create_parameter(self):
-        btn = QtWidgets.QMessageBox.Yes
+        btn = QMessageBox.Yes
         if isinstance(self.value, Equation):
-            message_box = QtWidgets.QMessageBox(self)
+            message_box = QMessageBox(self)
             message_box.setWindowTitle('Warning')
-            message_box.setIcon(QtWidgets.QMessageBox.Warning)
+            message_box.setIcon(QMessageBox.Warning)
 
             # Text
             message_box.setText("Warning: Replace equation with parameter?")
 
-            message_box.addButton(QtWidgets.QMessageBox.Yes)
-            message_box.addButton(QtWidgets.QMessageBox.No)
-            message_box.setDefaultButton(QtWidgets.QMessageBox.No)
+            message_box.addButton(QMessageBox.Yes)
+            message_box.addButton(QMessageBox.No)
+            message_box.setDefaultButton(QMessageBox.No)
             btn = message_box.exec_()
 
-        if btn == QtWidgets.QMessageBox.Yes:
+        if btn == QMessageBox.Yes:
             name = get_unique_string('param', PARAMETER_DICT.keys())
 
             v = self.dtype(0)
@@ -177,11 +220,11 @@ class BaseWidget(QtCore.QObject):
 
         return self.default_value
 
-class LineEdit(QtWidgets.QLineEdit, BaseWidget):
-    value_updated = QtCore.Signal(object, object, object)
+class LineEdit(QLineEdit, BaseWidget):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QLineEdit.__init__(self, parent)
+        QLineEdit.__init__(self, parent)
         self.textChanged.connect(self.mark_changed)
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = str
@@ -190,7 +233,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
         self._separators = ['*', '**', '/', '-', '+', ' ']
         self._completer_model = QStringListModel(sorted(list(PARAMETER_DICT.keys())))
-        self._completer = QtWidgets.QCompleter()
+        self._completer = QCompleter()
         self._completer.setModel(self._completer_model)
         self._completer.setWidget(self)
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -232,7 +275,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         if self.dtype is str:
             return text
         elif self.dtype is float:
-            if re_float.match(text) or re_int.match(text):
+            if RE_FLOAT.match(text) or RE_INT.match(text):
                 try:
                     f = float(text)
                 except ValueError as e: # Should not really happen, unless our regexes are bad
@@ -245,7 +288,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.report_value_error(e)
                     return self.updateValue(None, self.saved_value)
-            elif re_float_exp.match(text):
+            elif RE_FLOAT_EXP.match(text):
                 try:
                     f = make_FloatExp(text)
                 except ValueError as e:
@@ -258,7 +301,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 except ValueError as e:
                     self.report_value_error(e)
                     return self.updateValue(None, self.saved_value)
-            elif re_math.search(text) or any(par in text for par in parameters):
+            elif RE_MATH.search(text) or any(par in text for par in parameters):
                 if text.startswith('@(') and text.endswith(')'):
                     text = text[2:-1]
                 try:
@@ -282,7 +325,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 return self.updateValue(None, self.saved_value)
 
         elif self.dtype is int:
-            if re_math.search(text) or any(par in text for par in parameters):
+            if RE_MATH.search(text) or any(par in text for par in parameters):
                 # integer equations?  do we use this?
                 try:
                     eq = Equation(text, dtype=int)
@@ -336,7 +379,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         return new_value
 
     def default(self, val=None):
-        if BaseWidget.default(self,val) is None:
+        if BaseWidget.default(self, val) is None:
             self.clear()
             self.saved_value = None
             self.text_changed_flag = False
@@ -374,7 +417,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
 
     def keyPressEvent(self, event):
         if not self.allow_parameters:
-            QtWidgets.QLineEdit.keyPressEvent(self, event)
+            QLineEdit.keyPressEvent(self, event)
             return
 
         if self._completer.popup().isVisible():
@@ -383,7 +426,7 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
                 return
         else:
             self._update_completion_list()
-        QtWidgets.QLineEdit.keyPressEvent(self, event)
+        QLineEdit.keyPressEvent(self, event)
         completionPrefix = self.textUnderCursor()
         if completionPrefix != self._completer.completionPrefix():
             self._updateCompleterPopupItems(completionPrefix)
@@ -416,11 +459,11 @@ class LineEdit(QtWidgets.QLineEdit, BaseWidget):
         """
         self._completer.setCompletionPrefix(completionPrefix)
         self._completer.popup().setCurrentIndex(
-                self._completer.completionModel().index(0, 0))
+            self._completer.completionModel().index(0, 0))
 
-class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
+class PlainTextEdit(QPlainTextEdit, BaseWidget):
     def __init__(self, parent=None):
-        QtWidgets.QCheckBox.__init__(self, parent)
+        QCheckBox.__init__(self, parent)
 
         self.context_menu = self.createStandardContextMenu
 
@@ -432,13 +475,13 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
             first_default_action = first_default_action[0]
 
         # clear
-        clear_action = QtWidgets.QAction(
+        clear_action = QAction(
             get_icon('close.png'), 'Clear', menu)
         clear_action.triggered.connect(self.clear)
         insert_append_action(menu, clear_action, first_default_action)
 
         # save
-        clear_action = QtWidgets.QAction(
+        clear_action = QAction(
             get_icon('save.png'), 'Save', menu)
         clear_action.triggered.connect(self.save_to_file)
         insert_append_action(menu, clear_action, first_default_action)
@@ -447,7 +490,10 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
 
     def save_to_file(self):
         proj_dir = os.path.dirname(SETTINGS.value('project_file'))
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save output to a file", proj_dir, "Text (*.txt)")
+        filename = QFileDialog.getSaveFileName(self,
+                                               "Save output to a file",
+                                               proj_dir,
+                                               "Text (*.txt)")
         if PYQT5:
             filename = filename[0]
         if not filename:
@@ -457,15 +503,15 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, BaseWidget):
         with open(filename, 'w') as txtfile:
             txtfile.write(text)
 
-class CheckBox(QtWidgets.QCheckBox, BaseWidget):
-    value_updated = QtCore.Signal(object, object, object)
+class CheckBox(QCheckBox, BaseWidget):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QCheckBox.__init__(self, parent)
+        QCheckBox.__init__(self, parent)
         # stateChanged:  called on both user interaction and programmatic change
         # clicked:  user interaction only
         self.clicked.connect(self.emitUpdatedValue)
-        self.context_menu = QtWidgets.QMenu
+        self.context_menu = QMenu
         self.dtype = bool
         self.true_value = None
         self.false_value = None
@@ -490,47 +536,47 @@ class CheckBox(QtWidgets.QCheckBox, BaseWidget):
             new_value = new_value.lower()
             try:
                 if 'true' in new_value:
-                    v = True
+                    updated_value = True
                 elif 'false' in new_value:
-                    v = False
+                    updated_value = False
                 else:
-                    v = bool(new_value)
+                    updated_value = bool(new_value)
             except TypeError:
-                v = bool(new_value)
+                updated_value = bool(new_value)
         elif isinstance(new_value, (int, float)):
-            v = True
+            updated_value = True
             if new_value <= 0:
-                v = False
+                updated_value = False
         else:
-            v = new_value
-        self.setChecked(v)
+            updated_value = new_value
+        self.setChecked(updated_value)
 
     def default(self, val=None):
         if BaseWidget.default(self, val) is None:
             self.setChecked(False) #?
 
-class GroupBox(QtWidgets.QGroupBox, CheckBox):
-    value_updated = QtCore.Signal(object, object, object)
+class GroupBox(QGroupBox, CheckBox):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QGroupBox.__init__(self, parent)
+        QGroupBox.__init__(self, parent)
         self.clicked.connect(self.emitUpdatedValue)
-        self.context_menu = QtWidgets.QMenu
+        self.context_menu = QMenu
         self.dtype = bool
         self.true_value = None
         self.false_value = None
 
-class ComboBox(QtWidgets.QComboBox, BaseWidget):
-    value_updated = QtCore.Signal(object, object, object)
+class ComboBox(QComboBox, BaseWidget):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QComboBox.__init__(self, parent)
+        QComboBox.__init__(self, parent)
         # activated: only on user setttings, not programmatic change
         self.activated.connect(self.emitUpdatedValue)
         #self.currentIndexChanged.connect(self.emitUpdatedValue)
         self.dtype = str
         self.is_pop_up = False
-        self.context_menu = QtWidgets.QMenu
+        self.context_menu = QMenu
 
     @property
     def value(self):
@@ -551,28 +597,30 @@ class ComboBox(QtWidgets.QComboBox, BaseWidget):
 
     def setCurrentText(self, new_value):
         for itm in range(self.count()):
-            if self.dtype == str and to_text_string(new_value).lower() == to_text_string(self.itemText(itm)).lower():
-                self.setCurrentIndex(itm)
-                break
-            elif self.dtype == int and int(new_value) == int(to_text_string(self.itemText(itm)).split('-')[0].strip()):
-                self.setCurrentIndex(itm)
-                break
+            if self.dtype == str:
+                if to_text_string(new_value).lower() == to_text_string(self.itemText(itm)).lower():
+                    self.setCurrentIndex(itm)
+                    break
+            elif self.dtype == int:
+                if int(new_value) == int(to_text_string(self.itemText(itm)).split('-')[0].strip()):
+                    self.setCurrentIndex(itm)
+                    break
         else:
             raise ValueError(new_value)
 
     def default(self, val=None):
-        if BaseWidget.default(self,val) is None:
+        if BaseWidget.default(self, val) is None:
             self.setCurrentIndex(0) # ?
 
-class SpinBox(QtWidgets.QSpinBox, BaseWidget):
-    value_updated = QtCore.Signal(object, object, object)
+class SpinBox(QSpinBox, BaseWidget):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QDoubleSpinBox.__init__(self, parent)
+        QDoubleSpinBox.__init__(self, parent)
         # Would be nice to distinguish user input from programmatic setting
         self.valueChanged.connect(self.emitUpdatedValue)
         self.dtype = int
-        self.context_menu = QtWidgets.QMenu
+        self.context_menu = QMenu
 
     def emitUpdatedValue(self): # calls self.value() instead of using self.value
         self.value_updated.emit(self, {self.key: self.value()}, self.args)
@@ -589,19 +637,19 @@ class SpinBox(QtWidgets.QSpinBox, BaseWidget):
             self.setMinimum(int(min))
 
     def default(self, val=None):
-        if BaseWidget.default(self,val) is None:
+        if BaseWidget.default(self, val) is None:
             self.setValue(0) #?
 
-class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
-    value_updated = QtCore.Signal(object, object, object)
+class DoubleSpinBox(QDoubleSpinBox, BaseWidget):
+    value_updated = Signal(object, object, object)
 
     def __init__(self, parent=None):
-        QtWidgets.QDoubleSpinBox.__init__(self, parent)
+        QDoubleSpinBox.__init__(self, parent)
         # Distinguish user input from programmatic setting
         #self.valueChanged.connect(self.emitUpdatedValue)
         self.editingFinished.connect(self.emitUpdatedValue)
         self.dtype = float
-        self.context_menu = QtWidgets.QMenu
+        self.context_menu = QMenu
 
     def textFromValue(self, value):
         ret = repr(value)
@@ -622,11 +670,11 @@ class DoubleSpinBox(QtWidgets.QDoubleSpinBox, BaseWidget):
             self.setMinimum(float(min))
 
     def default(self, val=None):
-        if BaseWidget.default(self,val) is None:
+        if BaseWidget.default(self, val) is None:
             self.setValue(0.0) #?
 
 # --- Table ---
-class Table(QtWidgets.QTableView, BaseWidget):
+class Table(QTableView, BaseWidget):
     """A table view with built in dictionary and array table models. Custom
     delegates are also provided.
 
@@ -665,15 +713,15 @@ class Table(QtWidgets.QTableView, BaseWidget):
     new_selection:
         emits the from and to indices of a selection change. """
 
-    value_changed = QtCore.Signal(object, object, object)
-    lost_focus = QtCore.Signal(object)
-    new_selection = QtCore.Signal(object, object)
+    value_changed = Signal(object, object, object)
+    lost_focus = Signal(object)
+    new_selection = Signal(object, object)
 
     def __init__(self, parent=None, dtype=None, columns=[], rows=[],
                  column_delegate={}, row_delegate={}, selection_behavior='row',
                  multi_selection=False):
 
-        QtWidgets.QTableView.__init__(self, parent)
+        QTableView.__init__(self, parent)
 
         self.dtype = dtype
         self.columns = columns
@@ -690,17 +738,17 @@ class Table(QtWidgets.QTableView, BaseWidget):
             self.verticalHeader().hide()
 
         # build context menu
-        self.menu = QtWidgets.QMenu(self)
-        applyAction = QtWidgets.QAction('Apply to Column', self)
+        self.menu = QMenu(self)
+        applyAction = QAction('Apply to Column', self)
         applyAction.triggered.connect(self.apply_val_to_column)
         self.menu.addAction(applyAction)
 
     def _setModel(self):
 
         # remove old model
-        oldModel = self.model()
-        if oldModel:
-            oldModel.deleteLater()
+        old_model = self.model()
+        if old_model:
+            old_model.deleteLater()
 
         # Setup model
         if self.dtype in (dict, OrderedDict):
@@ -713,31 +761,31 @@ class Table(QtWidgets.QTableView, BaseWidget):
             model = None
 
         if model is not None:
-            QtWidgets.QTableView.setModel(self, model)
+            QTableView.setModel(self, model)
     #        self.model().modelReset.connect(self.hideRows)
             self.model().value_updated.connect(self.value_changed.emit)
             self.model().modelAboutToBeReset.connect(self.save_selection)
 
             # Need a reference or it segfaults with pyside
             # http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
-            selectModel = self.selectionModel()
-            selectModel.selectionChanged.connect(self.selection_changed_event)
+            select_model = self.selectionModel()
+            select_model.selectionChanged.connect(self.selection_changed_event)
 
     def set_selection_model(self, behavior='row', multi=False):
         " set the selection model "
 
         if behavior == 'col' or behavior == 'column':
             self.setSelectionBehavior(
-                QtWidgets.QAbstractItemView.SelectColumns)
+                QAbstractItemView.SelectColumns)
         elif behavior == 'row':
-            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+            self.setSelectionBehavior(QAbstractItemView.SelectRows)
         else:
-            self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectItems)
+            self.setSelectionBehavior(QAbstractItemView.SelectItems)
 
         if multi:
-            self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+            self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         else:
-            self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+            self.setSelectionMode(QAbstractItemView.SingleSelection)
 
         if self.selectionModel():
             selectionmodel = self.selectionModel()
@@ -850,7 +898,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
 
     def contextMenuEvent(self, event):
         """Qt context menu over-ride"""
-        self.mouse_pos = QtGui.QCursor.pos()
+        self.mouse_pos = QCursor.pos()
         # popup context menu
         self.menu.popup(self.mouse_pos)
 
@@ -860,7 +908,7 @@ class Table(QtWidgets.QTableView, BaseWidget):
         return (self.rowAt(local_pos.y()), self.columnAt(local_pos.x()))
 
     def apply_val_to_column(self):
-        row, column  = self.get_clicked_cell()
+        row, column = self.get_clicked_cell()
         value = self.model().data(col=column, row=row, role=Qt.EditRole)
         self.model().apply_to_column(column, value)
 
@@ -888,10 +936,10 @@ class Table(QtWidgets.QTableView, BaseWidget):
         else:
             self.clear()
 
-class CustomDelegate(QtWidgets.QStyledItemDelegate):
+class CustomDelegate(QStyledItemDelegate):
     def __init__(self, column_dict={}, row_dict={}, column_color_dict={},
                  row_color_dict={}):
-        QtWidgets.QStyledItemDelegate.__init__(self)
+        QStyledItemDelegate.__init__(self)
 
         self.column_dict = column_dict
         self.row_dict = row_dict
@@ -960,40 +1008,41 @@ class CustomDelegate(QtWidgets.QStyledItemDelegate):
             # print(event, event.type())
             # TODO: there is a bug here that doesn't return focus to the
             # tableview
-            if event.type() == QtCore.QEvent.FocusOut:
+            if event.type() == QEvent.FocusOut:
                 pop = widget.is_pop_up
                 widget.is_pop_up = True  # When does this get cleared?
                 return pop
 
             else:
-                return QtWidgets.QStyledItemDelegate.eventFilter(
+                return QStyledItemDelegate.eventFilter(
                     self, widget, event)
 
         else: # ???
-            return QtWidgets.QStyledItemDelegate.eventFilter(
+            return QStyledItemDelegate.eventFilter(
                 self, widget, event)
 
     def paint(self, painter, option, index):
 
-        if index.column() in self.column_dict and self.column_dict[index.column()]['widget'] == 'progressbar':
+        if index.column() in self.column_dict:
+            if self.column_dict[index.column()]['widget'] == 'progressbar':
 
-            progress = int(index.model().data(index, Qt.EditRole))
+                progress = int(index.model().data(index, Qt.EditRole))
 
-            progressbar = QtWidgets.QStyleOptionProgressBar()
-            progressbar.rect = option.rect
-            progressbar.minimum = 0
-            progressbar.maximum = 100
-            progressbar.progress = progress
-            progressbar.text = '{}%'.format(progress)
-            progressbar.textVisible = True
-            progressbar.textAlignment = Qt.AlignCenter
+                progressbar = QStyleOptionProgressBar()
+                progressbar.rect = option.rect
+                progressbar.minimum = 0
+                progressbar.maximum = 100
+                progressbar.progress = progress
+                progressbar.text = '{}%'.format(progress)
+                progressbar.textVisible = True
+                progressbar.textAlignment = Qt.AlignCenter
 
-            QtWidgets.QApplication.style().drawControl(
-                QtWidgets.QStyle.CE_ProgressBar, progressbar, painter)
+                QApplication.style().drawControl(
+                    QStyle.CE_ProgressBar, progressbar, painter)
         else:
-            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+            QStyledItemDelegate.paint(self, painter, option, index)
 
-class DictTableModel(QtCore.QAbstractTableModel):
+class DictTableModel(QAbstractTableModel):
     """Table model that handles dict(dict()).
 
     Parameters
@@ -1008,10 +1057,10 @@ class DictTableModel(QtCore.QAbstractTableModel):
     parent (QObject):
         parent of the model (default None) """
 
-    value_updated = QtCore.Signal(object, object, object)
+    value_updated = Signal(object, object, object)
 
     def __init__(self, columns=[], rows=[], parent=None, ):
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        QAbstractTableModel.__init__(self, parent)
         self.datatable = {}
         self._columns = columns
         self._rows = rows
@@ -1059,14 +1108,14 @@ class DictTableModel(QtCore.QAbstractTableModel):
             self.setData(col=col, row=i,
                          value=copy.deepcopy(val))
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         'return the row count'
         if self.datatable.keys():
             return len(self.datatable.keys())
         else:
             return 0
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         'return the column count'
 
         if self._columns:
@@ -1095,7 +1144,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole:
             if value is None:
                 value = None
-            elif isinstance(value, QtGui.QPixmap):
+            elif isinstance(value, QPixmap):
                 value = None
             else:
                 value = to_text_string(value)
@@ -1104,8 +1153,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
-        elif role == Qt.DecorationRole and isinstance(value,
-                                                             QtGui.QPixmap):
+        elif role == Qt.DecorationRole and isinstance(value, QPixmap):
             return value
         else:
             return None
@@ -1129,7 +1177,7 @@ class DictTableModel(QtCore.QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
-class ArrayTableModel(QtCore.QAbstractTableModel):
+class ArrayTableModel(QAbstractTableModel):
     """Table model that handles the following data types:
         - list()
         - tuple()
@@ -1140,10 +1188,10 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         - 2D numpy.ndarray
         - pandas.DataFrame """
 
-    value_updated = QtCore.Signal(object)
+    value_updated = Signal(object)
 
     def __init__(self, columns=[], rows=[], parent=None, ):
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        QAbstractTableModel.__init__(self, parent)
         self.datatable = []
         self._columns = columns
         self._rows = rows
@@ -1180,10 +1228,10 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             self.setData(col=col, row=i,
                          value=copy.deepcopy(val))
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.datatable)
 
-    def columnCount(self, parent=QtCore.QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         if (isinstance(self.datatable, (list, tuple)) and
                 len(self.datatable) > 0):
             if isinstance(self.datatable[0], (list, tuple)):
@@ -1221,8 +1269,7 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
             return value
         elif role == Qt.BackgroundRole and hasattr(value, 'qcolor'):
             return value.qcolor
-        elif role == Qt.DecorationRole and isinstance(value,
-                                                             QtGui.QPixmap):
+        elif role == Qt.DecorationRole and isinstance(value, QPixmap):
             return value
         else:
             return None
@@ -1247,12 +1294,12 @@ class ArrayTableModel(QtCore.QAbstractTableModel):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
 
 # --- custom popup ---
-class CustomPopUp(QtWidgets.QWidget):
-    finished = QtCore.Signal(bool)
-    visibilityChanged = QtCore.Signal(bool)
+class CustomPopUp(QWidget):
+    finished = Signal(bool)
+    visibilityChanged = Signal(bool)
 
     def __init__(self, parent=None, button=None):
-        QtWidgets.QWidget.__init__(self, parent=parent)
+        QWidget.__init__(self, parent=parent)
 
         self.setFocusPolicy(Qt.ClickFocus)
         self.button = button
@@ -1264,10 +1311,10 @@ class CustomPopUp(QtWidgets.QWidget):
         self.setWindowFlags(flags)
 
         # add a layout
-        self.layout = QtWidgets.QGridLayout(self)
+        self.layout = QGridLayout(self)
         self.layout.setContentsMargins(5, 5, 5, 5)
         # this is really important when animating geometry
-        self.layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
+        self.layout.setSizeConstraint(QLayout.SetNoConstraint)
 
         # add an event filter to find ActivationChange
         self.installEventFilter(self)
@@ -1283,12 +1330,12 @@ class CustomPopUp(QtWidgets.QWidget):
         width = rect.width()
 
         self.setGeometry(x, y, width, 0)
-        start = QtCore.QRect(x, y, width, 0)
-        stop = QtCore.QRect(x, y, size.width(), size.height())
+        start = QRect(x, y, width, 0)
+        stop = QRect(x, y, size.width(), size.height())
 
-        self.animation = QtCore.QPropertyAnimation(self, "geometry".encode('utf-8'))
+        self.animation = QPropertyAnimation(self, "geometry".encode('utf-8'))
         self.animation.setDuration(ANIMATION_SPEED)
-        self.animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        self.animation.setEasingCurve(QEasingCurve.InOutQuint)
         self.animation.setStartValue(start)
         self.animation.setEndValue(stop)
 
@@ -1308,7 +1355,7 @@ class CustomPopUp(QtWidgets.QWidget):
 
     def eventFilter(self, obj, event):
         # look for WindowDeactivate event
-        if event.type() == QtCore.QEvent.WindowDeactivate:
+        if event.type() == QEvent.WindowDeactivate:
             self.close()
         return False
 

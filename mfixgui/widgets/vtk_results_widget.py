@@ -9,9 +9,6 @@ from bisect import bisect_left
 from collections import Mapping, OrderedDict
 from xml.etree import ElementTree
 
-from mfixgui.tools.general import get_icon, to_unicode_from_fs
-from mfixgui.widgets.base import CustomPopUp
-from mfixgui.widgets.base_vtk import BaseVtkWidget
 from qtpy import QtCore, QtGui, QtWidgets, uic
 
 # graphics libraries
@@ -46,6 +43,9 @@ except:
     build_vtk_lookup_tables, get_color_map_pngs = None, None
     LOOKUP_TABLES = {}
 
+from mfixgui.tools.general import get_icon, to_unicode_from_fs
+from mfixgui.widgets.base import CustomPopUp
+from mfixgui.widgets.base_vtk import BaseVtkWidget
 
 PLOT_ITEMS = OrderedDict([
     ['Select an item', {}],
@@ -111,7 +111,7 @@ def update(d, u):
     return d
 
 class ArrowWidget(QtWidgets.QWidget):
-    '''a widget that draw an arrow'''
+    '''a widget that draws an arrow'''
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
@@ -182,9 +182,11 @@ class ColorMapPopUp(QtWidgets.QDialog):
 
         d_range = [0, 1]
         self.ui.lineedit_from.updateValue(None,
-            self.array.get('from', self.array.get('range', d_range)[0]))
+                                          self.array.get('from',
+                                                         self.array.get('range', d_range)[0]))
         self.ui.lineedit_to.updateValue(None,
-            self.array.get('to', self.array.get('range', d_range)[1]))
+                                        self.array.get('to',
+                                                       self.array.get('range', d_range)[1]))
 
         single_color = self.array.get('single_color', False)
         self.ui.checkbox_single_color.setChecked(single_color)
@@ -235,10 +237,10 @@ class ParticleOptions(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent)
 
         self.color = None
-        ui = self.ui = uic.loadUi(os.path.join(UI_FILE_DIR, 'particle_options.ui'), self)
+        self.ui = uic.loadUi(os.path.join(UI_FILE_DIR, 'particle_options.ui'), self)
 
-        ui.lineedit_maximum_particles.updateValue(None, DEFAULT_MAXIMUM_POINTS)
-        ui.lineedit_maximum_particles.dtype = int
+        self.ui.lineedit_maximum_particles.updateValue(None, DEFAULT_MAXIMUM_POINTS)
+        self.ui.lineedit_maximum_particles.dtype = int
         self.setWindowTitle('Particle Options')
 
         btn = self.ui.buttonBox.button(QtWidgets.QDialogButtonBox.Apply)
@@ -296,7 +298,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.file_timer.start(1000)
 
         # dialogs
-        self.color_dialog  = ColorMapPopUp(self)
+        self.color_dialog = ColorMapPopUp(self)
         self.color_dialog.applyEvent.connect(self.change_color)
 
         self.particle_option_dialog = ParticleOptions(self)
@@ -377,7 +379,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.glyph_mask = vtk.vtkMaskPoints()
         self.glyph_mask.SetInputConnection(self.particle_reader.GetOutputPort())
         self.glyph_mask.RandomModeOn()
-        self.glyph_mask.SetRandomModeType(1)
+        self.glyph_mask.SetRandomModeType(2) # setting to type 1 crashes on windows
         self.glyph_mask.SetMaximumNumberOfPoints(DEFAULT_MAXIMUM_POINTS)
 
         self.glyph = vtk.vtkGlyph3D()
@@ -615,7 +617,7 @@ class GraphicsVtkWidget(BaseVtkWidget):
         hspacer = QtWidgets.QSpacerItem(99999, 10, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum,)
 
         self.frame_spinbox = QtWidgets.QSpinBox()
-        self.frame_spinbox.valueChanged.connect(self.change_frame)
+        self.frame_spinbox.editingFinished.connect(lambda: self.change_frame(self.frame_spinbox.value()))
         self.frame_spinbox.setMaximum(9999999)
         self.frame_spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
 
@@ -696,31 +698,28 @@ class GraphicsVtkWidget(BaseVtkWidget):
         self.change_frame(self.frame_index + 1)
 
     def handle_last(self):
-        self.change_frame(max(len(self.vtu_files), len(self.vtp_files)))
+        self.change_frame(max(len(self.vtu_files), len(self.vtp_files))-1)
 
     def forward(self):
         self.change_frame(self.frame_index + 1)
 
     def change_frame(self, index, force=False):
-
-        if index == self.frame_index and not force:
-            return
-        else:
-            self.frame_index = index
-
         # assume that whatever one is bigger has the smaller time step
         n_vtp = len(self.vtp_files)
         n_vtu = len(self.vtu_files)
         n_max = max(n_vtp, n_vtu)
 
+        if index >= n_max:
+            index = n_max-1
+        elif index < 0:
+            index = 0
+        if index == self.frame_index and not force:
+            return
+        else:
+            self.frame_index = index
+        self.frame_spinbox.setValue(index)
+
         if n_max > 0:
-            if index >= n_max:
-                index = n_max-1
-            elif index < 0:
-                index = 0
-
-            self.frame_spinbox.setValue(index)
-
             if n_vtp > n_vtu:
                 time = list(self.vtp_files.keys())[index]
                 self.read_vtp(self.vtp_files[time])
@@ -738,8 +737,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
 
             if self.checkbox_snap.isChecked():
                 self.screenshot(True, fname=os.path.join(self.project_dir, self.project_name+'_'+str(index).zfill(4)+'.png'))
-        else:
-            self.frame_spinbox.setValue(0)
 
     def look_for_files(self):
         pvd_files = glob.glob(os.path.join(self.project_dir, '*.pvd'))
@@ -864,7 +861,6 @@ class GraphicsVtkWidget(BaseVtkWidget):
                 'i':i,
                 'components':array.GetNumberOfComponents(),
                 'range': array.GetRange()}
-
         point_info = self.point_arrays.get(self.vtp_pattern, {})
         point_info = update( point_info, copy.deepcopy(new_array_info))
         self.point_arrays[self.vtp_pattern] = point_info

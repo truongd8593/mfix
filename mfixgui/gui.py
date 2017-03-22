@@ -5,6 +5,7 @@ from __future__ import (absolute_import, division, print_function,
 
 import argparse
 import copy
+import tempfile
 import datetime
 import glob
 import json
@@ -19,12 +20,66 @@ import traceback
 from collections import OrderedDict
 
 # import qt
-from qtpy import PYQT5, QtCore, QtGui, QtWidgets
-from qtpy.QtCore import QSettings, Qt, Signal
+from qtpy import PYQT5
+
+from qtpy.QtGui import (
+    QColor,
+    QIcon,
+    QKeySequence,
+    QTextCharFormat,
+)
+
+from qtpy.QtCore import (
+    QAbstractAnimation,
+    QEasingCurve,
+    QParallelAnimationGroup,
+    QPoint,
+    QPropertyAnimation,
+    QSettings,
+    QSize,
+    QTimer,
+    Qt,
+    Signal,
+)
+
+from qtpy.QtWidgets import (
+    QAbstractButton,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QFileDialog,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QShortcut,
+    QSplashScreen,
+    QSplitter,
+    QStyleFactory,
+    QTableWidget,
+    QToolButton,
+    QWidget,
+)
 
 from mfixgui.bcs import BCS
 from mfixgui.chemistry import Chemistry
-from mfixgui.constants import *
+from mfixgui.constants import (
+    CONSTANT,
+    DEM,
+    HYBRID,
+    MAX_RECENT_PROJECTS,
+    PARAMETER_DICT,
+    PIC,
+    SINGLE,
+    SPECIAL_PARAMETERS,
+    TFM,
+    TURBULENCE_MODELS,
+    UDF,
+)
 from mfixgui.fluid_handler import FluidHandler
 from mfixgui.graphic_tabs import GraphicTabs
 from mfixgui.ics import ICS
@@ -40,12 +95,22 @@ from mfixgui.output import Output
 from mfixgui.project_manager import ProjectManager
 from mfixgui.pss import PSS
 from mfixgui.solids_handler import SolidsHandler
-from mfixgui.tools.general import (SCRIPT_DIRECTORY, convert_string_to_python,
-                                   format_key_with_args, get_icon,
-                                   get_image_path, get_pixmap, get_username,
-                                   is_text_string, is_unicode,
-                                   to_fs_from_unicode, to_unicode_from_fs,
-                                   widget_iter)
+from mfixgui.tools.general import (
+    convert_string_to_python,
+    get_icon,
+    get_image_path,
+    get_pixmap,
+    get_username,
+    is_text_string,
+    is_unicode,
+    to_fs_from_unicode,
+    to_unicode_from_fs,
+    widget_iter,
+)
+from mfixgui.tools.util import (
+    SCRIPT_DIRECTORY,
+    format_key_with_args,
+)
 from mfixgui.tools.keyword_args import keyword_args
 from mfixgui.tools.namelistparser import getKeywordDoc
 from mfixgui.tools.thumbnail import create_thumbnail
@@ -58,12 +123,13 @@ from mfixgui.widgets.regions import RegionsWidget
 from mfixgui.widgets.regions_popup import RegionsPopup
 from mfixgui.widgets.run_popup import RunPopup
 from mfixgui.widgets.species_popup import SpeciesPopup
+from mfixgui.widgets.build_popup import BuildPopup
 
-from .version import get_version
+from mfixgui.version import __version__
 
 # Initialize logger early
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
-UserRole = QtCore.Qt.UserRole
+UserRole = Qt.UserRole
 
 PRECOMPILE_UI = False
 if not PRECOMPILE_UI:
@@ -98,7 +164,7 @@ ANIMATION_SPEED = int(SETTINGS.value('animation_speed', 400))
 
 
 # --- Main Gui ---
-class MfixGui(QtWidgets.QMainWindow,
+class MfixGui(QMainWindow,
               ModelSetup,
               Mesh,
               FluidHandler,
@@ -147,7 +213,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def __init__(self, app, parent=None, project_file=None, loadworkflow=True,
                  loadvtk=True, set_splash_text=None):
         self.app = app
-        QtWidgets.QMainWindow.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         self.setObjectName('mfixgui')
         if project_file is not None:
             self.set_project_file(project_file)
@@ -180,13 +246,14 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # load UI
 
-        self.customWidgets = {'LineEdit':      LineEdit,
-                              'CheckBox':      CheckBox,
-                              'ComboBox':      ComboBox,
-                              'DoubleSpinBox': DoubleSpinBox,
-                              'SpinBox':       SpinBox,
-                              'Table':         Table,
-                              }
+        self.customWidgets = {
+            'LineEdit':      LineEdit,
+            'CheckBox':      CheckBox,
+            'ComboBox':      ComboBox,
+            'DoubleSpinBox': DoubleSpinBox,
+            'SpinBox':       SpinBox,
+            'Table':         Table,
+        }
 
         if PRECOMPILE_UI: # Slightly faster startup (?)
             self.ui = Ui_MainWindow()
@@ -195,9 +262,9 @@ class MfixGui(QtWidgets.QMainWindow,
             def make_widget(cls):
                 # Create an instance of a new class which is a subclass
                 # of QWidget and the specified class
-                class Widget(QtWidgets.QWidget, cls):
+                class Widget(QWidget, cls):
                     def __init__(self):
-                        QtWidgets.QWidget.__init__(self, parent)
+                        QWidget.__init__(self, parent)
                         self.setupUi(self)
                 return Widget()
 
@@ -222,7 +289,7 @@ class MfixGui(QtWidgets.QMainWindow,
                     name = 'regions'
                 else:
                     widget = make_widget(cls)
-                    name = cls.__name__.split('_',1)[1] # part after "Ui_"
+                    name = cls.__name__.split('_', 1)[1] # part after "Ui_"
                 # assign 'self.ui.model_setup', etc
                 setattr(self.ui, name, widget)
                 self.ui.stackedWidgetTaskPane.addWidget(widget)
@@ -237,27 +304,29 @@ class MfixGui(QtWidgets.QMainWindow,
             self.setCentralWidget(self.ui)
             assert self is not self.ui
 
-            for name in ('model_setup',
-                         'geometry',
-                         'mesh',
-                         'regions',
-                         'fluid',
-                         'solids',
-                         'initial_conditions',
-                         'boundary_conditions',
-                         'point_sources',
-                         'internal_surfaces',
-                         'chemistry',
-                         'numerics',
-                         'output',
-                         'monitors',
-                         'run',
-                         #'post-processing'
-                         ):
+            names = (
+                'model_setup',
+                'geometry',
+                'mesh',
+                'regions',
+                'fluid',
+                'solids',
+                'initial_conditions',
+                'boundary_conditions',
+                'point_sources',
+                'internal_surfaces',
+                'chemistry',
+                'numerics',
+                'output',
+                'monitors',
+                'run',
+                #'post-processing'
+            )
+            for name in names:
                 if name == 'regions':  # not loaded from .ui file
                     widget = RegionsWidget(parent=self)
                 else:
-                    widget = QtWidgets.QWidget()
+                    widget = QWidget()
                     try:
                         path = os.path.join(uifiles, name+'.ui')
                         uic.loadUi(path, widget)
@@ -278,12 +347,12 @@ class MfixGui(QtWidgets.QMainWindow,
         # add and hide a progress bar in the status bar
         # this is a hack show text on top of a QProgressBar
         # add bar first, then label
-        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar = QProgressBar()
         self.progress_bar.setTextVisible(False)
         self.ui.horizontallayout_mode_bar.addWidget(self.progress_bar, 0, 5)
         self.progress_bar.hide()
-        self.ui.label_status = QtWidgets.QLabel('Ready')
-        self.ui.label_status.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.ui.label_status = QLabel('Ready')
+        self.ui.label_status.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
         self.ui.horizontallayout_mode_bar.addWidget(self.ui.label_status, 0, 5)
 
         # build keyword documentation from namelist docstrings
@@ -301,7 +370,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if False:
             keys = self.keyword_doc.keys()
             keys.sort()
-            with open('/tmp/keys','w') as f:
+            with open('/tmp/keys', 'w') as f:
                 f.write('\n'.join(keys))
 
         # Setup the navigation tree widget
@@ -341,9 +410,9 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Initialize popup dialogs
         self.set_splash_text('Initializing Dialogs')
-        self.species_popup = SpeciesPopup(QtWidgets.QDialog(), self)
+        self.species_popup = SpeciesPopup(QDialog(), self)
         #self.species_popup.setModal(True) # ?
-        self.regions_popup = RegionsPopup(QtWidgets.QDialog(), self)
+        self.regions_popup = RegionsPopup(QDialog(), self)
 
         # Create project manager
         # NOTE.  it's a ProjectManager, not a Project.  But
@@ -367,6 +436,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.init_numerics()
         self.init_output()
         self.init_graphic_tabs(loadvtk)
+        self.init_keyboard_shortcuts()
 
         # In-process REPL (for development, should we enable this for users?)
         self.init_interpreter()
@@ -387,7 +457,7 @@ class MfixGui(QtWidgets.QMainWindow,
         #  in the name
         self.set_splash_text('Loading icons')
         for widget in widget_iter(self):
-            if isinstance(widget, QtWidgets.QToolButton):
+            if isinstance(widget, QToolButton):
                 name = str(widget.objectName())
                 if 'add' in name:
                     widget.setIcon(get_icon('add.png'))
@@ -395,28 +465,27 @@ class MfixGui(QtWidgets.QMainWindow,
                     widget.setIcon(get_icon('remove.png'))
                 elif 'copy' in name:
                     widget.setIcon(get_icon('copy.png'))
-            if isinstance(widget, QtWidgets.QAbstractButton):
+            if isinstance(widget, QAbstractButton):
                 # Make sure lineedits lose focus so updates stick!!
                 widget.setFocusPolicy(Qt.ClickFocus)
 
         # Toolbuttons at top of frame
         ui = self.ui
-        for (button, icon_name, function) in (
-                (ui.toolbutton_file, 'menu', self.handle_main_menu),
-                (ui.toolbutton_save, 'save', self.handle_save),
-                (ui.toolbutton_run_mfix, 'play', self.handle_run),
-                (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
-                (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
-                (ui.toolbutton_reset_mfix, 'restore_delete', self.remove_output_files),
-                # (ui.toolbutton_compile, 'build', self.handle_compile),
-                (ui.toolbutton_parameters, 'functions', self.handle_parameters),
-                ):
+        button_tuples = (
+            (ui.toolbutton_file, 'menu', self.handle_main_menu),
+            (ui.toolbutton_save, 'save', self.handle_save),
+            (ui.toolbutton_run_mfix, 'play', self.handle_run),
+            (ui.toolbutton_pause_mfix, 'pause', self.handle_pause),
+            (ui.toolbutton_stop_mfix, 'stop', self.handle_stop),
+            (ui.toolbutton_reset_mfix, 'restore_delete', self.remove_output_files),
+            (ui.toolbutton_compile, 'build', self.handle_compile),
+            (ui.toolbutton_parameters, 'functions', self.handle_parameters),
+        )
+        for (button, icon_name, function) in button_tuples:
             button.setIcon(get_icon(icon_name+'.png'))
             button.clicked.connect(function)
 
         ui.toolbutton_stop_mfix.mouseDoubleClickEvent = self.handle_force_stop
-        # TODO: implement handle_compile
-        ui.toolbutton_compile.setVisible(False)
 
         # Make sure lineedits lose focus so keywords update before save/run !!
         for button in (ui.toolbutton_run_mfix, ui.toolbutton_save):
@@ -434,16 +503,17 @@ class MfixGui(QtWidgets.QMainWindow,
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
             btn.pressed.connect(lambda mode=mode: self.change_mode(mode))
-            btn.released.connect(lambda btn=btn:  btn.setChecked(True)) # Force button to remain in 'checked' state
+            # Force button to remain in 'checked' state
+            btn.released.connect(lambda btn=btn:  btn.setChecked(True))
 
         # navigation tree
         ui.toolbutton_collapse_navigation.clicked.connect(self.toggle_nav_menu)
-        icon = self.icon_collapse_right = QtGui.QIcon()
-        icon.addFile(get_image_path('right_light.png'), QtCore.QSize(), icon.Normal, icon.Off)
-        icon.addFile(get_image_path('right.png'), QtCore.QSize(), icon.Active, icon.Off)
-        icon = self.icon_collapse_left = QtGui.QIcon()
-        icon.addFile(get_image_path('left_light.png'), QtCore.QSize(), icon.Normal, icon.Off)
-        icon.addFile(get_image_path('left.png'), QtCore.QSize(), icon.Active, icon.Off)
+        icon = self.icon_collapse_right = QIcon()
+        icon.addFile(get_image_path('right_light.png'), QSize(), icon.Normal, icon.Off)
+        icon.addFile(get_image_path('right.png'), QSize(), icon.Active, icon.Off)
+        icon = self.icon_collapse_left = QIcon()
+        icon.addFile(get_image_path('left_light.png'), QSize(), icon.Normal, icon.Off)
+        icon.addFile(get_image_path('left.png'), QSize(), icon.Active, icon.Off)
         ui.toolbutton_collapse_navigation.setIcon(icon)
 
         ui.treewidget_navigation.itemSelectionChanged.connect(
@@ -459,7 +529,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
         # Make splitters non-collapsing
         for widget in widget_iter(self):
-            if isinstance(widget, QtWidgets.QSplitter):
+            if isinstance(widget, QSplitter):
                 widget.setChildrenCollapsible(False)
 
         # Job manager / monitor
@@ -467,7 +537,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.job_manager = JobManager(self)
         self.job_manager.sig_change_run_state.connect(self.slot_update_runbuttons)
         self.job_manager.sig_update_job_status.connect(self.slot_update_residuals)
-        self.watch_run_dir_timer = QtCore.QTimer()# Move to monitor class
+        self.watch_run_dir_timer = QTimer()# Move to monitor class
         self.watch_run_dir_timer.timeout.connect(self.slot_rundir_timer)
         self.watch_run_dir_timer.start(1000)
 
@@ -515,6 +585,20 @@ class MfixGui(QtWidgets.QMainWindow,
         # Reset everything to default values
         # This is done in 'load_project'.  so why do it now?
         #self.reset() # Clear command_output too?
+
+    def init_keyboard_shortcuts(self):
+
+        sc = [
+        ('Ctrl+O', self.handle_open_shortcut),
+        ('Ctrl+N', self.handle_new_shortcut),
+        ('Ctrl+S', self.handle_save),
+        ('Ctrl+R', self.handle_run),
+        ('Ctrl+B', self.handle_compile),
+        ]
+
+        for key, callback in sc:
+            qsc = QShortcut(QKeySequence(key), self)
+            qsc.activated.connect(callback)
 
     def add_extra_keyword_doc(self):
         # Add a little extra knowledge ...
@@ -640,7 +724,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def update_keyword(self, key, value, args=None):
         """like set_keyword but no action if value already set"""
-
         expected_args = keyword_args.get(key)
         if expected_args is not None:
             if isinstance(args, int):
@@ -652,7 +735,7 @@ class MfixGui(QtWidgets.QMainWindow,
                            (key, str(expected_args), str(args)))
                 return
 
-        if value is None or value=='':
+        if value is None or value == '':
             self.unset_keyword(key, args)
             return
 
@@ -663,9 +746,9 @@ class MfixGui(QtWidgets.QMainWindow,
         def typematch(v1, v2):
             if is_text_string(v1) or is_unicode(v1):
                 return is_text_string(v2) or is_unicode(v2)
-            return (type(v1) == type(v2))
+            return type(v1) == type(v2)
 
-        if typematch(v, value) and str(v)==str(value):
+        if typematch(v, value) and str(v) == str(value):
                 return
         self.set_keyword(key, value, args=args)
 
@@ -696,7 +779,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def short_labels(self):
         tree = self.ui.treewidget_navigation
-        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        flags = Qt.MatchFixedString | Qt.MatchRecursive
         for (long, short) in self.nav_labels:
             items = tree.findItems(long, flags, 0)
             for item in items:
@@ -706,7 +789,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def long_labels(self):
         tree = self.ui.treewidget_navigation
-        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        flags = Qt.MatchFixedString | Qt.MatchRecursive
         for (long, short) in self.nav_labels:
             items = tree.findItems(short, flags, 0)
             for item in items:
@@ -768,7 +851,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def status_message(self, message=''):
         '''set the status text'''
         # pad text
-        message+='  '
+        message += '  '
         if message == self.ui.label_status.text():
             return
         self.ui.label_status.setText(message)
@@ -788,7 +871,7 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def set_run_button(self, text=None, enabled=None):
         if text is not None:
-            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFiX run' if text=='Resume'
+            self.ui.toolbutton_run_mfix.setToolTip('Resume previous MFiX run' if text == 'Resume'
                                                    else text+' MFiX')
         if enabled is not None:
             b = self.ui.toolbutton_run_mfix
@@ -807,7 +890,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # tooltip?
 
     def set_reset_button(self, enabled):
-        b =  self.ui.toolbutton_reset_mfix
+        b = self.ui.toolbutton_reset_mfix
         b.setEnabled(enabled)
 
     def enable_input(self, editable=True, partial=False):
@@ -880,9 +963,11 @@ class MfixGui(QtWidgets.QMainWindow,
         ui = self.ui
         project_file = os.path.basename(self.get_project_file() or '')
 
-        log.debug('accessing job_manager object: %s (slot_update_runbuttons)', self.job_manager)
+        log.debug(('accessing job_manager object:'
+                   ' %s (slot_update_runbuttons)'), self.job_manager)
         if self.job_manager.job:
-            log.debug('accessing job_manager.job object: %s (slot_update_runbuttons)', self.job_manager.job)
+            log.debug(('accessing job_manager.job object:'
+                       ' %s (slot_update_runbuttons)'), self.job_manager.job)
         project_open = bool(project_file and self.open_succeeded)
         pending = self.job_manager.is_job_pending()
         # why both paused and unpaused states?
@@ -892,7 +977,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.update_window_title() # put run state in window titlebar
 
-        self.enable_input(editable=project_open and not (pending or unpaused or paused or resumable),
+        editable = project_open and not (pending or unpaused or paused or resumable)
+        self.enable_input(editable=editable,
                           partial=project_open and (paused or resumable))
 
         #handle buttons in order:  RESET RUN PAUSE STOP
@@ -938,7 +1024,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def print_welcome(self):
         self.print_internal("Welcome to MFiX - https://mfix.netl.doe.gov",
                             color='blue')
-        self.print_internal("MFiX-GUI version %s" % get_version(),
+        self.print_internal("MFiX-GUI version %s" % __version__,
                             color='blue')
 
     def resizeEvent(self, event):
@@ -946,7 +1032,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if self.main_menu.isVisible():
             self.main_menu.setGeometry(0, 0, self.width(), self.height())
 
-        QtWidgets.QMainWindow.resizeEvent(self, event)
+        QMainWindow.resizeEvent(self, event)
 
     def closeEvent(self, event):
         '''over-ride of qt close event'''
@@ -961,8 +1047,8 @@ class MfixGui(QtWidgets.QMainWindow,
 
         name = self.curr_nav_label
         for (long, short) in self.nav_labels:
-            if name==short:
-                name=long
+            if name == short:
+                name = long
                 break
         self.settings.setValue('navigation', name)
 
@@ -973,12 +1059,12 @@ class MfixGui(QtWidgets.QMainWindow,
 
     def find_navigation_tree_item(self, item_name):
         tree = self.ui.treewidget_navigation
-        flags =  Qt.MatchFixedString | Qt.MatchRecursive
+        flags = Qt.MatchFixedString | Qt.MatchRecursive
         items = tree.findItems(item_name, flags, 0)
         if len(items) == 1:
             return items[0]
         else:
-            for (long,short) in self.nav_labels:
+            for (long, short) in self.nav_labels:
                 if (item_name == long):
                     items = tree.findItems(short, flags, 0)
                     if len(items) == 1:
@@ -996,7 +1082,7 @@ class MfixGui(QtWidgets.QMainWindow,
         else:
             self.unset_keyword("nscalar")
 
-        for i in range(1,1+self.fluid_nscalar_eq):
+        for i in range(1, 1+self.fluid_nscalar_eq):
             self.update_keyword("phase4scalar", 0, args=i)
         i = 1+self.fluid_nscalar_eq
         for (phase, s) in enumerate(self.solids.values(), 1):
@@ -1073,7 +1159,7 @@ class MfixGui(QtWidgets.QMainWindow,
                             continue
                         key = base_key
 
-                if len(keyword_args.get(key,[])) != len(args or []):
+                if len(keyword_args.get(key, [])) != len(args or []):
                        self.error("keyword args mismatch: key=%s: expected %s, got %s" %
                                   (key, keyword_args.get(key), args))
 
@@ -1100,11 +1186,11 @@ class MfixGui(QtWidgets.QMainWindow,
                     self.add_tooltip(widget, key)
 
                     # NB not all widgets get set up this way
-                    if isinstance(widget, QtWidgets.QLineEdit) and widget.dtype in (int, float):
+                    if isinstance(widget, QLineEdit) and widget.dtype in (int, float):
                         widget.allow_parameters = True
-                    elif isinstance(widget, QtWidgets.QComboBox) and widget.count() < 1:
+                    elif isinstance(widget, QComboBox) and widget.count() < 1:
                             widget.addItems(list(doc['valids'].keys()))
-                    elif isinstance(widget, QtWidgets.QCheckBox):
+                    elif isinstance(widget, QCheckBox):
                         # TODO: infer which value is true/false?
                         values = sorted([convert_string_to_python(v) for v in doc['valids'].keys()])
                         if len(values) == 2:
@@ -1138,8 +1224,8 @@ class MfixGui(QtWidgets.QMainWindow,
                     return self if key=='vtkiren' else self.noop
             self.vtkwidget = FakeVtk()
             self.ui.regions.vtkwidget = self.vtkwidget
-            label = QtWidgets.QLabel('Could not import vtk, please check your installation.')
-            label.setAlignment(QtCore.Qt.AlignCenter);
+            label = QLabel('Could not import vtk, please check your installation.')
+            label.setAlignment(Qt.AlignCenter);
             self.ui.horizontalLayoutModelGraphics.addWidget(label)
             return
 
@@ -1218,7 +1304,7 @@ class MfixGui(QtWidgets.QMainWindow,
         for key, btn in self.modebuttondict.items():
             btn.setChecked(mode == key)
 
-        workflow = (mode=='workflow')
+        workflow = (mode == 'workflow')
         if self.ui.workflow_widget.PYQTNODE_AVAILABLE:
             nc = self.ui.workflow_widget.nodeChart
             for btn in [nc.runToolButton, nc.autorunToolButton, nc.stopToolButton, nc.stepToolButton]:
@@ -1267,8 +1353,8 @@ class MfixGui(QtWidgets.QMainWindow,
         self.curr_nav_label = name = str(current_selection[0].text(0))
         # Translate from short to long name
         for (long, short) in self.nav_labels:
-            if name==short:
-                name=long
+            if name == short:
+                name = long
                 break
         name = '_'.join(name.lower().split(' '))
 
@@ -1303,7 +1389,7 @@ class MfixGui(QtWidgets.QMainWindow,
             self.ui.regions.setup_regions()
         elif text == 'model_setup':
             self.setup_model_setup()
-        elif text == 'fluid' : #
+        elif text == 'fluid':
             self.setup_fluid()
         elif text == 'solids':
             self.setup_solids()
@@ -1359,7 +1445,7 @@ class MfixGui(QtWidgets.QMainWindow,
             offsetx = 0
             offsety = 0
 
-        self.stack_animation = QtCore.QParallelAnimationGroup()
+        self.stack_animation = QParallelAnimationGroup()
 
         if (from_ != to):
             # move to widget and show
@@ -1400,28 +1486,28 @@ class MfixGui(QtWidgets.QMainWindow,
     def animation_setup(self, target, x_start, y_start, x_end, y_end, width_end=None):
         """setup an animation widget"""
         # TODO: this could probably be done better.
-        animation = QtCore.QPropertyAnimation(target, "pos".encode('utf-8'))
+        animation = QPropertyAnimation(target, "pos".encode('utf-8'))
         animation.setDuration(ANIMATION_SPEED)
-        animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
-        animation.setStartValue(QtCore.QPoint(x_start, y_start))
-        animation.setEndValue(QtCore.QPoint(x_end,y_end))
+        animation.setEasingCurve(QEasingCurve.InOutQuint)
+        animation.setStartValue(QPoint(x_start, y_start))
+        animation.setEndValue(QPoint(x_end,y_end))
         self.stack_animation.addAnimation(animation)
 
         # resize line width
         if width_end is not None:
-            animation = QtCore.QPropertyAnimation(target, "size".encode('utf-8'))
+            animation = QPropertyAnimation(target, "size".encode('utf-8'))
             animation.setDuration(ANIMATION_SPEED)
-            animation.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+            animation.setEasingCurve(QEasingCurve.InOutQuint)
             size = target.size()
             animation.setStartValue(size)
-            animation.setEndValue(QtCore.QSize(width_end, size.height()))
+            animation.setEndValue(QSize(width_end, size.height()))
             self.stack_animation.addAnimation(animation)
 
     def animate_stacked_widget_finished(self, widget, from_, to,
                                         btn_layout=None, to_btn=None, line=None, line_to=None):
         """cleanup after animation"""
         try:
-            if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
+            if self.stack_animation.state() == QAbstractAnimation.Stopped:
                 widget.setCurrentIndex(to)
                 if (from_ != to):
                     from_widget = widget.widget(from_)
@@ -1463,17 +1549,17 @@ class MfixGui(QtWidgets.QMainWindow,
         if detailedText:
             self.print_internal(detailedText)
 
-        message_box = QtWidgets.QMessageBox(self)
+        message_box = QMessageBox(self)
         self.message_box = message_box # Make it accessible to tests
         message_box.setWindowTitle(title)
 
         # Icon
         if icon == 'warning':
-            icon = QtWidgets.QMessageBox.Warning
+            icon = QMessageBox.Warning
         elif icon == 'question':
-            icon = QtWidgets.QMessageBox.Question
+            icon = QMessageBox.Question
         else:
-            icon = QtWidgets.QMessageBox.Information
+            icon = QMessageBox.Information
 
         message_box.setIcon(icon)
 
@@ -1490,11 +1576,11 @@ class MfixGui(QtWidgets.QMainWindow,
         #   http://doc.qt.io/qt-4.8/qmessagebox.html#StandardButton-enum
         # or drop this translation dict
         # buttons
-        qbuttonDict = {'ok':      QtWidgets.QMessageBox.Ok,
-                       'yes':     QtWidgets.QMessageBox.Yes,
-                       'no':      QtWidgets.QMessageBox.No,
-                       'cancel':  QtWidgets.QMessageBox.Cancel,
-                       'discard': QtWidgets.QMessageBox.Discard,
+        qbuttonDict = {'ok':      QMessageBox.Ok,
+                       'yes':     QMessageBox.Yes,
+                       'no':      QMessageBox.No,
+                       'cancel':  QMessageBox.Cancel,
+                       'discard': QMessageBox.Discard,
                        }
         for button in buttons:
             message_box.addButton(qbuttonDict[button])
@@ -1545,16 +1631,16 @@ class MfixGui(QtWidgets.QMainWindow,
         key = key.lower()
         line = line.strip()
 
-        message_box = QtWidgets.QMessageBox(self)
+        message_box = QMessageBox(self)
         self.message_box = message_box
         message_box.setWindowTitle("%s keyword" % err_type.title())
-        message_box.setIcon(QtWidgets.QMessageBox.Warning)
+        message_box.setIcon(QMessageBox.Warning)
         text="'%s' is %s" % (key, err_type)
         message_box.setText(text)
         buttons = ['Drop Key', 'Edit', 'Ignore']
         for b in buttons:
-            role = QtWidgets.QMessageBox.AcceptRole # Seems to be OK to use for all buttons
-            message_box.addButton(QtWidgets.QPushButton(b),  role)
+            role = QMessageBox.AcceptRole # Seems to be OK to use for all buttons
+            message_box.addButton(QPushButton(b),  role)
 
         def drop(key):
             if '(' in key: # This is a little crude, use parser instead?
@@ -1573,7 +1659,7 @@ class MfixGui(QtWidgets.QMainWindow,
             drop(key)
 
         elif resp == 'edit':
-            q = QtWidgets.QInputDialog(self)#,
+            q = QInputDialog(self)#,
             text, ok = q.getText(self, 'Edit keyword', "Deprecated keyword: %s\n\nEnter replacement text"%line, text=line)
             if not ok:
                 return
@@ -1659,18 +1745,18 @@ class MfixGui(QtWidgets.QMainWindow,
             logmsg = logmsg[5:].strip()
             line = line[5:].strip() # Supress 'Info:' in console window (?)
             log.info(logmsg)
-            color='blue'
+            color = 'blue'
         else:
             log.info(logmsg)
         cursor = qtextbrowser.textCursor()
         cursor.movePosition(cursor.End)
-        char_format = QtGui.QTextCharFormat()
+        char_format = QTextCharFormat()
 
         # HACK is this going too far?  we should define message types, not infer from messages
         if any(x in lower for x in ('error', 'warn', 'fail')) and 'error%' not in lower:
-            color='red'
+            color = 'red'
         if color:
-            char_format.setForeground(QtGui.QColor(color))
+            char_format.setForeground(QColor(color))
         if font:
             if strikeout: # hack
                 char_format.setFontFamily("Monospace")
@@ -1896,11 +1982,11 @@ class MfixGui(QtWidgets.QMainWindow,
             elif gui.project.solver == 'PIC':
                 gui.setup_solids_pic_tab()
 
-        for t in (0,2,4,5):
+        for t in (0, 2, 4, 5):
             gui.setup_bcs_tab(t)
 
         for w in widget_iter(self):
-            if isinstance(w, QtWidgets.QTableWidget):
+            if isinstance(w, QTableWidget):
                 for r in range(0, w.rowCount()):
                     w.setCurrentCell(r, 0)
 
@@ -1923,7 +2009,7 @@ class MfixGui(QtWidgets.QMainWindow,
         # save version
         v = self.project.mfix_gui_comments.get('project_version', 0)
         self.project.mfix_gui_comments['project_version'] = str(int(v) + 1)
-        self.project.mfix_gui_comments['gui_version'] = get_version()
+        self.project.mfix_gui_comments['gui_version'] = __version__
 
         self.project.mfix_gui_comments['project_notes'] = json.dumps(self.ui.main_menu_project_notes.toPlainText())
 
@@ -2006,7 +2092,7 @@ class MfixGui(QtWidgets.QMainWindow,
         if message is None:
             message = 'Save Project As'
         default = os.path.join(self.get_project_dir(), self.get_runname()+".mfx",)
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, message, default, "*.mfx")
+        filename = QFileDialog.getSaveFileName(self, message, default, "*.mfx")
         if PYQT5:
             filename = filename[0]
         return filename
@@ -2045,10 +2131,15 @@ class MfixGui(QtWidgets.QMainWindow,
         self.vtkwidget.update_parameters(changed_params)
         self.project.update_parameters(changed_params)
 
-    # def handle_compile(self):
-    #     """compiling tool"""
-    #     # TODO: implement
-    #     self.unimplemented()
+    def handle_compile(self):
+        """compiling tool"""
+        self.ui.toolbutton_compile.setEnabled(False)
+        popup = BuildPopup(self, self.get_project_dir())
+        popup.finished.connect(self.handle_compile_finished)
+        popup.show()
+
+    def handle_compile_finished(self):
+        self.ui.toolbutton_compile.setEnabled(True)
 
     def update_window_title(self):
         title = self.solver_name or 'MFiX'
@@ -2096,7 +2187,6 @@ class MfixGui(QtWidgets.QMainWindow,
     def check_writable(self, directory):
         """check whether directory is writable """
         try:
-            import tempfile
             testfile = tempfile.TemporaryFile(dir=directory)
             testfile.close()
             return True
@@ -2128,7 +2218,7 @@ class MfixGui(QtWidgets.QMainWindow,
                         run_name = match.group('run_name')
 
         except Exception as e:
-            self.message(text="Error in project template %s:  %s" % (template,e),
+            self.message(text="Error in project template %s:  %s" % (template, e),
                          buttons=['ok'],
                          default=['ok'])
             self.set_no_project()
@@ -2166,7 +2256,7 @@ class MfixGui(QtWidgets.QMainWindow,
         creation_time = time.strftime('%Y-%m-%d %H:%M')
         try:
             with open(template, 'rb') as infile:
-                with open(project_file,'wb') as outfile:
+                with open(project_file, 'wb') as outfile:
                     for line in infile:
                         line = to_unicode_from_fs(line)
                         if line.startswith('# Generic'):
@@ -2197,7 +2287,7 @@ class MfixGui(QtWidgets.QMainWindow,
     def get_open_filename(self):
         """wrapper for call to getOpenFileName, override in for unit tests"""
         project_dir = self.get_project_dir()
-        project_path = QtWidgets.QFileDialog.getOpenFileName(
+        project_path = QFileDialog.getOpenFileName(
             self, 'Open Project Directory', project_dir,
             'MFiX Project (*.mfx *.dat);; All Files (*)')
         if PYQT5:
@@ -2239,8 +2329,8 @@ class MfixGui(QtWidgets.QMainWindow,
             # Avoid extra blank lines at end
             while lines and lines[-1] == '':
                 lines.pop(-1)
-            src = '\n'.join('%4d:%s'%(lineno,line)
-                            for (lineno,line) in enumerate(lines,1))
+            src = '\n'.join('%4d:%s'%(lineno, line)
+                            for (lineno, line) in enumerate(lines, 1))
 
         self.ui.mfix_dat_source.setPlainText(src)
 
@@ -2347,7 +2437,7 @@ class MfixGui(QtWidgets.QMainWindow,
         self.update_keyword('run_name', runname)
 
         if interactive and not project_path.endswith(runname_mfx):
-            ok_to_write =  self.confirm_rename(project_file, runname_mfx)
+            ok_to_write = self.confirm_rename(project_file, runname_mfx)
             if ok_to_write:
                 renamed_project_file = os.path.join(project_dir, runname_mfx)
                 if os.path.exists(renamed_project_file):
@@ -2378,13 +2468,10 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.do_open(project_file, runname_pid)
 
-        #self.navigate_all() # leaves GUI in undesired state
+
 
     def do_open(self, project_file, runname_pid):
-        """do_open performs the details of opening the project. It has a direct
-        control-flow path, with no return statements, meaning that the project
-        open cannot be canceled beyond this point.
-        """
+        """details of opening the project"""
         project_dir = os.path.dirname(project_file)
 
         # make sure the main_menu is closed
@@ -2400,9 +2487,6 @@ class MfixGui(QtWidgets.QMainWindow,
 
         self.setup_current_pane() # update vals in any open tabs
         self.update_source_view()
-
-        # set up rundir watcher
-        self.slot_rundir_timer()
 
         ### Geometry
         # Look for geometry.stl and load automatically
@@ -2498,8 +2582,8 @@ class MfixGui(QtWidgets.QMainWindow,
                                (self.set_fluid_specific_heat_model, 'c_p'), # inconsistent
                                (self.set_fluid_conductivity_model, 'k'),
                                (self.set_fluid_diffusion_model, 'dif')):
-            name_g0 = 'c_pg0' if name=='c_p' else name+'_g0'
-            name_usr = 'usr_cpg' if name=='c_p' else 'usr_'+name+'g'
+            name_g0 = 'c_pg0' if name == 'c_p' else name+'_g0'
+            name_usr = 'usr_cpg' if name == 'c_p' else 'usr_'+name+'g'
             val_g0 = self.project.get_value(name_g0)
             val_usr = self.project.get_value(name_usr)
 
@@ -2705,7 +2789,7 @@ class MfixGui(QtWidgets.QMainWindow,
         response = self.message(title="Info",
                                icon="info",
                                text=message_text,
-                               buttons=['ok','cancel'],
+                               buttons=['ok', 'cancel'],
                                default='cancel')
         return response == 'ok'
 
@@ -2714,7 +2798,7 @@ def main():
     global gui
 
     # handle command-line arguments
-    av_styles = [s.lower() for s in QtWidgets.QStyleFactory.keys()]
+    av_styles = [s.lower() for s in QStyleFactory.keys()]
     parser = argparse.ArgumentParser(description='MFiX GUI')
     ARG = parser.add_argument
     ARG('project', action='store', nargs='?', default=None,
@@ -2743,7 +2827,7 @@ def main():
         help="Enable test mode.")
     ARG('-ct', '--thumbnails', action='store_true',
         help="Create thumbnails in test mode.")
-    ARG('-v', '--version', action='version', version=get_version())
+    ARG('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 
@@ -2806,12 +2890,12 @@ def main():
         sys.excepthook = excepthook
 
     # create the QApplication
-    qapp = QtWidgets.QApplication([]) # TODO pass args to qt
+    qapp = QApplication([]) # TODO pass args to qt
 
     # splash screen
     splash = None
     if not args.test:
-        splash = QtWidgets.QSplashScreen(get_pixmap('splash.png', 600, 338))
+        splash = QSplashScreen(get_pixmap('splash.png', 600, 338))
         splash.setWindowFlags(Qt.SplashScreen | Qt.WindowStaysOnTopHint)
         splash.show()
 

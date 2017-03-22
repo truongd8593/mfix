@@ -28,6 +28,7 @@
       USE param1
       USE physprop
       USE residual
+      USE residual_pub
       USE run
       USE scalars, only :NScalar
       USE toleranc
@@ -223,5 +224,3 @@
 
       RETURN
       END SUBROUTINE CHECK_CONVERGENCE
-
-

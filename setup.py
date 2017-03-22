@@ -5,9 +5,9 @@ https://packaging.python.org/en/latest/distributing.html
 http://mfix.netl.doe.gov/
 """
 
-import codecs
 import platform
 import shutil
+import io
 import subprocess
 import sys
 import zipfile
@@ -22,7 +22,7 @@ import distutils.cygwinccompiler
 from numpy.distutils.core import setup
 from mfixgui.tools.namelistparser import buildKeywordDoc, writeFiles
 
-exec(codecs.open('mfixgui/version.py').read())
+exec(io.open('mfixgui/version.py').read())
 
 from mfixgui.build_mfixsolver import BuildExtCommand, BuildMfixCommand, make_mfixsolver
 
@@ -30,7 +30,7 @@ HERE = path.abspath(path.dirname(__file__))
 NAME = 'mfix'
 
 # Get the long description from the README file
-with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
+with io.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 MODEL_DIR = path.join(HERE, 'model')
@@ -90,7 +90,7 @@ def build_doc():
 
         subprocess.call(['pandoc', doc_src, '-o', doc_dest] + pandoc_args)
 
-        with codecs.open(doc_dest, encoding="utf8") as doc:
+        with io.open(doc_dest, encoding="utf8") as doc:
             data = doc.read()
 
         # fix links in README to the GUIDES
@@ -98,13 +98,13 @@ def build_doc():
         data = data.replace('USER_GUIDE.md', 'USER_GUIDE.html')
         data = data.replace('TUTORIALS.md', 'TUTORIALS.html')
 
-        with codecs.open(doc_dest, 'w', encoding='utf8') as doc:
+        with io.open(doc_dest, 'w', encoding='utf8') as doc:
             doc.write(data)
 
         # fix links to images in packaged docs
         data = data.replace('../mfixgui/icons', '../icons')
 
-        with codecs.open(doc_pkg, 'w', encoding='utf8') as doc:
+        with io.open(doc_pkg, 'w', encoding='utf8') as doc:
             doc.write(data)
 
         rendered_docs.append(path.basename(doc_pkg))
@@ -176,7 +176,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version=get_git_revision_short_hash(),
+    version=__version__,
 
     description='A GUI for the MFiX computational fluid dynamics solver',
     long_description=LONG_DESCRIPTION,
@@ -236,8 +236,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'flask',
-        'numpy==1.11.3',
-        'qtpy',
+        'numpy',
+        'qtpy>=1.2.1',
     ],
 
     ext_modules=[make_mfixsolver(),],

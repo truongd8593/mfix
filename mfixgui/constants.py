@@ -1,4 +1,4 @@
-# Constants
+""" Constants """
 from collections import OrderedDict
 
 # Solver types
@@ -41,12 +41,21 @@ FRICTION_MODELS = ['SCHAEFFER', 'SRIVASTAVA', 'NONE']
 RDF_TYPES = ['LEBOWITZ', 'LEBOWITZ', #sic
              'MANSOORI', 'MODIFIED_LEBOWITZ', 'MODIFIED_MANSOORI']
 
-DEFAULT_RDF_TYPE='LEBOWITZ'
+DEFAULT_RDF_TYPE = 'LEBOWITZ'
 
 BLENDING_FUNCTIONS = ['NONE', 'TANH_BLEND', 'SIGM_BLEND']
 DEFAULT_BLENDING_FUNCTION = 'NONE'
 
-BC_TYPES = ['MI', 'PO', 'NSW', 'FSW', 'PSW', 'PI', 'MO', 'CYCLIC'] # 'CYCLIC' is not really a bc_type
+BC_TYPES = [
+    'CYCLIC', # 'CYCLIC' is not really a bc_type
+    'FSW',
+    'MI',
+    'MO',
+    'NSW',
+    'PI',
+    'PO',
+    'PSW',
+]
 
 BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
             'Free Slip Wall', 'Partial Slip Wall',
@@ -62,8 +71,16 @@ BC_NAMES = ['Mass Inflow', 'Pressure Outflow', 'No Slip Wall',
 DEFAULT_BC_TYPE = 'NSW'
 
 
-IS_NAMES = ['Impermeable', 'X-Axis Impermeable', 'Y-Axis Impermeable', 'Z-Axis Impermeable',
-            'Semi-permeable', 'X-Axis semi-permeable','Y-Axis semi-permeable','Z-Axis semi-permeable']
+IS_NAMES = [
+    'Impermeable',
+    'Semi-permeable',
+    'X-Axis Impermeable',
+    'X-Axis semi-permeable',
+    'Y-Axis Impermeable',
+    'Y-Axis semi-permeable',
+    'Z-Axis Impermeable',
+    'Z-Axis semi-permeable',
+]
 
 IS_TYPES = ['IMPERMEABLE', 'X_IMPERMEABLE', 'Y_IMPERMEABLE', 'Z_IMPERMEABLE',
             'SEMIPERMEABLE', 'X_SEMIPERMEABLE', 'Y_SEMIPERMEABLE', 'Z_SEMIPERMEABLE']

@@ -30,6 +30,7 @@
       USE param1
       USE physprop
       USE residual
+      USE residual_pub
       USE funits
       USE compar
       IMPLICIT NONE

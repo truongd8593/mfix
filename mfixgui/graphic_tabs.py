@@ -33,11 +33,11 @@ PLOT_ITEMS = OrderedDict([
         'bottom':'Elapsed Wall Time [s]',
         'x_var':'walltime_elapsed',
         'y_var':'time'}],
-    ['Residuals vs Simulation time', {
-        'left':'Residual',
-        'bottom':'Simulation Time [s]',
-        'x_var':'time',
-        'y_var':'residuals'}],
+#    ['Residuals vs Simulation time', {
+#        'left':'Residual',
+#        'bottom':'Simulation Time [s]',
+#        'x_var':'time',
+#        'y_var':'residuals'}],
     ])
 
 TABLEAU20 = [(31, 119, 180),
@@ -114,7 +114,7 @@ class BaseGraphicTab(QtWidgets.QWidget):
 
         # pyqtgraph
         combobox = QtWidgets.QComboBox()
-        # TODO: add more/build dynamically
+
         combobox.addItems(PLOT_ITEMS.keys())
         # disable already used plots
         model = combobox.model()
@@ -215,13 +215,13 @@ class BaseGraphicTab(QtWidgets.QWidget):
                 if len(y) > 1:
                     if len(self.x) == 0:
                         curve.setData(y)
-                    else:
+                    elif len(self.x) > 1 and self.x[-1] - self.x[0] > 0:
                         curve.setData(self.x, y)
         # normal plotting
         elif len(self.y)>1:
             if len(self.x) == 0:
                 self.curve.setData(self.y)
-            elif len(self.x) > 1:
+            elif len(self.x) > 1 and self.x[-1] - self.x[0] > 0:
                 self.curve.setData(self.x, self.y)
 
     def get_index(self):
