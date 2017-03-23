@@ -41,7 +41,6 @@ requirements:
     - numpy
     - pyqt
     - qtpy >=1.2.1
-    - vtk
 
 #### build as .whl package if OUTPUT_TYPE_WHEEL is defined
 {% if environ.get('OUTPUT_TYPE_WHEEL',None) %}
