@@ -100,7 +100,6 @@ class BuildPopup(QtWidgets.QDialog):
         self.layout.addWidget(self.output, 100, 0, 1, -1)
         self.output.hide()
 
-
     def show(self):
         # Check to see if compiling is possible
         # Check if BUILD_CMD in path
@@ -109,8 +108,11 @@ class BuildPopup(QtWidgets.QDialog):
             possible = False
             message = 'The command: "{}" does not exist in your path.'.format(BUILD_CMD)
         else:
+            # check platform dependencies
             if os.name == 'nt':
                 possible, message = self.check_windows()
+            else:
+                possible, message = self.check_unix()
 
         if not possible:
             setup_guide = path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'SETUP_GUIDE.html'))
@@ -122,11 +124,12 @@ class BuildPopup(QtWidgets.QDialog):
             self.parent().warn(message, popup=True)
 
             self.cancel()
-
-
             self.finished.emit(1)
         else:
             QtWidgets.QDialog.show(self)
+
+    def check_unix(self):
+        return True, 'blahh'
 
     def check_windows(self):
         """check for packages on windows"""
@@ -159,6 +162,30 @@ class BuildPopup(QtWidgets.QDialog):
         else:
             self.output.hide()
 
+    def get_environment(self):
+        env = QtCore.QProcessEnvironment.systemEnvironment()
+
+        if os.name == 'nt':
+            # find conda home
+            conda = spawn.find_executable('conda')
+            if conda is None:
+                self.parent().warn('Can not find "conda" to pre-pend PATH')
+            else:
+                anaconda_home = os.path.dirname(os.path.dirname(conda))
+                path = env.value('PATH')
+
+                # pre-pend
+                #  - ANACONDA_HOME/Library/mingw-w64/bin
+                #  - ANACONDA_HOME/Library/usr/bin
+                new_path = os.pathsep.join([
+                    os.path.join(anaconda_home, 'Library', 'mingw-w64', 'bin'),
+                    os.path.join(anaconda_home, 'Library', 'usr', 'bin'),
+                    path
+                    ])
+                env.insert("PATH", new_path)
+                print(new_path)
+        return env
+
     def build(self):
         self.line_count = 0
         self.build_proc = QtCore.QProcess()
@@ -181,13 +208,14 @@ class BuildPopup(QtWidgets.QDialog):
             cmd += ' --dmp'
 
         self.print_to_output('Command: %s' % cmd)
-        self.build_proc.start(cmd)
+        self.build_proc.setProcessEnvironment(self.get_environment())
         self.build_proc.readyReadStandardOutput.connect(self.check_progress)
         self.build_proc.readyReadStandardError.connect(self.read_err)
         self.build_proc.finished.connect(self.finished_building)
         self.build_proc.error.connect(self.error)
         self.cancel_btn.setText('Cancel')
         self.build_btn.setEnabled(False)
+        self.build_proc.start(cmd)
 
     def finished_building(self):
         self.progressbar.setValue(100)
