@@ -1,15 +1,44 @@
 # -*- coding: utf-8 -*-
+'''
+Dialog to build the mfixsolver from the GUI
+On windows, the following paths need to be added to PATH:
+  - ANACONDA_HOME/Library/mingw-w64/bin
+  - ANACONDA_HOME/Library/usr/bin
+'''
 from __future__ import print_function, absolute_import, unicode_literals, division
 import argparse
 import logging
 import os
+import subprocess
+from distutils import spawn
+
+# FIXME: use six instead
+try:
+    # Python 3
+    import urllib.request as urlparse
+    import urllib.request as urllib
+except ImportError:
+    # Python 2
+    import urlparse
+    import urllib
 
 from qtpy import QtWidgets, QtCore, QtGui
+
+from mfixgui.tools.util import (
+    SCRIPT_DIRECTORY,
+)
 
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
 
 BUILD_CMD = 'build_mfixsolver'
 LINECOUNT = 3000
+WINDOWS_CONDA_PACKAGES = ['m2-base', 'm2-autoconf', 'm2-automake-wrapper',
+    'm2-make', 'm2-tar', 'm2w64-gcc', 'm2w64-gcc-fortran']
+
+def path2url(path):
+    """Convert path to url."""
+    return urlparse.urljoin(
+        'file:', urllib.pathname2url(path))
 
 class BuildPopup(QtWidgets.QDialog):
     def __init__(self, parent=None, cwd='./'):
@@ -70,6 +99,54 @@ class BuildPopup(QtWidgets.QDialog):
         self.output = QtWidgets.QTextBrowser()
         self.layout.addWidget(self.output, 100, 0, 1, -1)
         self.output.hide()
+
+
+    def show(self):
+        # Check to see if compiling is possible
+        # Check if BUILD_CMD in path
+        possible = True
+        if spawn.find_executable(BUILD_CMD) is None:
+            possible = False
+            message = 'The command: "{}" does not exist in your path.'.format(BUILD_CMD)
+        else:
+            if os.name == 'nt':
+                possible, message = self.check_windows()
+
+        if not possible:
+            setup_guide = path2url(os.path.join(SCRIPT_DIRECTORY, 'doc', 'SETUP_GUIDE.html'))
+
+            message = '\n'.join([
+                'Can not build solver in current environment:'
+                '<blockquote>' + message + '</blockquote>',
+                'Please see the <a href="%s">Setup Guide</a> for more information.' % setup_guide])
+            self.parent().warn(message, popup=True)
+
+            self.cancel()
+
+
+            self.finished.emit(1)
+        else:
+            QtWidgets.QDialog.show(self)
+
+    def check_windows(self):
+        """check for packages on windows"""
+
+        try:
+            packages = subprocess.Popen("conda list", stdout=subprocess.PIPE).stdout.read()
+        except FileNotFoundError:
+            # conda does not exists
+            return False, 'The command "conda" is not avaliable, can not check dependencies.'
+        packages = str(packages)
+
+        found = [False]*len(WINDOWS_CONDA_PACKAGES)
+        for i, package in enumerate(WINDOWS_CONDA_PACKAGES):
+            if package in packages:
+                found[i] = True
+
+        missing = '\n'.join([package for i, package in enumerate(WINDOWS_CONDA_PACKAGES) if not found[i]])
+        found = all(found)
+
+        return found, '' if found else 'The following packages are missing:\n' + missing
 
     def cancel(self):
         if self.build_proc is not None:

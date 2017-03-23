@@ -1552,6 +1552,7 @@ class MfixGui(QMainWindow,
         message_box = QMessageBox(self)
         self.message_box = message_box # Make it accessible to tests
         message_box.setWindowTitle(title)
+        message_box.setTextFormat(Qt.RichText) # hyper links work
 
         # Icon
         if icon == 'warning':
