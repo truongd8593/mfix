@@ -169,12 +169,12 @@ class BuildPopup(QtWidgets.QDialog):
             # find conda home
             conda = spawn.find_executable('conda')
             if conda is None:
-                self.parent().warn('Can not find "conda" to pre-pend PATH')
+                self.parent().warn('Can not find "conda" to prepend PATH')
             else:
                 anaconda_home = os.path.dirname(os.path.dirname(conda))
                 path = env.value('PATH')
 
-                # pre-pend
+                # prepend
                 #  - ANACONDA_HOME/Library/mingw-w64/bin
                 #  - ANACONDA_HOME/Library/usr/bin
                 new_path = os.pathsep.join([
