@@ -24,9 +24,12 @@ except ImportError:
 
 from qtpy import QtWidgets, QtCore, QtGui
 
-from mfixgui.tools.util import (
-    SCRIPT_DIRECTORY,
-)
+try:
+    from mfixgui.tools.util import (
+        SCRIPT_DIRECTORY,
+    )
+except ImportError:
+    SCRIPT_DIRECTORY='./'
 
 log = logging.getLogger('mfix-gui' if __name__ == '__main__' else __name__)
 
@@ -52,9 +55,11 @@ class BuildPopup(QtWidgets.QDialog):
 
         # generate ui
         self.layout = QtWidgets.QGridLayout(self)
-        self.layout.setSizeConstraint(self.layout.SetFixedSize)
 
         # don't show options on windows
+        label = QtWidgets.QLabel('Compiler Options:')
+        self.layout.addWidget(label, 0, 0, 1, -1)
+
         visible = os.name != 'nt'
         self.dmp = QtWidgets.QCheckBox('Distributed memory parallel (DMP)')
         self.dmp.setVisible(visible)
@@ -69,16 +74,24 @@ class BuildPopup(QtWidgets.QDialog):
         self.layout.addWidget(label, 5, 0)
 
         self.fc_flags = QtWidgets.QLineEdit()
+        self.fc_flags.setToolTip(
+            'Flags to be passed to the Fortran compiler.')
         self.fc_flags.setVisible(visible)
         self.layout.addWidget(self.fc_flags, 5, 1, 1, -1)
 
-        label = QtWidgets.QLabel('Other Flags')
-        #label.setVisible(visible)
+        label = QtWidgets.QLabel('Other Flags' if visible else 'Flags')
         self.layout.addWidget(label, 6, 0)
 
         self.other_flags = QtWidgets.QLineEdit()
-        #self.other_flags.setVisible(visible)
+        self.other_flags.setToolTip(
+            'Flags to be passed to build_mfixsolver such as -j to build in parallel.')
         self.layout.addWidget(self.other_flags, 6, 1, 1, -1)
+
+        spacer = QtWidgets.QSpacerItem(100, 10, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum,)
+        self.layout.addItem(spacer, 8, 0)
+
+        self.compile_label = QtWidgets.QLabel('Press "Build Solver" to compile.')
+        self.layout.addWidget(self.compile_label, 9, 0, 1, -1)
 
         self.progressbar = QtWidgets.QProgressBar()
         self.progressbar.setValue(0)
@@ -159,8 +172,11 @@ class BuildPopup(QtWidgets.QDialog):
     def toggle_output(self):
         if not self.output.isVisible():
             self.output.show()
+            constraint = self.layout.SetMaximumSize
         else:
             self.output.hide()
+            constraint = self.layout.SetFixedSize
+        self.layout.setSizeConstraint(constraint)
 
     def get_environment(self):
         env = QtCore.QProcessEnvironment.systemEnvironment()
@@ -183,10 +199,11 @@ class BuildPopup(QtWidgets.QDialog):
                     path
                     ])
                 env.insert("PATH", new_path)
-                print(new_path)
         return env
 
     def build(self):
+        self.compile_label.setText('Building Solver...')
+
         self.line_count = 0
         self.build_proc = QtCore.QProcess()
         self.build_proc.setWorkingDirectory(self.cwd)
@@ -219,20 +236,22 @@ class BuildPopup(QtWidgets.QDialog):
 
     def finished_building(self):
         self.progressbar.setValue(100)
+        self.compile_label.setText('Finished Building.')
         self.cancel_btn.setText('Close')
 
     def error(self, error):
         if error == QtCore.QProcess.FailedToStart:
-            msg = "Process failed to start "+ 'build_mfixsolver'
+            msg = "Process failed to start "+ BUILD_CMD
         elif error == QtCore.QProcess.Crashed:
-            msg = "Process exit " + 'build_mfixsolver'
+            msg = "Process exit " + BUILD_CMD
         elif error == QtCore.QProcess.Timedout:
-            msg = "Process timeout "+ 'build_mfixsolver'
+            msg = "Process timeout "+ BUILD_CMD
         elif error in (QtCore.QProcess.WriteError, QtCore.QProcess.ReadError):
-            msg = "Process communication error " + 'build_mfixsolver'
+            msg = "Process communication error " + BUILD_CMD
         else:
-            msg = "Unknown error " + 'build_mfixsolver'
+            msg = "Unknown error " + BUILD_CMD
 
+        self.compile_label.setText('Process Error')
         self.print_to_output(msg, error=True)
         self.output.show()
 
