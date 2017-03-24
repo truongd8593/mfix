@@ -73,11 +73,11 @@ class BuildPopup(QtWidgets.QDialog):
         self.layout.addWidget(self.fc_flags, 5, 1, 1, -1)
 
         label = QtWidgets.QLabel('Other Flags')
-        label.setVisible(visible)
+        #label.setVisible(visible)
         self.layout.addWidget(label, 6, 0)
 
         self.other_flags = QtWidgets.QLineEdit()
-        self.other_flags.setVisible(visible)
+        #self.other_flags.setVisible(visible)
         self.layout.addWidget(self.other_flags, 6, 1, 1, -1)
 
         self.progressbar = QtWidgets.QProgressBar()
