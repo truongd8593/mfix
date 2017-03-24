@@ -142,7 +142,7 @@ class BuildPopup(QtWidgets.QDialog):
             QtWidgets.QDialog.show(self)
 
     def check_unix(self):
-        return True, 'blahh'
+        return True, 'blahh' #TODO check unix
 
     def check_windows(self):
         """check for packages on windows"""
