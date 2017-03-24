@@ -43,6 +43,7 @@
       USE physprop
       USE ps
       USE residual
+      USE residual_pub
       USE run
       USE rxns
       USE scalars

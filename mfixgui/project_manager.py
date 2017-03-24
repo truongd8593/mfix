@@ -337,7 +337,7 @@ class ProjectManager(Project):
             # Parse THERMO DATA section NB: parsemfixdat does not handle this
             user_species = {}
             if self.thermo_data is not None:
-                for (species, lines) in self.thermo_data.items():
+                for (species,lines) in self.thermo_data.items():
                     section = ['User defined', 'loaded from %s' % project_file] + lines
                     data = read_burcat.parse_section(section)
                     for (species, phase, tmin, tmax, mol_weight, coeffs, comment) in data:
@@ -360,7 +360,7 @@ class ProjectManager(Project):
                 user_def = user_species.get((species, phase))
                 # Look for mismatched phase
                 if not user_def:
-                    for ((s,p),v) in user_species.items():
+                    for ((s,p), v) in user_species.items():
                         if s == species:
                             # This is all-too-common.  existing mfix files all have 'S' for
                             # phase in thermo data.
@@ -427,6 +427,7 @@ class ProjectManager(Project):
                     self.gui.set_unsaved_flag()
                     self.thermo_data.pop(species, None)
                     species = alias # Create a new species, so we can override mol. weight, etc
+                    self.gui.update_keyword('species_g', species, args=[g.ind])
 
                 self.gui.fluid_species[species] = species_data
 
@@ -448,11 +449,10 @@ class ProjectManager(Project):
                     self.updateKeyword('solids_model', default_solids_model, args=[s.ind])
 
                 self.gui.solids_species[s.ind] = OrderedDict()
-
                 species = list(s.species)
                 species.sort(key=lambda a:a.ind)
 
-                for sp in species:
+                for (i,sp) in enumerate(species,1):
                     # First look for definition in THERMO DATA section
                     phase = sp.phase.upper() # phase and species_g are guaranteed to be set
                     species = sp.get('species_s')
@@ -470,8 +470,8 @@ class ProjectManager(Project):
                     user_def = user_species.get((species, phase))
                     # Hack, look for mismatched phase
                     if not user_def:
-                        for ((s_,p),v) in user_species.items():
-                            if s_ == species:
+                        for ((s1,p), v) in user_species.items():
+                            if s1 == species:
                                 # This is all-too-common.  existing mfix files all have 'S' for
                                 # phase in thermo data.
                                 #warnings.warn("species '%s' defined as phase '%s', expected '%s'"
@@ -539,6 +539,7 @@ class ProjectManager(Project):
                         self.gui.set_unsaved_flag()
                         self.thermo_data.pop(species, None)
                         species = alias # Create a new species, so we can override mol. weight, etc
+                        self.gui.update_keyword('species_s', species, args=[s.ind, i])
 
                     self.gui.solids_species[s.ind][species] = species_data
 

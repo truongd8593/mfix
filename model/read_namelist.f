@@ -40,6 +40,7 @@
       USE qmom_kinetic_equation
       USE quadric
       USE residual
+      USE residual_pub
       USE run
       USE rxns
       USE scalars

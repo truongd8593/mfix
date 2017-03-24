@@ -22,6 +22,14 @@ import threading
 import time
 import traceback
 
+import builtins
+
+#logfile = open('/tmp/pymfix.log', 'w')
+#def print(*args, **kwargs):
+#    kwargs['flush'] = True
+#    kwargs['file'] = logfile
+#    builtins.print(*args, **kwargs)
+
 pidfilename = None
 
 from flask import Flask, jsonify, make_response, request
@@ -40,9 +48,9 @@ from mfixgui.version import __version__
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 
 FLASK_APP = Flask(__name__)
-FLASK_APP.config['SECRET_KEY'] = \
-            ''.join([random.choice(string.digits + string.ascii_letters)
-            for x in range(0, 64)])
+FLASK_APP.config['SECRET_KEY'] = ''.join(
+    [random.choice(string.digits + string.ascii_letters)
+     for x in range(0, 64)])
 FLASK_APP.config['TOKEN_NAME'] = 'x-pymfix-auth'
 DEBUG_FLAG = False
 
@@ -101,7 +109,7 @@ def import_mfixsolver(solver=None):
     # conventional to only use uppercase for constants)
     global COMPAR
     global DEBUG
-    global DEM
+    global PIC
     global DES_TIME_MARCH
     global ITERATE
     global MAIN
@@ -121,12 +129,12 @@ def import_mfixsolver(solver=None):
 
     COMPAR = mfixsolver.compar
     DEBUG = mfixsolver.debug
-    DEM = mfixsolver.discretelement
+    PIC = mfixsolver.pic_time_march
     DES_TIME_MARCH = mfixsolver.des_time_march
     ITERATE = mfixsolver.iterate
     MAIN = mfixsolver.main
     PARALLEL_MPI = mfixsolver.parallel_mpi
-    RESIDUAL = mfixsolver.residual
+    RESIDUAL = mfixsolver.residual_pub
     RUN = mfixsolver.run
     STEP = mfixsolver.step
 
@@ -163,10 +171,12 @@ def main():
     protocol = 'https' if setup_ssl() else 'http'
 
     def _start_flask(host, port, debug, use_reloader):
+        #print("START FLASK")
         global pidfilename
         try:
             while not get_run_name():
                 # wait for mfix thread to initialize RUN_NAME
+                #print("SLEEP1")
                 time.sleep(0.1)
             pidfilename = '%s.pid' % get_run_name()
             pid = os.getpid()
@@ -177,11 +187,14 @@ def main():
                 f.write('token=%s:%s\n' % (
                     FLASK_APP.config['TOKEN_NAME'],
                     FLASK_APP.config['SECRET_KEY']))
+            #print("WROTE PIDFILE, RUNNING FLASK")
             FLASK_APP.run(host=host,
                           port=port, debug=debug,
                           use_reloader=use_reloader)
+            #print("FLASK OUT")
         finally:
             try:
+                #print("REMOVE PIDFILE")
                 os.remove(pidfilename)
             except:
                 pass
@@ -248,13 +261,15 @@ class Mfix(object):
 
         # DEBUG.good_config is not instantaneously set correctly
         time.sleep(0.25)
+        #print("SLEEP2")
         while not DEBUG.good_config:
             # loaded project file can't be run, enter loop to wait for good
             # config to be uploaded
             self.paused = True
             self.check_requests()
-            print('reading data from %s' % self.mfix_dat)
+            #print('reading %s' % self.mfix_dat)
             MAIN.get_data(self.mfix_dat)
+            #print("SLEEP3")
             time.sleep(0.1)
 
         MAIN.initialize(self.mfix_dat)
@@ -263,12 +278,12 @@ class Mfix(object):
 
         self.update_status()
 
-        if DEM.discrete_element and not DEM.des_continuum_coupled:
+        if RUN.discrete_element and not RUN.des_continuum_coupled:
             DES_TIME_MARCH.des_time_init()
             if RUN.dem_solids:
                 self.dem_time_march()
             if RUN.pic_solids:
-                DEM.pic_time_march()
+                PIC.pic_time_march()
         else:
 
             while not self.stopped:
@@ -355,11 +370,11 @@ class Mfix(object):
         output['nit'] = int(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
-            for res_id in range(len(RESIDUAL.resid_grp_string)):
+            for res_id in range(RESIDUAL.get_resid_grp_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_grp_string(res_id)),
                                             str(RESIDUAL.get_resid_grp(res_id))))
         else:
-            for res_id in range(len(RESIDUAL.resid_string)):
+            for res_id in range(RESIDUAL.get_resid_string_len()):
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
@@ -379,12 +394,13 @@ class Mfix(object):
                     tok = line.strip().split('=', 1)
                     if len(tok) == 2 and tok[0] == 'pid':
                         try:
-                            file_pid = int(tok(1))
+                            file_pid = int(tok[1])
                             break
                         except ValueError as e:
                             log.exception(str(e))
 
         except Exception as e:
+            #print(e)
             log.exception(str(e))
             return False
 
@@ -394,16 +410,20 @@ class Mfix(object):
 
         return True
 
+
     def check_requests(self):
         "check for requests sent by the Flask thread"
-        while True:
+        #print("CHECK REQUESTS")
+        while True: ### FIXME
             if self.requests:
                 # requests would only arrive at rank 0
                 req_id, cmd_args = self.requests.popitem()
+                #print("POP", req_id, cmd_args)
                 # exit if pidfile is missing
                 if not self.check_pidfile():
                     cmd_args = ('EXIT', None)
             else:
+                #print("NOTHING TO DO")
                 # command is empty for rank>0, or when rank 0 hasn't received anything
                 req_id = None
                 cmd_args = (None, None)
@@ -417,10 +437,11 @@ class Mfix(object):
 
             if command:
                 cmd = command.split(' ')[0].lower().strip()
-
                 if hasattr(self, cmd):
+                    #print("CMD", cmd)
                     self.responses[req_id] = getattr(self, cmd)(args)
                 else:
+                    #print("NO CAN DO", cmd)
                     self.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
 
             self.update_status()
@@ -429,10 +450,11 @@ class Mfix(object):
             if not DEBUG.good_config:
                 return
             # loop until unpaused
+            #print("SLEEP4")
             time.sleep(0.1)
 
-    def unpause(self, _):
-        " unpause "
+    def unpause(self, *args):
+        #print("UNPAUSE")
         if DEBUG.good_config:
             self.paused = False
             return 200, "UNPAUSING MFiX"
@@ -440,34 +462,43 @@ class Mfix(object):
             return 200, "UNABLE TO UNPAUSE MFiX"
 
     def pause(self, _):
-        " paused "
+        #print("PAUSE")
         self.paused = True
         return 200, "PAUSING MFiX"
 
     def write_dbg_vt(self, _):
         " call write_dbg_vtu_and_vtp_files "
+        #print("WRITE_DBG_VT")
         MAIN.do_write_dbg_vtu_and_vtp_files()
         return 200, 'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
 
     def backupres(self, _):
         " backup resource files"
+        #print("BACKUPRES")
         MAIN.do_backupres()
         return 200, 'BACKING UP RESOURCE FILES\n'
 
     def reinit(self, _):
         " reinitialize "
+        #print("REINIT")
         self.mfix_dat = _.get('mfix_dat')
         MAIN.do_reinit(self.mfix_dat)
         return 200, 'REINITIALIZING MFiX\n'
 
     def exit(self, _):
         " run_mfix thread should exit cleanly "
+        #print("EXIT")
         self.stopped = True
         self.paused = False
         return 200, 'EXITING MFiX\n'
 
+    def die(self, args):
+        #print("DIE", args)
+        os._exit(1)
+
     def step(self, args):
         " take one or more timesteps "
+        #print("STEP", args)
         stepcount = int(args.get('stepcount', None)[0])
         if RUN.tstop <= RUN.time:
             RUN.tstop = RUN.tstop + stepcount*RUN.dt
@@ -477,11 +508,16 @@ class Mfix(object):
 
     def do_command(self, cmd, args=None):
         "Puts a command that was received over the web interface on the queue"
+        #print("DO_CMD", cmd, args)
         req_id = threading.current_thread().ident
         self.requests[req_id] = (cmd, args)
-        while req_id not in self.responses:
+        #print("ENQUEUE" , req_id, cmd, args)
+        while req_id not in self.responses: # XXXXX FIXME, this leads to infloop on exception
+            #print("SLEEP5")
+            #print("RESPONSES", self.responses)
             time.sleep(0.1)
         resp = self.responses[req_id]
+        #print("REQ_ID", req_id, "RESP", resp)
         del self.responses[req_id]
 
         return resp
@@ -498,16 +534,16 @@ def token_required(f):
         if client_token == server_token:
             return f(*args, **kwargs)
         else:
-            return "Authentication required", 401, \
-                  {'Content-Type': 'text/plain; charset=utf-8'}
+            return ("Authentication required", 401,
+                  {'Content-Type': 'text/plain; charset=utf-8'})
     return decorated_function
 
-def api_response(status_code, command_output):
+def response(status_code, command_output):
     return make_response(
-      jsonify(mfix_status=mfix_thread.status,
-              command_output=command_output),
-      status_code,
-      {'Content-Type': 'application/json; charset=utf-8'})
+        jsonify(mfix_status=mfix_thread.status,
+                command_output=command_output),
+        status_code,
+        {'Content-Type': 'application/json; charset=utf-8'})
 
 @FLASK_APP.before_request
 def debug_before():
@@ -543,97 +579,111 @@ def reinitialize():
     except Exception as e:
         status_code = 500
         command_output = "Error %s saving submitted project file" % e
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 @FLASK_APP.route('/set/<modname>/<varname>', methods=['POST'])
 @token_required
 def set_variable(modname, varname):
-    "sets a variable"
+    #print("SETVAR")
     args = dict(request.form)
     args['modname'] = modname
     args['varname'] = varname
     status_code, command_output = mfix_thread.do_command("SET", args=args)
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 @FLASK_APP.route('/set/<modname>/<varname>/<elem>', methods=['POST'])
 @token_required
 def set_variable_array(modname, varname, elem):
-    "sets a variable"
+    #print("SET VAR ARRAY")
     args = dict(request.form)
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
     status_code, command_output = mfix_thread.do_command("SET", args=args)
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 @FLASK_APP.route('/get/<modname>/<varname>', methods=['GET'])
 @token_required
 def get_variable(modname, varname):
-    "retrieves a variable"
+    #print("GET VAR", modname, varname)
     args = dict(request.args)
     args['modname'] = modname
     args['varname'] = varname
     status_code, command_output = mfix_thread.do_command("GET", args=args)
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 @FLASK_APP.route('/get/<modname>/<varname>/<elem>', methods=['GET'])
 @token_required
 def get_variable_array(modname, varname, elem):
-    "retrieves a variable"
+    #print("GET VAR ARRAY", modname, varname, elem)
     args = dict(request.args)
     args['modname'] = modname
     args['varname'] = varname
     args['elem'] = elem
     status_code, command_output = mfix_thread.do_command("GET", args=args)
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 
 @FLASK_APP.route('/write_dbg_vt', methods=['POST'])
 @token_required
 def write_dbg_vt():
     "calls WRITE_DBG_VTU_AND_VTP_FILES"
+    #print("WRITE_DBG_VT")
     status_code, command_output = mfix_thread.do_command("WRITE_DBG_VT")
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 
 @FLASK_APP.route('/backupres', methods=['POST'])
 @token_required
 def backupres():
+    #print("BACKUPRES")
     status_code, command_output = mfix_thread.do_command("BACKUPRES")
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 
 @FLASK_APP.route('/exit', methods=['POST'])
 @token_required
 def exit_mfix():
+    #print("EXIT MFIX")
     status_code, command_output = mfix_thread.do_command("EXIT")
     mfix_thread.thread.join()
     do_exit()
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
+
+
+@FLASK_APP.route('/die', methods=['POST'])
+@token_required
+def kill_mfix():
+    #print("GOODBYE CRUEL WORLD")
+    os._exit(1)
 
 
 @FLASK_APP.route('/step', methods=['POST'])
 @token_required
 def step():
     """runs mfix for one timestep, regardless of TIME and TSTOP"""
+    #print("STEP")
     args = dict(request.form)
     status_code, command_output = mfix_thread.do_command("STEP", args=args)
-    return api_response(status_code, command_output)
+    #print("STEP DONE")
+    return response(status_code, command_output)
 
 
 @FLASK_APP.route('/pause', methods=['PUT'])
 @token_required
 def pause():
     "pauses MFiX if unpaused"
+    #print(" PAUSE")
     status_code, command_output = mfix_thread.do_command("PAUSE")
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 @FLASK_APP.route('/unpause', methods=['PUT'])
 @token_required
 def unpause():
     "unpause MFiX if paused"
+    #print(" UNPAUSE")
     status_code, command_output = mfix_thread.do_command("UNPAUSE")
-    return api_response(status_code, command_output)
+    return response(status_code, command_output)
 
 def do_exit():
     try:
@@ -651,10 +701,14 @@ def do_exit():
 @token_required
 def get_status():
     "returns current status: paused state, current time, and residuals"
-    # status is included in api_response
+    # status is included in response
+    #print("STATUS REQUEST")
     if RUN.steady_state and mfix_thread.steady_converged:
-        do_exit()
-    return api_response(200, '')
+        print("EXITING") #
+        do_exit() # Ugh, nice side-effect of a status request!
+    ret = response(200, '')
+    #print("RETURNING", ret)
+    return ret
 
 @FLASK_APP.route('/logging/<state>', methods=['POST'])
 @FLASK_APP.route('/logging/<state>/<level>', methods=['POST'])
@@ -666,7 +720,7 @@ def set_logging(state=None, level=None):
     if state == 'disable':
         log.disabled = True
     # maybe handle loglevel someday
-    return api_response(200, 'OK')
+    return response(200, 'OK')
 
 
 def conv_bool(s):

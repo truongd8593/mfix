@@ -10,7 +10,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE residual, only: GROUP_RESID
+      USE residual_pub, only: GROUP_RESID
       IMPLICIT NONE
 
 ! Local variables

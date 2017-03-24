@@ -479,7 +479,7 @@ libmfix_src = \
 	../model/des/pic/set_bc_pic.f \
 	../model/des/pic/set_bc_pic_mi.f \
 	../model/des/pic/set_bc_pic_mo.f \
-	../model/des/pic/time_march_pic.f \
+	../model/des/pic/pic_time_march.f \
 	../model/des/randomno_mod.f \
 	../model/des/read_particle_input.f \
 	../model/des/read_res0_des.f \
@@ -634,6 +634,7 @@ libmfix_src = \
 	../model/remove_comment.f \
 	../model/reset_new.f \
 	../model/residual_mod.f \
+	../model/residual_pub_mod.f \
 	../model/rrates.f \
 	../model/rrates0.f \
 	../model/rrates_init.f \
