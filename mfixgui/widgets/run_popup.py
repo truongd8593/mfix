@@ -5,6 +5,7 @@ import os
 import signal
 import sys
 import tempfile
+from distutils.version import StrictVersion
 
 try: #2.7
     from StringIO import StringIO
@@ -24,7 +25,7 @@ try: #2.7
 except: # 3
     import configparser
 
-from qtpy import PYQT5, uic
+from qtpy import PYQT5, uic, QT_VERSION
 from qtpy.QtCore import (
     QProcess,
     QProcessEnvironment,
@@ -678,7 +679,13 @@ class RunPopup(QDialog):
         self.mfixproc.setProcessEnvironment(process_env)
 
         def slot_start():
-            msg = "MFiX process %d is running" % self.mfixproc.processId()
+            # processId was only added in qt 5.3
+            if StrictVersion(QT_VERSION) > StrictVersion('5.3'):
+                pid = self.mfixproc.processId()
+            else:
+                pid = self.mfixproc.pid()
+
+            msg = "MFiX process %d is running" % pid
             self.parent.signal_update_runbuttons.emit(msg)
 
         def slot_read_out():
