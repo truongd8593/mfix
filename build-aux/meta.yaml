@@ -27,6 +27,7 @@ requirements:
     - setuptools
     - wheel >=0.25.0
     - flask
+    - future
     - libpython # [win]
     - numpy
     - pandoc
@@ -38,6 +39,7 @@ requirements:
     - setuptools
     - wheel >=0.25.0
     - flask
+    - future
     - numpy
     - pyqt
     - qtpy >=1.2.1
