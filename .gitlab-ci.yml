@@ -197,7 +197,7 @@ linux_py2_whl:
 
 windows_py35_conda:
   variables:
-    CONDA_BLD_PATH: "C:\conda_bld"
+    CONDA_BLD_PATH: "C:/conda_bld"
   script:
     - rm -rf dist
     - rm -f $CONDA_BLD_PATH/linux-64/mfix*
