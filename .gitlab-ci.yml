@@ -197,13 +197,13 @@ linux_py2_whl:
 
 windows_py35_conda:
   variables:
-    CONDA_BLD_PATH: "C:/conda_bld"
+    CONDA_BLD_PATH: "C:/Users/User/Miniconda3/conda_bld"
   script:
     - rm -rf dist
-    - rm -f $CONDA_BLD_PATH/linux-64/mfix*
-    - env CONDA_BLD_PATH="$CONDA_BLD_PATH" conda build --python 3.5 build-aux/meta.yaml
-    - mkdir -p dist/linux-64
-    - cp $CONDA_BLD_PATH/linux-64/mfix* dist/linux-64
+    - rm -f $CONDA_BLD_PATH/win-64/*
+    - conda build --python 3.5 build-aux/meta.yaml
+    - mkdir dist
+    - cp -r $CONDA_BLD_PATH/win-64 dist
   stage: build
   only:
     - develop
@@ -234,45 +234,45 @@ windows_py35_conda:
 #   tags:
 #     - windows
 
-# install:pip_update:
-#   script:
-#     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
-#     - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/linux-64/*27*.whl --prefix=${PYPATH}
-#   stage: deploy
-#   only:
-#     - develop
-#     - tags
-#   dependencies:
-#     - linux_py2_whl
-#   tags:
-#     - linux
+install:pip_update:
+  script:
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip uninstall --yes mfix || true
+    - env PYTHONPATH=${PYPATH}/lib/python2.7/site-packages ${ANACONDA_BIN}/pip install dist/linux-64/*27*.whl --prefix=${PYPATH}
+  stage: deploy
+  only:
+    - develop
+    - tags
+  dependencies:
+    - linux_py2_whl
+  tags:
+    - linux
 
-# install:conda_update:
-#   variables:
-#     CONDA_BIN: /opt/miniconda3/bin
-#     CONDA_REPO: /var/www/html/dist
-#   script:
-#     - rsync -rv dist/ ${CONDA_REPO}/
-#     - $CONDA_BIN/conda index ${CONDA_REPO}/linux-64
-#     - $CONDA_BIN/conda index ${CONDA_REPO}/mac-64
-#     - $CONDA_BIN/conda index ${CONDA_REPO}/win-64
-#   stage: deploy
-#   only:
-#     - develop
-#     - tags
-#   dependencies:
-#     - linux_py2_conda
-#     - linux_py2_whl
-#     - linux_py34_conda
-#     - linux_py35_conda
-#     - linux_py36_conda
-#     - mac_py36_conda
-#     - windows_py2_conda
-#     - windows_py34_conda
-#     - windows_py35_conda
-#     - windows_py3_whl
-#   tags:
-#     - conda
+install:conda_update:
+  variables:
+    CONDA_BIN: /opt/miniconda3/bin
+    CONDA_REPO: /var/www/html/dist
+  script:
+    - rsync -rv dist/ ${CONDA_REPO}/
+    - $CONDA_BIN/conda index ${CONDA_REPO}/linux-64
+    - $CONDA_BIN/conda index ${CONDA_REPO}/mac-64
+    - $CONDA_BIN/conda index ${CONDA_REPO}/win-64
+  stage: deploy
+  only:
+    - develop
+    - tags
+  dependencies:
+    - linux_py2_conda
+    - linux_py2_whl
+    - linux_py34_conda
+    - linux_py35_conda
+    - linux_py36_conda
+    # - mac_py36_conda
+    # - windows_py2_conda
+    # - windows_py34_conda
+    - windows_py35_conda
+    # - windows_py36_whl
+  tags:
+    - conda
 
 # install:pylint_update:
 #   script:
