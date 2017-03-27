@@ -197,16 +197,17 @@ linux_py2_whl:
 
 windows_py35_conda:
   variables:
-    CONDA_BLD_PATH: "C:/conda_bld"
+    CONDA_BLD_PATH: "C:/Users/User/Miniconda3/conda_bld"
   script:
     - rm -rf dist
-    - rm -f $CONDA_BLD_PATH/linux-64/mfix*
-    - env CONDA_BLD_PATH="$CONDA_BLD_PATH" conda build --python 3.5 build-aux/meta.yaml
-    - mkdir -p dist/linux-64
-    - cp $CONDA_BLD_PATH/linux-64/mfix* dist/linux-64
+    - rm -f $CONDA_BLD_PATH/win-64/mfix*
+    - conda build --python 3.5 build-aux/meta.yaml
+    - mkdir -p dist/win-64
+    - cp $CONDA_BLD_PATH/win-64/mfix* dist/linux-64
   stage: build
   only:
     - develop
+    - enable_conda
     - tags
   artifacts:
     name: "$CI_BUILD_NAME"
