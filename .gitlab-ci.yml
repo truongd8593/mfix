@@ -197,7 +197,7 @@ linux_py2_whl:
 
 windows_py35_conda:
   variables:
-    CONDA_BLD_PATH: "C:/Users/User/Miniconda3/conda_bld"
+    CONDA_BLD_PATH: "/c/Users/User/Miniconda3/conda_bld"
   script:
     - rm -rf dist
     - rm -f $CONDA_BLD_PATH/win-64/*
