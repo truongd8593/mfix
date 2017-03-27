@@ -197,13 +197,13 @@ linux_py2_whl:
 
 windows_py35_conda:
   variables:
-    CONDA_BLD_PATH: "/c/Users/User/Miniconda3/conda_bld"
+    CONDA_BLD_PATH: "C:/Users/User/Miniconda3/conda_bld"
   script:
     - rm -rf dist
-    - rm -f $CONDA_BLD_PATH/win-64/*
+    - rm -f %CONDA_BLD_PATH%/win-64/*
     - conda build --python 3.5 build-aux/meta.yaml
     - mkdir dist
-    - cp -r $CONDA_BLD_PATH/win-64 dist
+    - cp -r %CONDA_BLD_PATH%/win-64 dist
   stage: build
   only:
     - develop
